@@ -1,1 +1,1 @@
-# iran-payment-gateways
+# iran-payment

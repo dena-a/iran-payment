@@ -1,0 +1,12 @@
+{
+	"name": "dena-a/iran-payment",
+	"description": "a Laravel package to handle Internet Payment Gateways for Iran Banking System",
+	"authors": [
+		{
+			"name": "Dena Ajdari",
+			"email": "dena.ajdari@gmail.com"
+		}
+	],
+	"minimum-stability": "dev",
+	"require": {}
+}
