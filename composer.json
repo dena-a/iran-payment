@@ -1,6 +1,18 @@
 {
 	"name": "dena-a/iran-payment",
 	"description": "a Laravel package to handle Internet Payment Gateways for Iran Banking System",
+	"type": "library",
+	"homepage": "https://github.com/dena-a/iran-payment",
+	"license": "MIT",
+	 "keywords": [
+		"laravel",
+		"iran",
+		"payment",
+		"bank",
+		"banking",
+		"payment system",
+		"zarinpal",
+	],
 	"authors": [
 		{
 			"name": "Dena Ajdari",
@@ -8,5 +20,12 @@
 		}
 	],
 	"minimum-stability": "dev",
-	"require": {}
+	"require": {
+		"php": ">=5.5.0"
+	},
+	"extra": {
+		"branch-alias": {
+			"dev-master": "1.0-dev"
+		}
+	}
 }
