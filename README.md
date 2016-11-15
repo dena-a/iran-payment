@@ -34,8 +34,8 @@ First add aliases:
 // config/app.php
 'aliases' => [
     ...
-    'IranPayment'				      =>	Dena\IranPayment\IranPayment::class,
-		'IranPaymentTransaction'	=>	Dena\IranPayment\Models\IranPaymentTransaction::class,
+    'IranPayment' => Dena\IranPayment\IranPayment::class,
+    'IranPaymentTransaction' => Dena\IranPayment\Models\IranPaymentTransaction::class,
 ];
 ```
 
