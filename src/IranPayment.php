@@ -34,7 +34,10 @@ class IranPayment
 
 	public function __call($name, $arguments)
 	{
-		return call_user_func_array([$this->payment_gateway, $name], $arguments);
+		if ($this->payment_gateway) {
+			return call_user_func_array([$this->payment_gateway, $name], $arguments);
+		}
+		return false;
 	}
 
 	public function build()
