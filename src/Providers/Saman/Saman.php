@@ -137,17 +137,7 @@ class Saman extends GatewayAbstract implements IranPaymentInterface
 
 	protected function generateResNum()
 	{
-		$this->reference_id = sha1(
-			implode(
-				'&&',
-				[
-					uniqid('', true),
-					$this->user_id,
-					$this->amount,
-					Carbon::now()->timestamp,
-				]
-			)
-		);
+		$this->reference_id = $this->generateRandomString();
 	}
 
 	public function redirect()
