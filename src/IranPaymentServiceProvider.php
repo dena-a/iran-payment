@@ -19,7 +19,13 @@ class IranPaymentServiceProvider extends ServiceProvider
 			__DIR__.'/config/iranpayment.php' => base_path('config/iranpayment.php'),
 		]);
 		$this->publishes([
-			__DIR__.'/database/migrations/create_iran_payment_transactions_table.php' => $this->app->databasePath().'/migrations/2016_11_01_000000_create_iran_payment_transactions_table.php',
+			__DIR__.'/database/migrations/2016_11_01_000000_create_iran_payment_transactions_table.php' => $this->app->databasePath().'/migrations/2016_11_01_000000_create_iran_payment_transactions_table.php',
+		]);
+		$this->publishes([
+			__DIR__.'/database/migrations/2017_01_01_000000_alter_table_iran_payment_transactions.php' => $this->app->databasePath().'/migrations/2017_01_01_000000_alter_table_iran_payment_transactions.php',
+		]);
+		$this->publishes([
+			__DIR__.'/resources/views/iranpayment' => $this->app->basePath().'/resources/views/iranpayment',
 		]);
 	}
 

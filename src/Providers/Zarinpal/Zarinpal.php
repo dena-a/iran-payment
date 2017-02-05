@@ -53,7 +53,7 @@ class Zarinpal extends GatewayAbstract implements IranPaymentInterface
 
 		$fields = [
 			'MerchantID'	=> Config::get('iranpayment.zarinpal.merchant-id'),
-			'CallbackURL'	=> $this->buildQuery(Config::get('iranpayment.zarinpal.callback-url'), ['transaction_id' => $this->transactionId()]),
+			'CallbackURL'	=> $this->buildQuery(Config::get('iranpayment.zarinpal.callback-url'), ['transaction' => $this->transactionHashids()]),
 			'Description'	=> Config::get('iranpayment.zarinpal.description'),
 			'Email'			=> Config::get('iranpayment.zarinpal.email'),
 			'Mobile'		=> Config::get('iranpayment.zarinpal.mobile'),
@@ -82,16 +82,6 @@ class Zarinpal extends GatewayAbstract implements IranPaymentInterface
 
 		$this->reference_id = $response->Authority;
 		$this->transactionSetReferenceId($this->transaction_id);
-
-		switch (Config::get('iranpayment.zarinpal.type')) {
-			case 'zarin-gate':
-				$this->payment_url = str_replace('$Authority', $this->reference_id, $this->zaringate_url);
-				break;
-			case 'normal':
-			default:
-				$this->payment_url = $this->gate_url.$this->reference_id;
-				break;
-		}
 	}
 
 	protected function userPayment()
@@ -156,5 +146,19 @@ class Zarinpal extends GatewayAbstract implements IranPaymentInterface
 				$this->server_url = $this->germany_server;
 			break;
 		}
+	}
+
+	public function redirect()
+	{
+		switch (Config::get('iranpayment.zarinpal.type')) {
+			case 'zarin-gate':
+				$payment_url = str_replace('$Authority', $this->reference_id, $this->zaringate_url);
+				break;
+			case 'normal':
+			default:
+				$payment_url = $this->gate_url.$this->reference_id;
+				break;
+		}
+		return redirect($payment_url);
 	}
 }

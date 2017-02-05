@@ -16,9 +16,10 @@ class CreateIranPaymentTransactionsTable extends Migration
 			$table->increments('id');
 			$table->integer('user_id')->unsigned();
 			$table->foreign('user_id')->references('id')->on('users');
-			$table->string('reference_id')->index();
+			$table->string('reference_id')->nullable()->index();
 			$table->tinyInteger('gateway')->unsigned();
 			$table->double('amount', 16, 4)->unsigned();
+			$table->tinyInteger('currency')->unsigned()->length(1)->default(1);
 			$table->tinyInteger('status')->unsigned()->length(1);
 			$table->string('tracking_code')->nullable()->index();
 			$table->string('card_number')->nullable();

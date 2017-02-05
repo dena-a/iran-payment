@@ -7,6 +7,9 @@ use Dena\IranPayment\Exceptions\InvalidDataException;
 use Dena\IranPayment\Models\IranPaymentTransaction;
 
 use Carbon\Carbon;
+use Vinkla\Hashids\Facades\Hashids;
+
+use Config;
 
 abstract class GatewayAbstract
 {
@@ -18,17 +21,25 @@ abstract class GatewayAbstract
 	protected $transaction_id	= null;
 	protected $transaction		= null;
 	protected $card_number		= null;
+	protected $description		= null;
 
 	protected $user_id;
 	protected $gateway;
 	protected $reference_id;
 	protected $amount;
 	protected $tracking_code;
-	protected $payment_url;
 
 	public function __construct($gateway)
 	{
 		$this->gateway = $gateway;
+
+		if (!Config::has('hashids.connections.iranpayment')) {
+			Config::set('hashids.connections.iranpayment', [
+				'salt'		=> Config::get('iranpayment.hashids.salt' ,'your-salt-string'),
+				'length'	=> Config::get('iranpayment.hashids.length' ,16),
+				'alphabet'	=> Config::get('iranpayment.hashids.alphabet' ,'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'),
+			]);
+		}
 	}
 
 	public function gateway()
@@ -44,11 +55,6 @@ abstract class GatewayAbstract
 	public function trackingCode()
 	{
 		return $this->tracking_code;
-	}
-
-	public function paymentUrl()
-	{
-		return $this->payment_url;
 	}
 
 	public function transactionId()
@@ -114,7 +120,8 @@ abstract class GatewayAbstract
 	{
 		return IranPaymentTransaction::find($this->transaction_id)
 			->update([
-				'status'	=> self::T_FAILED,
+				'status'		=> self::T_FAILED,
+				'description'	=> $this->description,
 			]);
 	}
 
@@ -138,9 +145,9 @@ abstract class GatewayAbstract
 		}
 	}
 
-	public function redirect()
+	public function transactionHashids()
 	{
-		return redirect($this->payment_url);
+		return Hashids::connection('iranpayment')->encode($this->transaction_id);
 	}
 
 }

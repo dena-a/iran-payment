@@ -4,14 +4,16 @@
 	"type": "library",
 	"homepage": "https://github.com/dena-a/iran-payment",
 	"license": "MIT",
-	 "keywords": [
+	"keywords": [
 		"laravel",
 		"iran",
 		"payment",
 		"bank",
 		"banking",
 		"payment system",
-		"zarinpal"
+		"zarinpal",
+		"saman",
+		"sep"
 	],
 	"authors": [
 		{
@@ -22,7 +24,8 @@
 	"minimum-stability": "dev",
 	"require": {
 		"php": ">=5.5.0",
-		"laravel/framework": ">=5.1.0"
+		"laravel/framework": ">=5.1.0",
+		"vinkla/hashids": "^2.4"
 	},
 	"autoload": {
 		"psr-4": {
