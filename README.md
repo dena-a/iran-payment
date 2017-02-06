@@ -1,7 +1,7 @@
 # IranPayment
 a Laravel package to handle Internet Payment Gateways for Iran Banking System
 
-<p align="center"><a href="https://github.com/dena-a/iran-payment" target="_blank"><img width="300" src="https://raw.githubusercontent.com/dena-a/iran-payment/master/images/screen.png"></a></p>
+<p align="center"><a href="https://github.com/dena-a/iran-payment" target="_blank"><img width="650" src="https://raw.githubusercontent.com/dena-a/iran-payment/master/images/screen.png"></a></p>
 
 ## Install
 
