@@ -10,7 +10,6 @@ use Dena\IranPayment\Exceptions\TransactionNotFoundException;
 use Dena\IranPayment\Providers\Saman\Saman;
 use Dena\IranPayment\Providers\Zarinpal\Zarinpal;
 
-use Dena\IranPayment\GatewayAbstract;
 use Dena\IranPayment\Models\IranPaymentTransaction;
 
 use Vinkla\Hashids\Facades\Hashids;
@@ -96,11 +95,12 @@ class IranPayment
 			throw new TransactionNotFoundException;
 		}
 
-		if ($transaction->status == GatewayAbstract::T_SUCCEED || $transaction->status == GatewayAbstract::T_FAILED) {
+		if ($transaction->status != IranPaymentTransaction::T_PENDING) {
 			throw new RetryException;
 		}
 
-		$this->build($transaction->gateway);
+		$this->gateway = $transaction->gateway;
+		$this->build();
 
 		return $this->payment_gateway->verify($transaction);
 	}

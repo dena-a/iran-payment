@@ -13,16 +13,21 @@ use SoapClient;
 
 class Zarinpal extends GatewayAbstract implements IranPaymentInterface
 {
-	protected $server_url;
 	protected $germany_server	= 'https://de.zarinpal.com/pg/services/WebGate/wsdl';
 	protected $iran_server		= 'https://ir.zarinpal.com/pg/services/WebGate/wsdl';
 	protected $gate_url			= 'https://www.zarinpal.com/pg/StartPay/';
 	protected $zaringate_url	= 'https://www.zarinpal.com/pg/StartPay/$Authority/ZarinGate';
 
+	protected $server_url;
+	protected $callback_url;
+	protected $connection_timeout;
+
 	public function __construct($gateway)
 	{
 		parent::__construct($gateway);
 		$this->setServer();
+		$this->callback_url			= Config::get('iranpayment.zarinpal.callback-url', Config::get('iranpayment.callback-url'));
+		$this->connection_timeout	= Config::get('iranpayment.timeout', 30);
 	}
 
 	public function setAmount($amount)
@@ -41,7 +46,7 @@ class Zarinpal extends GatewayAbstract implements IranPaymentInterface
 	{
 		parent::verify($transaction);
 
-		$this->userPayment();
+		$this->checkPayment();
 		$this->verifyPayment();
 
 		return $this;
@@ -53,7 +58,7 @@ class Zarinpal extends GatewayAbstract implements IranPaymentInterface
 
 		$fields = [
 			'MerchantID'	=> Config::get('iranpayment.zarinpal.merchant-id'),
-			'CallbackURL'	=> $this->buildQuery(Config::get('iranpayment.zarinpal.callback-url'), ['transaction' => $this->transactionHashids()]),
+			'CallbackURL'	=> $this->callbackURL(),
 			'Description'	=> Config::get('iranpayment.zarinpal.description'),
 			'Email'			=> Config::get('iranpayment.zarinpal.email'),
 			'Mobile'		=> Config::get('iranpayment.zarinpal.mobile'),
@@ -65,39 +70,45 @@ class Zarinpal extends GatewayAbstract implements IranPaymentInterface
 				'encoding'				=> 'UTF-8', 
 				'trace'					=> 1,
 				'exceptions'			=> 1,
-				'connection_timeout'	=> Config::get('iranpayment.zarinpal.timeout', 15),
+				'connection_timeout'	=> $this->connection_timeout,
 			]);
 			$response = $soap->PaymentRequest($fields);
 		} catch(SoapFault $e) {
+			$this->description = $e->getMessage();
 			$this->transactionFailed();
 			throw $e;
 		} catch(Exception $e){
+			$this->description = $e->getMessage();
 			$this->transactionFailed();
 			throw $e;
 		}
 
 		if ($response->Status != 100) {
-			throw new ZarinpalException($response->Status);
+			$e	= new ZarinpalException($response->Status);
+			$this->description = $e->getMessage();
+			$this->transactionFailed();
+			throw $e;
 		}
 
 		$this->reference_id = $response->Authority;
 		$this->transactionSetReferenceId($this->transaction_id);
 	}
 
-	protected function userPayment()
+	protected function checkPayment()
 	{
-		$this->authority = request()->Authority;
-		if ($this->authority != $this->reference_id) {
-			throw new ZarinpalException(-11);
+		if (request()->Authority !== $this->reference_id) {
+			$e = new ZarinpalException(-11);
+			$this->description = $e->getMessage();
+			$this->transactionFailed();
+			throw $e;
 		}
-
-		$status = request()->Status;
-		if ($status == 'OK') {
-			return true;
+		if (request()->Status != 'OK') {
+			$e = new ZarinpalException(-22);
+			$this->description = $e->getMessage();
+			$this->transactionFailed();
+			throw $e;
 		}
-
-		$this->transactionFailed();
-		throw new ZarinpalException(-22);
+		$this->transactionVerifyPending();
 	}
 
 	protected function verifyPayment()
@@ -107,31 +118,32 @@ class Zarinpal extends GatewayAbstract implements IranPaymentInterface
 			'Authority'		=> $this->reference_id,
 			'Amount'		=> $this->amount,
 		];
-
 		try {
 			$soap = new SoapClient($this->server_url, [
 				'encoding'				=> 'UTF-8', 
 				'trace'					=> 1,
 				'exceptions'			=> 1,
-				'connection_timeout'	=> Config::get('iranpayment.zarinpal.timeout', 15),
+				'connection_timeout'	=> $this->connection_timeout,
 			]);
 			$response = $soap->PaymentVerification($fields);
 		} catch(SoapFault $e) {
+			$this->description = $e->getMessage();
 			$this->transactionFailed();
 			throw $e;
 		} catch(Exception $e){
+			$this->description = $e->getMessage();
+			$this->transactionFailed();
+			throw $e;
+		}
+		if ($response->Status != 100) {
+			$e = new ZarinpalException($response->Status);
+			$this->description = $e->getMessage();
 			$this->transactionFailed();
 			throw $e;
 		}
 
-		if ($response->Status != 100) {
-			$this->transactionFailed();
-			throw new ZarinpalException($response->Status);
-		}
-
 		$this->tracking_code = $response->RefID;
-		$this->transactionSucceed();
-		return true;
+		$this->transactionSucceed(['tracking_code' => $this->tracking_code]);
 	}
 
 	protected function setServer()
@@ -150,6 +162,7 @@ class Zarinpal extends GatewayAbstract implements IranPaymentInterface
 
 	public function redirect()
 	{
+		$this->transactionPending();
 		switch (Config::get('iranpayment.zarinpal.type')) {
 			case 'zarin-gate':
 				$payment_url = str_replace('$Authority', $this->reference_id, $this->zaringate_url);

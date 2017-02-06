@@ -16,13 +16,19 @@ class Saman extends GatewayAbstract implements IranPaymentInterface
 {
 	protected $token_url		= 'https://sep.shaparak.ir/Payments/InitPayment.asmx?wsdl';
 	protected $payment_url		= 'https://sep.shaparak.ir/Payment.aspx';
-	protected $verify_url		= 'https://sep.shaparak.ir/Payment.aspx‬‬';
+	protected $verify_url		= 'https://verify.sep.ir/Payments/ReferencePayment.asmx?wsdl';
 
 	protected $token;
+	protected $merchant_id;
+	protected $callback_url;
+	protected $connection_timeout;
 
 	public function __construct($gateway)
 	{
 		parent::__construct($gateway);
+		$this->merchant_id			= Config::get('iranpayment.saman.merchant-id');
+		$this->callback_url			= Config::get('iranpayment.saman.callback-url', Config::get('iranpayment.callback-url'));
+		$this->connection_timeout	= Config::get('iranpayment.timeout', 30);
 	}
 
 	public function setAmount($amount)
@@ -41,7 +47,7 @@ class Saman extends GatewayAbstract implements IranPaymentInterface
 	{
 		parent::verify($transaction);
 
-		$this->userPayment();
+		$this->checkPayment();
 		$this->verifyPayment();
 
 		return $this;
@@ -58,11 +64,11 @@ class Saman extends GatewayAbstract implements IranPaymentInterface
 				'encoding'				=> 'UTF-8', 
 				'trace'					=> 1,
 				'exceptions'			=> 1,
-				'connection_timeout'	=> Config::get('iranpayment.timeout', 15),
+				'connection_timeout'	=> $this->connection_timeout,
 			]);
 			$token = $soap->RequestToken(
-				Config::get('iranpayment.saman.merchant-id'),
-				$this->transactionId(),
+				$this->merchant_id,
+				$this->reference_id,
 				$this->amount
 			);
 		} catch(SoapFault $e) {
@@ -85,54 +91,84 @@ class Saman extends GatewayAbstract implements IranPaymentInterface
 		}
 	}
 
-	protected function userPayment()
+	protected function checkPayment()
 	{
-		$this->authority = request()->Authority;
-		if ($this->authority != $this->reference_id) {
-			throw new SamanException(-11);
+		if (request()->State != 'OK' || request()->StateCode != '0' ) {
+			switch (request()->StateCode) {
+				case '-1':
+					$e	= new SamanException(-101);
+					break;
+				case '51':
+					$e	= new SamanException(51);
+					break;
+				default:
+					$e	= new SamanException(-100);
+					break;
+			}
+			$this->description = $e->getMessage();
+			$this->transactionFailed();
+			throw $e;
+		}
+		if (request()->ResNum !== $this->reference_id) {
+			$e	= new SamanException(-14);
+			$this->description = $e->getMessage();
+			$this->transactionFailed();
+			throw $e;
+		}
+		if (request()->MID !== $this->merchant_id) {
+			$e	= new SamanException(-4);
+			$this->description = $e->getMessage();
+			$this->transactionFailed();
+			throw $e;
 		}
 
-		$status = request()->Status;
-		if ($status == 'OK') {
-			return true;
-		}
-
-		$this->transactionFailed();
-		throw new SamanException(-22);
+		$this->tracking_code	= request()->TRACENO;
+		$this->transactionUpdate([
+			'card_number'		=> request()->SecurePan,
+			'tracking_code'		=> $this->tracking_code,
+			'receipt_number'	=> request()->RefNum,
+		]);
+		$this->transactionVerifyPending();
 	}
 
 	protected function verifyPayment()
 	{
-		$fields				= [
-			'MerchantID'	=> Config::get('iranpayment.saman.merchant-id'),
-			'Authority'		=> $this->reference_id,
-			'Amount'		=> $this->amount,
-		];
-
-		try {
-			$soap = new SoapClient($this->server_url, [
+		try{
+			$soap = new SoapClient($this->verify_url, [
 				'encoding'				=> 'UTF-8', 
 				'trace'					=> 1,
 				'exceptions'			=> 1,
-				'connection_timeout'	=> Config::get('iranpayment.timeout', 15),
+				'connection_timeout'	=> $this->connection_timeout,
 			]);
-			$response = $soap->PaymentVerification($fields);
+			$amount = $soap->verifyTransaction(
+				$this->transaction->receipt_number,
+				$this->merchant_id
+			);
 		} catch(SoapFault $e) {
+			$this->description = $e->getMessage();
 			$this->transactionFailed();
 			throw $e;
 		} catch(Exception $e){
+			$this->description = $e->getMessage();
 			$this->transactionFailed();
 			throw $e;
 		}
 
-		if ($response->Status != 100) {
+		if ($amount <= 0) {
+			$e	= new SamanException($amount);
+			$this->description = $e->getMessage();
 			$this->transactionFailed();
-			throw new SamanException($response->Status);
+			throw $e;
 		}
 
-		$this->tracking_code = $response->RefID;
+		if ($amount != $this->amount) {
+			$e	= new SamanException(-102);
+			$this->description = $e->getMessage();
+			$this->transactionFailed();
+			throw $e;
+		}
+
 		$this->transactionSucceed();
-		return true;
 	}
 
 	protected function generateResNum()
@@ -142,10 +178,12 @@ class Saman extends GatewayAbstract implements IranPaymentInterface
 
 	public function redirect()
 	{
+		$this->transactionPending();
 		return view('iranpayment.pages.saman', [
+			'reference_id'	=> $this->reference_id,
 			'token'			=> $this->token,
 			'bank_url'		=> $this->payment_url,
-			'redirect_url'	=> $this->buildQuery(Config::get('iranpayment.saman.callback-url'), ['transaction' => $this->transactionHashids()]),
+			'redirect_url'	=> $this->callbackURL(),
 		]);
 	}
 

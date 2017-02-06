@@ -13,11 +13,6 @@ use Config;
 
 abstract class GatewayAbstract
 {
-
-	const T_INIT	= 0;
-	const T_SUCCEED	= 1;
-	const T_FAILED	= 2;
-
 	protected $transaction_id	= null;
 	protected $transaction		= null;
 	protected $card_number		= null;
@@ -96,7 +91,7 @@ abstract class GatewayAbstract
 		}
 		$transaction	= new IranPaymentTransaction([
 			'amount'	=> $this->amount,
-			'status'	=> self::T_INIT,
+			'status'	=> IranPaymentTransaction::T_INIT,
 		]);
 		$transaction->gateway = $this->gateway;
 		$transaction->user_id = $this->user_id;
@@ -105,43 +100,60 @@ abstract class GatewayAbstract
 		return $this->transaction_id;
 	}
 
-	protected function transactionSucceed()
+	protected function transactionSucceed($params = [])
 	{
-		return IranPaymentTransaction::find($this->transaction_id)
-			->update([
-				'status'		=> self::T_SUCCEED,
-				'payment_date'	=> Carbon::now(),
-				'tracking_code'	=> $this->tracking_code,
-				'card_number'	=> $this->card_number
-			]);
+		$params				= array_merge(['payment_date' => Carbon::now()], $params);
+		$this->transaction	= IranPaymentTransaction::find($this->transaction_id);
+		$this->transaction->fill($params);
+		$this->transaction->status	= IranPaymentTransaction::T_SUCCEED;
+		$this->transaction->save();
 	}
 
 	protected function transactionFailed()
 	{
-		return IranPaymentTransaction::find($this->transaction_id)
-			->update([
-				'status'		=> self::T_FAILED,
-				'description'	=> $this->description,
-			]);
+		$this->transaction	= IranPaymentTransaction::find($this->transaction_id);
+		$this->transaction->status		= IranPaymentTransaction::T_FAILED;
+		$this->transaction->description	= $this->description;
+		$this->transaction->save();
+	}
+
+	protected function transactionPending()
+	{
+		$this->transaction	= IranPaymentTransaction::find($this->transaction_id);
+		$this->transaction->status	= IranPaymentTransaction::T_PENDING;
+		$this->transaction->save();
+	}
+
+	protected function transactionVerifyPending()
+	{
+		$this->transaction	= IranPaymentTransaction::find($this->transaction_id);
+		$this->transaction->status	= IranPaymentTransaction::T_VERIFY_PENDING;
+		$this->transaction->save();
 	}
 
 	protected function transactionSetReferenceId()
 	{
-		IranPaymentTransaction::find($this->transaction_id)
-			->update([
-				'reference_id'	=> $this->reference_id,
-			]);
+		$this->transaction	= IranPaymentTransaction::find($this->transaction_id);
+		$this->transaction->reference_id	= $this->reference_id;
+		$this->transaction->save();
 	}
 
-	protected function buildQuery($url, array $query = [])
+	protected function transactionUpdate($params)
 	{
-		$query = http_build_query($query);
+		$this->transaction	= IranPaymentTransaction::find($this->transaction_id);
+		$this->transaction->fill($params);
+		$this->transaction->save();
+	}
 
-		$question_mark = strpos($url, '?');
+	protected function callbackURL()
+	{
+		$query = http_build_query(['transaction' => $this->transactionHashids()]);
+
+		$question_mark = strpos($this->callback_url, '?');
 		if (!$question_mark) {
-			return $url.'?'.$query;
+			return $this->callback_url.'?'.$query;
 		} else {
-			return $url."&".$query;
+			return $this->callback_url."&".$query;
 		}
 	}
 

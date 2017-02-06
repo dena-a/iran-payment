@@ -8,12 +8,12 @@ return [
 	|--------------------------------------------------------------------------
 	| [saman|zarinpal]
 	*/
-	'default'	=> 'saman',
+	'default'		=> 'saman',
 
-	'timeout'	=> 30,
+	'callback-url'	=> 'http://example.com/payments/callback',
 
-	'hashids'	=> [
-		'salt'	=> 'your-salt-string',
+	'hashids' => [
+		'salt'		=> 'your-salt-string',
 	],
 
 	/*
@@ -23,7 +23,6 @@ return [
 	*/
 	'saman' => [
 		'merchant-id'	=> env('SAMAN_MERCHANT_ID', 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'),
-		'callback-url'	=> 'http://example.com/payments/saman/callback',
 	],
 
 	/*
@@ -36,7 +35,6 @@ return [
 	'zarinpal' => [
 		'merchant-id'	=> env('ZARINPAL_MERCHANT_ID', 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'),
 		'type'			=> 'normal',
-		'callback-url'	=> 'http://example.com/payments/zarinpal/callback',
 		'server'		=> 'germany',
 		'description'	=> 'description',
 		'email'			=> 'email',
