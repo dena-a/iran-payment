@@ -3,7 +3,7 @@ a Laravel package to handle Internet Payment Gateways for Iran Banking System
 
 <p align="center"><a href="https://github.com/dena-a/iran-payment" target="_blank"><img width="650" src="https://raw.githubusercontent.com/dena-a/iran-payment/master/images/screen.png"></a></p>
 
-## Install
+## Installation
 
 You can install the package via composer:
 ``` bash
@@ -19,6 +19,16 @@ This service provider must be installed.
 ];
 ```
 
+Add aliases:
+```php
+// config/app.php
+'aliases' => [
+    ...
+    'IranPayment' => Dena\IranPayment\IranPayment::class,
+    'IranPaymentTransaction' => Dena\IranPayment\Models\IranPaymentTransaction::class,
+];
+```
+
 Publish the config-file and migration with:
 ```bash
 php artisan vendor:publish --provider="Dena\IranPayment\IranPaymentServiceProvider"
@@ -30,16 +40,6 @@ php artisan migrate
 ```
 
 ## Usage
-
-First add aliases:
-```php
-// config/app.php
-'aliases' => [
-    ...
-    'IranPayment' => Dena\IranPayment\IranPayment::class,
-    'IranPaymentTransaction' => Dena\IranPayment\Models\IranPaymentTransaction::class,
-];
-```
 
 New Payment:
 ```php
