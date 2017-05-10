@@ -11,8 +11,10 @@ use Exception;
 use SoapFault;
 use SoapClient;
 
-class Zarinpal extends GatewayAbstract implements IranPaymentInterface
+class Zarinpal extends GatewayAbstract
 {
+	private $prepared_amount;
+
 	protected $germany_server	= 'https://de.zarinpal.com/pg/services/WebGate/wsdl';
 	protected $iran_server		= 'https://ir.zarinpal.com/pg/services/WebGate/wsdl';
 	protected $gate_url			= 'https://www.zarinpal.com/pg/StartPay/';
@@ -22,12 +24,30 @@ class Zarinpal extends GatewayAbstract implements IranPaymentInterface
 	protected $callback_url;
 	protected $connection_timeout;
 
-	public function __construct($gateway)
+	protected $description;
+	protected $email;
+	protected $mobile;
+
+	public function __construct()
 	{
-		parent::__construct($gateway);
+		parent::__construct();
+		$this->setDefaults();
+	}
+
+	public function getGatewayName()
+	{
+		return 'zarinpal';
+	}
+
+	private function setDefaults()
+	{
 		$this->setServer();
-		$this->callback_url			= Config::get('iranpayment.zarinpal.callback-url', Config::get('iranpayment.callback-url'));
-		$this->connection_timeout	= Config::get('iranpayment.timeout', 30);
+		$this->callback_url			= config('iranpayment.zarinpal.callback-url', config('iranpayment.callback-url'));
+		$this->connection_timeout	= config('iranpayment.timeout', 30);
+
+		$this->setDescription(config('iranpayment.zarinpal.description', null));
+		$this->setEmail(config('iranpayment.zarinpal.email', null));
+		$this->setMobile(config('iranpayment.zarinpal.mobile', null));
 	}
 
 	public function setAmount($amount)
@@ -36,10 +56,68 @@ class Zarinpal extends GatewayAbstract implements IranPaymentInterface
 		return $this;
 	}
 
-	public function ready()
+	public function setParams(array $params)
 	{
-		$this->sendPayRequest();
-		return $this;
+		if (isset($params['description']) && mb_strlen($params['description'])) {
+			$this->setDescription($params['description']);
+		}
+		if (isset($params['email']) && mb_strlen($params['email'])) {
+			$this->setEmail($params['email']);
+		}
+		if (isset($params['mobile']) && mb_strlen($params['mobile'])) {
+			$this->setMobile($params['mobile']);
+		}
+	}
+
+	public function setDescription($description)
+	{
+		$this->description = $description;
+	}
+
+	public function getDescription()
+	{
+		return $this->description;
+	}
+
+	public function setEmail($email)
+	{
+		$this->email = $email;
+	}
+
+	public function getEmail()
+	{
+		return $this->email;
+	}
+
+	public function setMobile($mobile)
+	{
+		$this->mobile = $mobile;
+	}
+
+	public function getMobile()
+	{
+		return $this->mobile;
+	}
+
+	public function prepare()
+	{
+		$amount		= $this->getAmount();
+		$amount		= intval($amount);
+		if ($amount < 0) {
+			throw new InvalidDataException(InvalidDataException::INVALID_AMOUNT);
+		}
+		$currency	= $this->getCurrency();
+		if (!in_array($currency, [parent::PCN_RIAL, parent::PCN_TOMAN])) {
+			throw new InvalidDataException(InvalidDataException::INVALID_CURRENCY);
+		}
+		if ($currency == parent::PCN_RIAL) {
+			$amount	= Currency::RialToToman($amount);
+		}
+		if ($amount < 100) {
+			throw new InvalidDataException(InvalidDataException::INVALID_AMOUNT);
+		}
+		$this->prepared_amount	= $amount;
+		$this->setReferenceId(Helpers::generateRandomString());
 	}
 
 	public function verify($transaction)
@@ -52,16 +130,16 @@ class Zarinpal extends GatewayAbstract implements IranPaymentInterface
 		return $this;
 	}
 
-	protected function sendPayRequest()
+	protected function payRequest()
 	{
 		$this->newTransaction();
 
 		$fields = [
-			'MerchantID'	=> Config::get('iranpayment.zarinpal.merchant-id'),
+			'MerchantID'	=> config('iranpayment.zarinpal.merchant-id'),
 			'CallbackURL'	=> $this->callbackURL(),
-			'Description'	=> Config::get('iranpayment.zarinpal.description'),
-			'Email'			=> Config::get('iranpayment.zarinpal.email'),
-			'Mobile'		=> Config::get('iranpayment.zarinpal.mobile'),
+			'Description'	=> $this->description,
+			'Email'			=> $this->email,
+			'Mobile'		=> $this->mobile,
 			'Amount'		=> $this->amount,
 		];
 
@@ -111,10 +189,10 @@ class Zarinpal extends GatewayAbstract implements IranPaymentInterface
 		$this->transactionVerifyPending();
 	}
 
-	protected function verifyPayment()
+	protected function verifyRequest()
 	{
 		$fields				= [
-			'MerchantID'	=> Config::get('iranpayment.zarinpal.merchant-id'),
+			'MerchantID'	=> config('iranpayment.zarinpal.merchant-id'),
 			'Authority'		=> $this->reference_id,
 			'Amount'		=> $this->amount,
 		];
@@ -148,7 +226,7 @@ class Zarinpal extends GatewayAbstract implements IranPaymentInterface
 
 	protected function setServer()
 	{
-		switch (Config::get('iranpayment.zarinpal.server', 'germany'))
+		switch (config('iranpayment.zarinpal.server', 'germany'))
 		{
 			case 'iran':
 				$this->server_url = $this->iran_server;
@@ -163,7 +241,7 @@ class Zarinpal extends GatewayAbstract implements IranPaymentInterface
 	public function redirect()
 	{
 		$this->transactionPending();
-		switch (Config::get('iranpayment.zarinpal.type')) {
+		switch (config('iranpayment.zarinpal.type')) {
 			case 'zarin-gate':
 				$payment_url = str_replace('$Authority', $this->reference_id, $this->zaringate_url);
 				break;

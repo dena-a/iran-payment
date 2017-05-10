@@ -2,45 +2,70 @@
 
 namespace Dena\IranPayment\Providers\Saman;
 
+use Dena\IranPayment\Exceptions\InvalidDataException;
+
 use Dena\IranPayment\GatewayAbstract;
-use Dena\IranPayment\IranPaymentInterface;
+
+use Dena\IranPayment\Helpers\Helpers;
+use Dena\IranPayment\Helpers\Currency;
 
 use Log;
-use Config;
 use Exception;
 use SoapFault;
 use SoapClient;
 use Carbon\Carbon;
 
-class Saman extends GatewayAbstract implements IranPaymentInterface
+class Saman extends GatewayAbstract
 {
-	protected $token_url		= 'https://sep.shaparak.ir/Payments/InitPayment.asmx?wsdl';
-	protected $payment_url		= 'https://sep.shaparak.ir/Payment.aspx';
-	protected $verify_url		= 'https://verify.sep.ir/Payments/ReferencePayment.asmx?wsdl';
+	private $token;
+	private $token_url;
+	private $verify_url;
+	private $payment_url;
+	private $merchant_id;
+	private $prepared_amount;
+	private $connection_timeout;
 
-	protected $token;
-	protected $merchant_id;
-	protected $callback_url;
-	protected $connection_timeout;
-
-	public function __construct($gateway)
+	public function __construct()
 	{
-		parent::__construct($gateway);
-		$this->merchant_id			= Config::get('iranpayment.saman.merchant-id');
-		$this->callback_url			= Config::get('iranpayment.saman.callback-url', Config::get('iranpayment.callback-url'));
-		$this->connection_timeout	= Config::get('iranpayment.timeout', 30);
+		parent::__construct();
+		$this->setDefaults();
 	}
 
-	public function setAmount($amount)
+	public function getGatewayName()
 	{
-		$this->amount = intval($amount);
-		return $this;
+		return 'saman';
 	}
 
-	public function ready()
+	private function setDefaults()
 	{
-		$this->sendPayRequest();
-		return $this;
+		$this->merchant_id			= config('iranpayment.saman.merchant-id');
+		$this->connection_timeout	= config('iranpayment.timeout', 30);
+		$this->token_url			= config('iranpayment.saman.token_url', 'https://sep.shaparak.ir/Payments/InitPayment.asmx?wsdl');
+		$this->payment_url			= config('iranpayment.saman.payment_url', 'https://sep.shaparak.ir/Payment.aspx');
+		$this->verify_url			= config('iranpayment.saman.verify_url', 'https://verify.sep.ir/Payments/ReferencePayment.asmx?wsdl');
+
+		$this->setCallbackUrl(config('iranpayment.saman.callback-url', config('iranpayment.callback-url')));
+	}
+
+	public function prepare()
+	{
+		$amount		= $this->getAmount();
+		$amount		= intval($amount);
+		if ($amount < 0) {
+			throw new InvalidDataException(InvalidDataException::INVALID_AMOUNT);
+		}
+		$currency	= $this->getCurrency();
+		if (!in_array($currency, [parent::PCN_RIAL, parent::PCN_TOMAN])) {
+			throw new InvalidDataException(InvalidDataException::INVALID_CURRENCY);
+		}
+		if ($currency == parent::PCN_TOMAN) {
+			$amount	= Currency::TomanToRial($amount);
+		}
+		if ($amount < 100) {
+			throw new InvalidDataException(InvalidDataException::INVALID_AMOUNT);
+		}
+		$this->prepared_amount	= $amount;
+		$this->setReferenceId(Helpers::generateRandomString());
 	}
 
 	public function verify($transaction)
@@ -53,11 +78,10 @@ class Saman extends GatewayAbstract implements IranPaymentInterface
 		return $this;
 	}
 
-	protected function sendPayRequest()
+	protected function payRequest()
 	{
+		$this->prepare();
 		$this->newTransaction();
-		$this->generateResNum();
-		$this->transactionSetReferenceId($this->reference_id);
 
 		try{
 			$soap = new SoapClient($this->token_url, [
@@ -68,8 +92,8 @@ class Saman extends GatewayAbstract implements IranPaymentInterface
 			]);
 			$token = $soap->RequestToken(
 				$this->merchant_id,
-				$this->reference_id,
-				$this->amount
+				$this->getReferenceId(),
+				$this->prepared_amount
 			);
 		} catch(SoapFault $e) {
 			$this->description = $e->getMessage();
@@ -131,7 +155,7 @@ class Saman extends GatewayAbstract implements IranPaymentInterface
 		$this->transactionVerifyPending();
 	}
 
-	protected function verifyPayment()
+	protected function verifyRequest()
 	{
 		try{
 			$soap = new SoapClient($this->verify_url, [
@@ -169,11 +193,6 @@ class Saman extends GatewayAbstract implements IranPaymentInterface
 		}
 
 		$this->transactionSucceed();
-	}
-
-	protected function generateResNum()
-	{
-		$this->reference_id = $this->generateRandomString();
 	}
 
 	public function redirect()

@@ -24,38 +24,37 @@ class IranPayment
 	const PGN_ZARINPAL	= 'zarinpal';
 	const PGN_SAMAN		= 'saman';
 
-	const PC_RIAL		= 1;
-	const PC_TOMAN		= 2;
-
-	protected $user;
 	protected $gateway;
-	protected $currency;
-	protected $payment_gateway;
 
 	public function __construct($gateway = null)
 	{
-		$this->currency		= self::PC_RIAL;
-		if (is_null($gateway)) {
-			$this->gateway	= Config::get('iranpayment.default');
-		} else {
-			$this->gateway	= $gateway;
-		}
-
-		if (!Config::has('hashids.connections.iranpayment')) {
-			Config::set('hashids.connections.iranpayment', [
-				'salt'		=> Config::get('iranpayment.hashids.salt' ,'your-salt-string'),
-				'length'	=> Config::get('iranpayment.hashids.length' ,16),
-				'alphabet'	=> Config::get('iranpayment.hashids.alphabet' ,'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'),
-			]);
+		$this->setDefaults();
+		if (!is_null($gateway)) {
+			$this->setGateway($gateway);
 		}
 	}
 
 	public function __call($name, $arguments)
 	{
-		if ($this->payment_gateway) {
-			return call_user_func_array([$this->payment_gateway, $name], $arguments);
+		if ($this->gateway) {
+			return call_user_func_array([$this->gateway, $name], $arguments);
 		}
 		return false;
+	}
+
+	private function setDefaults()
+	{
+		$this->setGateway(config('iranpayment.default'));
+	}
+
+	public function setGateway($gateway)
+	{
+		$this->gateway = $gateway;
+	}
+
+	public function getGateway()
+	{
+		return $this->gateway;
 	}
 
 	public function build()
@@ -63,11 +62,11 @@ class IranPayment
 		switch ($this->gateway) {
 			case self::PG_ZARINPAL:
 			case self::PGN_ZARINPAL:
-				$this->payment_gateway = new Zarinpal(self::PG_ZARINPAL);
+				$this->gateway = new Zarinpal;
 				break;
 			case self::PG_SAMAN:
 			case self::PGN_SAMAN:
-				$this->payment_gateway = new Saman(self::PG_SAMAN);
+				$this->gateway = new Saman;
 				break;
 			default:
 				throw new GatewayNotFoundException;
@@ -99,10 +98,10 @@ class IranPayment
 			throw new RetryException;
 		}
 
-		$this->gateway = $transaction->gateway;
+		$this->setGateway($transaction->gateway);
 		$this->build();
 
-		return $this->payment_gateway->verify($transaction);
+		return $this->gateway->verify($transaction);
 	}
 
 	public function getSupportedGateways()
@@ -111,6 +110,16 @@ class IranPayment
 			self::PGN_ZARINPAL,
 			self::PGN_SAMAN,
 		];
+	}
+
+	public static function gatewayCodeFromName($gateway_name)
+	{
+		switch ($gateway_name) {
+			case self::PGN_SAMAN:
+				return self::PG_SAMAN;
+			case self::PGN_ZARINPAL:
+				return self::PG_ZARINPAL;
+		}
 	}
 
 }

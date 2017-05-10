@@ -21,12 +21,10 @@ class IranPaymentTransaction extends Model
 		'gateway',
 		'amount',
 		'currency',
-		'status',
 		'tracking_code',
 		'receipt_number',
 		'card_number',
 		'description',
-		'payment_date',
 	];
 
 	protected $hidden	= [
