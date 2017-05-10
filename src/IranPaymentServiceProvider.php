@@ -3,6 +3,7 @@
 namespace Dena\IranPayment;
 
 use Illuminate\Support\ServiceProvider;
+use Laravel\Lumen\Application as LumenApplication;
 
 use Config;
 
@@ -16,8 +17,11 @@ class IranPaymentServiceProvider extends ServiceProvider
 	public function boot()
 	{
 		$this->publishes([
-			__DIR__.'/config/iranpayment.php' => base_path('config/iranpayment.php'),
+			__DIR__.'/config/iranpayment.php' => config_path('config/iranpayment.php'),
 		]);
+		if ($this->app instanceof LumenApplication) {
+            $this->app->configure('iranpayment');
+        }
 		$this->publishes([
 			__DIR__.'/database/migrations/2016_11_01_000000_create_iran_payment_transactions_table.php' => $this->app->databasePath().'/migrations/2016_11_01_000000_create_iran_payment_transactions_table.php',
 		]);

@@ -285,7 +285,7 @@ abstract class GatewayAbstract
 
 	public function transactionHashids()
 	{
-		return Hashids::connection('iranpayment')->encode($this->transaction_id);
+		return app('hashids')->connection('iranpayment')->encode($this->transaction_id);
 	}
 
 }
