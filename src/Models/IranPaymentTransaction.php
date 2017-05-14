@@ -12,19 +12,20 @@ class IranPaymentTransaction extends Model
 	const T_PENDING			= 3;
 	const T_VERIFY_PENDING	= 4;
 
-	protected $table	= 'iran_payment_transactions';
+	protected $table	= 'iranpayment_transactions';
 
 	protected $guarded	= ['id'];
 
 	protected $fillable	= [
-		'reference_id',
+		'transaction_code',
 		'gateway',
 		'amount',
 		'currency',
 		'tracking_code',
-		'receipt_number',
+		'reference_number',
 		'card_number',
 		'description',
+		'extra',
 	];
 
 	protected $hidden	= [

@@ -5,11 +5,11 @@ namespace Dena\IranPayment\Helpers;
 class Currency
 {
 
-	public static function RialToToman($rial) {
+	public static function TomanToRial($rial) {
 		return abs(intval($rial) * 10);
 	}
 
-	public static function TomanToRial($toman) {
+	public static function RialToToman($toman) {
 		$toman = abs(intval($toman));
 		if ($toman == 0) {
 			return 0;

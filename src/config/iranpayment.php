@@ -23,9 +23,9 @@ return [
 	| Default callback url
 	|--------------------------------------------------------------------------
 	| You can use setCallbackUrl method to set a custom callback url for a payment.
-	| You may set a specific callback url for each gateways in the gateway config with callback-url parameter.
+	| You may set a specific callback url for each gateways in their config with callback-url parameter.
 	*/
-	'callback-url'	=> 'http://example.com/payments/callback',
+	'callback-url'			=> 'http://example.com/payments/callback',
 
 	/*
 	|--------------------------------------------------------------------------
@@ -34,17 +34,7 @@ return [
 	| Salt: use your own random string for hash-id.
 	*/
 	'hashids' => [
-		'use'		=> true,
 		'salt'		=> 'your-salt-string',
-	],
-
-	/*
-	|--------------------------------------------------------------------------
-	| Store data
-	|--------------------------------------------------------------------------
-	*/
-	'store' => [
-		'use_iranpayment_table' => true,
 	],
 
 	/*
@@ -53,7 +43,7 @@ return [
 	|--------------------------------------------------------------------------
 	*/
 	'saman' => [
-		'merchant-id'	=> env('SAMAN_MERCHANT_ID', 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'),
+		'merchant-id'	=> env('SAMAN_MERCHANT_ID', 'xxxxxxxx'),
 	],
 
 	/*

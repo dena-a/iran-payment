@@ -12,6 +12,7 @@ class InvalidDataException extends Exception
 	const INVALID_AMOUNT	= 2;
 	const INVALID_CURRENCY	= 3;
 	const INVALID_CALLBACK	= 4;
+	const INVALID_RESNUM	= 5;
 
 	public static $errors = [
 		0	=> 'Unknown Error:',
@@ -19,6 +20,7 @@ class InvalidDataException extends Exception
 		2	=> 'Amount is invalid:',
 		3	=> 'Currency is invalid:',
 		4	=> 'Callback url is invalid:',
+		5	=> 'Reservation Number url is invalid:',
 	];
 
 	public function __construct($error_id = 0)

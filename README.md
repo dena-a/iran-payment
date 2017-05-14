@@ -25,7 +25,6 @@ Add aliases:
 'aliases' => [
     ...
     'IranPayment' => Dena\IranPayment\IranPayment::class,
-    'IranPaymentTransaction' => Dena\IranPayment\Models\IranPaymentTransaction::class,
 ];
 ```
 

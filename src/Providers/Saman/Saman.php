@@ -6,14 +6,12 @@ use Dena\IranPayment\Exceptions\InvalidDataException;
 
 use Dena\IranPayment\GatewayAbstract;
 
-use Dena\IranPayment\Helpers\Helpers;
 use Dena\IranPayment\Helpers\Currency;
 
 use Log;
 use Exception;
 use SoapFault;
 use SoapClient;
-use Carbon\Carbon;
 
 class Saman extends GatewayAbstract
 {
@@ -31,7 +29,7 @@ class Saman extends GatewayAbstract
 		$this->setDefaults();
 	}
 
-	public function getGatewayName()
+	public function getGateway()
 	{
 		return 'saman';
 	}
@@ -47,41 +45,34 @@ class Saman extends GatewayAbstract
 		$this->setCallbackUrl(config('iranpayment.saman.callback-url', config('iranpayment.callback-url')));
 	}
 
-	public function prepare()
+	private function prepareAmount()
 	{
 		$amount		= $this->getAmount();
 		$amount		= intval($amount);
-		if ($amount < 0) {
+		if ($amount <= 0) {
 			throw new InvalidDataException(InvalidDataException::INVALID_AMOUNT);
 		}
 		$currency	= $this->getCurrency();
-		if (!in_array($currency, [parent::PCN_RIAL, parent::PCN_TOMAN])) {
+		if (!in_array($currency, [parent::IRR, parent::IRT])) {
 			throw new InvalidDataException(InvalidDataException::INVALID_CURRENCY);
 		}
-		if ($currency == parent::PCN_TOMAN) {
+		if ($currency == parent::IRT) {
 			$amount	= Currency::TomanToRial($amount);
 		}
 		if ($amount < 100) {
 			throw new InvalidDataException(InvalidDataException::INVALID_AMOUNT);
 		}
 		$this->prepared_amount	= $amount;
-		$this->setReferenceId(Helpers::generateRandomString());
 	}
 
-	public function verify($transaction)
+	public function payPrepare()
 	{
-		parent::verify($transaction);
-
-		$this->checkPayment();
-		$this->verifyPayment();
-
-		return $this;
+		$this->prepareAmount();
 	}
 
 	protected function payRequest()
 	{
-		$this->prepare();
-		$this->newTransaction();
+		$this->payPrepare();
 
 		try{
 			$soap = new SoapClient($this->token_url, [
@@ -92,22 +83,22 @@ class Saman extends GatewayAbstract
 			]);
 			$token = $soap->RequestToken(
 				$this->merchant_id,
-				$this->getReferenceId(),
+				$this->getTransactionCode(),
 				$this->prepared_amount
 			);
 		} catch(SoapFault $e) {
-			$this->description = $e->getMessage();
+			$this->setDescription($e->getMessage());
 			$this->transactionFailed();
 			throw $e;
 		} catch(Exception $e){
-			$this->description = $e->getMessage();
+			$this->setDescription($e->getMessage());
 			$this->transactionFailed();
 			throw $e;
 		}
 
 		if (is_numeric($token)) {
 			$e	= new SamanException($token);
-			$this->description = $e->getMessage();
+			$this->setDescription($e->getMessage());
 			$this->transactionFailed();
 			throw $e;
 		} else {
@@ -115,8 +106,9 @@ class Saman extends GatewayAbstract
 		}
 	}
 
-	protected function checkPayment()
+	protected function verifyPrepare()
 	{
+		$this->prepareAmount();
 		if (request()->State != 'OK' || request()->StateCode != '0' ) {
 			switch (request()->StateCode) {
 				case '-1':
@@ -129,34 +121,39 @@ class Saman extends GatewayAbstract
 					$e	= new SamanException(-100);
 					break;
 			}
-			$this->description = $e->getMessage();
+			$this->setDescription($e->getMessage());
 			$this->transactionFailed();
 			throw $e;
 		}
-		if (request()->ResNum !== $this->reference_id) {
+		if (request()->transaction !== $this->getTransactionCode()) {
 			$e	= new SamanException(-14);
-			$this->description = $e->getMessage();
+			$this->setDescription($e->getMessage());
 			$this->transactionFailed();
 			throw $e;
 		}
 		if (request()->MID !== $this->merchant_id) {
 			$e	= new SamanException(-4);
-			$this->description = $e->getMessage();
+			$this->setDescription($e->getMessage());
 			$this->transactionFailed();
 			throw $e;
 		}
 
-		$this->tracking_code	= request()->TRACENO;
+		$this->setTrackingCode(request()->TRACENO);
+		$this->setCardNumber(request()->SecurePan);
+		$this->setReferenceNumber(request()->RefNum);
+		
 		$this->transactionUpdate([
 			'card_number'		=> request()->SecurePan,
-			'tracking_code'		=> $this->tracking_code,
-			'receipt_number'	=> request()->RefNum,
+			'tracking_code'		=> request()->TRACENO,
+			'reference_number'	=> request()->RefNum,
 		]);
 		$this->transactionVerifyPending();
 	}
 
 	protected function verifyRequest()
 	{
+		$this->verifyPrepare();
+
 		try{
 			$soap = new SoapClient($this->verify_url, [
 				'encoding'				=> 'UTF-8', 
@@ -165,29 +162,29 @@ class Saman extends GatewayAbstract
 				'connection_timeout'	=> $this->connection_timeout,
 			]);
 			$amount = $soap->verifyTransaction(
-				$this->transaction->receipt_number,
+				$this->getReferenceNumber(),
 				$this->merchant_id
 			);
 		} catch(SoapFault $e) {
-			$this->description = $e->getMessage();
+			$this->setDescription($e->getMessage());
 			$this->transactionFailed();
 			throw $e;
 		} catch(Exception $e){
-			$this->description = $e->getMessage();
+			$this->setDescription($e->getMessage());
 			$this->transactionFailed();
 			throw $e;
 		}
 
 		if ($amount <= 0) {
 			$e	= new SamanException($amount);
-			$this->description = $e->getMessage();
+			$this->setDescription($e->getMessage());
 			$this->transactionFailed();
 			throw $e;
 		}
 
-		if ($amount != $this->amount) {
+		if ($amount != $this->prepared_amount) {
 			$e	= new SamanException(-102);
-			$this->description = $e->getMessage();
+			$this->setDescription($e->getMessage());
 			$this->transactionFailed();
 			throw $e;
 		}
@@ -199,10 +196,10 @@ class Saman extends GatewayAbstract
 	{
 		$this->transactionPending();
 		return view('iranpayment.pages.saman', [
-			'reference_id'	=> $this->reference_id,
-			'token'			=> $this->token,
-			'bank_url'		=> $this->payment_url,
-			'redirect_url'	=> $this->callbackURL(),
+			'transaction_code'	=> $this->getTransactionCode(),
+			'token'				=> $this->token,
+			'bank_url'			=> $this->payment_url,
+			'redirect_url'		=> $this->callbackURL(),
 		]);
 	}
 

@@ -14,15 +14,10 @@ use Dena\IranPayment\Models\IranPaymentTransaction;
 
 use Vinkla\Hashids\Facades\Hashids;
 
-use Config;
-
 class IranPayment
 {
-	const PG_ZARINPAL	= 1;
-	const PG_SAMAN		= 2;
-
-	const PGN_ZARINPAL	= 'zarinpal';
-	const PGN_SAMAN		= 'saman';
+	const ZARINPAL	= 'zarinpal';
+	const SAMAN		= 'saman';
 
 	protected $gateway;
 
@@ -45,6 +40,18 @@ class IranPayment
 	private function setDefaults()
 	{
 		$this->setGateway(config('iranpayment.default'));
+		$this->setHashidsConfig();
+	}
+
+	private function setHashidsConfig()
+	{
+		if (!config('hashids.connections.iranpayment', false)) {
+			config(['hashids.connections.iranpayment' => [
+				'salt'		=> config('iranpayment.hashids.salt' ,'your-salt-string'),
+				'length'	=> config('iranpayment.hashids.length' ,16),
+				'alphabet'	=> config('iranpayment.hashids.alphabet' ,'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'),
+			]]);
+		}
 	}
 
 	public function setGateway($gateway)
@@ -60,12 +67,10 @@ class IranPayment
 	public function build()
 	{
 		switch ($this->gateway) {
-			case self::PG_ZARINPAL:
-			case self::PGN_ZARINPAL:
+			case self::ZARINPAL:
 				$this->gateway = new Zarinpal;
 				break;
-			case self::PG_SAMAN:
-			case self::PGN_SAMAN:
+			case self::SAMAN:
 				$this->gateway = new Saman;
 				break;
 			default:
@@ -80,46 +85,33 @@ class IranPayment
 		if (!isset(request()->transaction)) {
 			throw new InvalidRequestException;
 		}
-
-		$transaction	= request()->transaction;
-		$transaction	= Hashids::connection('iranpayment')->decode($transaction);
-		if (!isset($transaction[0])) {
+		$transaction_id	= request()->transaction;
+		$transaction_id	= Hashids::connection('iranpayment')->decode($transaction_id);
+		if (!isset($transaction_id[0])) {
 			throw new InvalidRequestException;
 		}
-		$transaction_id	= $transaction[0];
+		$transaction_id	= $transaction_id[0];
 		$transaction_id	= intval($transaction_id);
-
 		$transaction	= IranPaymentTransaction::find($transaction_id);
 		if (!$transaction) {
 			throw new TransactionNotFoundException;
 		}
-
 		if ($transaction->status != IranPaymentTransaction::T_PENDING) {
 			throw new RetryException;
 		}
 
 		$this->setGateway($transaction->gateway);
 		$this->build();
-
-		return $this->gateway->verify($transaction);
+		$this->gateway->setTransaction($transaction);
+		return $this->gateway->verify();
 	}
 
 	public function getSupportedGateways()
 	{
 		return [
-			self::PGN_ZARINPAL,
-			self::PGN_SAMAN,
+			self::ZARINPAL,
+			self::SAMAN,
 		];
-	}
-
-	public static function gatewayCodeFromName($gateway_name)
-	{
-		switch ($gateway_name) {
-			case self::PGN_SAMAN:
-				return self::PG_SAMAN;
-			case self::PGN_ZARINPAL:
-				return self::PG_ZARINPAL;
-		}
 	}
 
 }
