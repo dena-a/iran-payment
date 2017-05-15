@@ -193,9 +193,10 @@ abstract class GatewayAbstract
 			throw new InvalidDataException(InvalidDataException::INVALID_AMOUNT);
 		}
 		app('db')->transaction(function() {
-			$this->transaction		= new IranPaymentTransaction([
-				'amount'			=> $this->amount,
-				'gateway'			=> $this->getGateway(),
+			$this->transaction	= new IranPaymentTransaction([
+				'amount'		=> $this->amount,
+				'gateway'		=> $this->getGateway(),
+				'extra'			=> $this->getExtra(),
 			]);
 			$this->transaction->status	= IranPaymentTransaction::T_INIT;
 			$this->transaction->user_id	= $this->user_id;
