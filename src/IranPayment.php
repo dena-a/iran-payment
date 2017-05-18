@@ -3,6 +3,7 @@
 namespace Dena\IranPayment;
 
 use Dena\IranPayment\Exceptions\RetryException;
+use Dena\IranPayment\Exceptions\SucceedRetryException;
 use Dena\IranPayment\Exceptions\InvalidRequestException;
 use Dena\IranPayment\Exceptions\GatewayNotFoundException;
 use Dena\IranPayment\Exceptions\TransactionNotFoundException;
@@ -95,8 +96,9 @@ class IranPayment
 		$transaction	= IranPaymentTransaction::find($transaction_id);
 		if (!$transaction) {
 			throw new TransactionNotFoundException;
-		}
-		if ($transaction->status != IranPaymentTransaction::T_PENDING) {
+		} elseif ($transaction->status == IranPaymentTransaction::T_SUCCEED) {
+			throw new SucceedRetryException;
+		} elseif ($transaction->status != IranPaymentTransaction::T_PENDING) {
 			throw new RetryException;
 		}
 
