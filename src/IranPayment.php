@@ -13,8 +13,6 @@ use Dena\IranPayment\Providers\Zarinpal\Zarinpal;
 
 use Dena\IranPayment\Models\IranPaymentTransaction;
 
-use Vinkla\Hashids\Facades\Hashids;
-
 class IranPayment
 {
 	const ZARINPAL	= 'zarinpal';
@@ -88,7 +86,7 @@ class IranPayment
 			throw new InvalidRequestException;
 		}
 		$transaction_id	= $request->transaction;
-		$transaction_id	= Hashids::connection('iranpayment')->decode($transaction_id);
+		$transaction_id	= app('hashids')->connection('iranpayment')->decode($transaction_id);
 		if (!isset($transaction_id[0])) {
 			throw new InvalidRequestException;
 		}
