@@ -2,7 +2,9 @@
 
 namespace Dena\IranPayment;
 
+use Dena\IranPayment\Exceptions\RetryException;
 use Dena\IranPayment\Exceptions\InvalidDataException;
+use Dena\IranPayment\Exceptions\SucceedRetryException;
 
 use Dena\IranPayment\Models\IranPaymentTransaction;
 
@@ -179,6 +181,11 @@ abstract class GatewayAbstract
 		$this->setTrackingCode($this->transaction->tracking_code);
 		$this->setCurrency($this->transaction->currency);
 		$this->setAmount($this->transaction->amount);
+		if ($this->transaction->status == IranPaymentTransaction::T_SUCCEED) {
+			throw new SucceedRetryException;
+		} elseif ($this->transaction->status != IranPaymentTransaction::T_PENDING) {
+			throw new RetryException;
+		}
 		if ($this->amount <= 0) {
 			throw new InvalidDataException(InvalidDataException::INVALID_AMOUNT);
 		}

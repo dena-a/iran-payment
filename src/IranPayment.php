@@ -95,16 +95,11 @@ class IranPayment
 		$transaction	= IranPaymentTransaction::find($transaction_id);
 		if (!$transaction) {
 			throw new TransactionNotFoundException;
-		} else {
-			$this->setGateway($transaction->gateway);
-			$this->build();
-			$this->gateway->setTransaction($transaction);
 		}
-		if ($transaction->status == IranPaymentTransaction::T_SUCCEED) {
-			throw new SucceedRetryException;
-		} elseif ($transaction->status != IranPaymentTransaction::T_PENDING) {
-			throw new RetryException;
-		}
+
+		$this->setGateway($transaction->gateway);
+		$this->build();
+		$this->gateway->setTransaction($transaction);
 
 		return $this->gateway->verify();
 	}
