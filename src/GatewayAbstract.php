@@ -21,6 +21,7 @@ abstract class GatewayAbstract
 	const IRT	= 'IRT';
 
 	protected $amount;
+	protected $request;
 	protected $currency;
 	protected $callback_url;
 	protected $transaction_code;
@@ -46,6 +47,7 @@ abstract class GatewayAbstract
 
 	private function setDefaults()
 	{
+		$this->request = app('request');
 		$this->setCurrency(self::IRR);
 	}
 

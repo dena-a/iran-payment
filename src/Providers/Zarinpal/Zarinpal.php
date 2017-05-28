@@ -143,13 +143,13 @@ class Zarinpal extends GatewayAbstract
 	{
 		$this->prepareAmount();
 
-		if (intval(request()->Authority) !== intval($this->transaction->reference_number)) {
+		if (intval($this->request->Authority) !== intval($this->transaction->reference_number)) {
 			$e = new ZarinpalException(-11);
 			$this->setDescription($e->getMessage());
 			$this->transactionFailed();
 			throw $e;
 		}
-		if (request()->Status != 'OK') {
+		if ($this->request->Status != 'OK') {
 			$e = new ZarinpalException(-22);
 			$this->setDescription($e->getMessage());
 			$this->transactionFailed();

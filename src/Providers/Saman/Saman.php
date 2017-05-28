@@ -109,8 +109,8 @@ class Saman extends GatewayAbstract
 	protected function verifyPrepare()
 	{
 		$this->prepareAmount();
-		if (request()->State != 'OK' || request()->StateCode != '0' ) {
-			switch (request()->StateCode) {
+		if ($this->request->State != 'OK' || $this->request->StateCode != '0' ) {
+			switch ($this->request->StateCode) {
 				case '-1':
 					$e	= new SamanException(-101);
 					break;
@@ -125,27 +125,27 @@ class Saman extends GatewayAbstract
 			$this->transactionFailed();
 			throw $e;
 		}
-		if (request()->transaction !== $this->getTransactionCode()) {
+		if ($this->request->transaction !== $this->getTransactionCode()) {
 			$e	= new SamanException(-14);
 			$this->setDescription($e->getMessage());
 			$this->transactionFailed();
 			throw $e;
 		}
-		if (request()->MID !== $this->merchant_id) {
+		if ($this->request->MID !== $this->merchant_id) {
 			$e	= new SamanException(-4);
 			$this->setDescription($e->getMessage());
 			$this->transactionFailed();
 			throw $e;
 		}
 
-		$this->setTrackingCode(request()->TRACENO);
-		$this->setCardNumber(request()->SecurePan);
-		$this->setReferenceNumber(request()->RefNum);
+		$this->setTrackingCode($this->request->TRACENO);
+		$this->setCardNumber($this->request->SecurePan);
+		$this->setReferenceNumber($this->request->RefNum);
 		
 		$this->transactionUpdate([
-			'card_number'		=> request()->SecurePan,
-			'tracking_code'		=> request()->TRACENO,
-			'reference_number'	=> request()->RefNum,
+			'card_number'		=> $this->request->SecurePan,
+			'tracking_code'		=> $this->request->TRACENO,
+			'reference_number'	=> $this->request->RefNum,
 		]);
 		$this->transactionVerifyPending();
 	}

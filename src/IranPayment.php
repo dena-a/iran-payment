@@ -83,10 +83,11 @@ class IranPayment
 
 	public function verify()
 	{
-		if (!isset(request()->transaction)) {
+		$request = app('request');
+		if (!isset($request->transaction)) {
 			throw new InvalidRequestException;
 		}
-		$transaction_id	= request()->transaction;
+		$transaction_id	= $request->transaction;
 		$transaction_id	= Hashids::connection('iranpayment')->decode($transaction_id);
 		if (!isset($transaction_id[0])) {
 			throw new InvalidRequestException;
