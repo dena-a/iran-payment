@@ -174,6 +174,9 @@ abstract class GatewayAbstract
 
 	public function verify()
 	{
+		$this->setCardNumber($this->transaction->card_number);
+		$this->setReferenceNumber($this->transaction->reference_number);
+		$this->setTrackingCode($this->transaction->tracking_code);
 		$this->setCurrency($this->transaction->currency);
 		$this->setAmount($this->transaction->amount);
 		if ($this->amount <= 0) {
