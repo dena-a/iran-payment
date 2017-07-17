@@ -24,9 +24,10 @@ abstract class GatewayAbstract
 
 	protected $amount;
 	protected $request;
-	protected $currency;
 	protected $callback_url;
 	protected $transaction_code;
+
+	protected $currency			= 'IRR';
 	protected $transaction		= null;
 	protected $card_number		= null;
 	protected $reference_number	= null;
@@ -207,6 +208,7 @@ abstract class GatewayAbstract
 		app('db')->transaction(function() {
 			$this->transaction	= new IranPaymentTransaction([
 				'amount'		=> $this->amount,
+				'currency'		=> $this->currency,
 				'gateway'		=> $this->getGateway(),
 				'extra'			=> $this->getExtra(),
 			]);
