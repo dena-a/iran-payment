@@ -4,8 +4,8 @@ namespace Dena\IranPayment\Helpers;
 
 class Helpers
 {
-
-	public static function generateRandomString($length = 16) {
+	public static function generateRandomString($length = 16)
+	{
 		$characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 		$characters_length = strlen($characters);
 		$random_string = '';

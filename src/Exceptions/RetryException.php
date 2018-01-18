@@ -2,6 +2,4 @@
 
 namespace Dena\IranPayment\Exceptions;
 
-use Exception;
-
-class RetryException extends Exception {}
+class RetryException extends \Exception {}

@@ -2,6 +2,4 @@
 
 namespace Dena\IranPayment\Exceptions;
 
-use Exception;
-
-class TransactionNotFoundException extends Exception {}
+class TransactionNotFoundException extends \Exception {}

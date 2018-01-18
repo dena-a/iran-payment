@@ -6,7 +6,7 @@ return [
 	|--------------------------------------------------------------------------
 	| Default gateway
 	|--------------------------------------------------------------------------
-	| [saman|zarinpal]
+	| [saman|zarinpal|payir]
 	*/
 	'default'		=> 'saman',
 
@@ -25,7 +25,7 @@ return [
 	| You can use setCallbackUrl method to set a custom callback url for a payment.
 	| You may set a specific callback url for each gateways in their config with callback-url parameter.
 	*/
-	'callback-url'			=> 'http://example.com/payments/callback',
+	'callback-url'	=> 'http://example.com/payments/callback',
 
 	/*
 	|--------------------------------------------------------------------------
@@ -60,6 +60,15 @@ return [
 		'description'	=> 'payment description', // Required
 		'email'			=> null, // Optional : user_email@example.com
 		'mobile'		=> null, // Optional : 0912XXXYYZZ
+	],
+
+	/*
+	|--------------------------------------------------------------------------
+	| Saman Pay.ir gateway
+	|--------------------------------------------------------------------------
+	*/
+	'payir' => [
+		'merchant-id'	=> env('PAYIR_MERCHANT_ID', 'test'), // api. set test for test
 	],
 
 ];

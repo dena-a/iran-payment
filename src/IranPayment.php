@@ -8,6 +8,7 @@ use Dena\IranPayment\Exceptions\InvalidRequestException;
 use Dena\IranPayment\Exceptions\GatewayNotFoundException;
 use Dena\IranPayment\Exceptions\TransactionNotFoundException;
 
+use Dena\IranPayment\Providers\PayIr\PayIr;
 use Dena\IranPayment\Providers\Saman\Saman;
 use Dena\IranPayment\Providers\Zarinpal\Zarinpal;
 
@@ -17,6 +18,7 @@ class IranPayment
 {
 	const ZARINPAL	= 'zarinpal';
 	const SAMAN		= 'saman';
+	const PAYIR		= 'pay.ir';
 
 	protected $gateway;
 
@@ -72,6 +74,9 @@ class IranPayment
 			case self::SAMAN:
 				$this->gateway = new Saman;
 				break;
+			case self::PAYIR:
+				$this->gateway = new PayIr;
+				break;
 			default:
 				throw new GatewayNotFoundException;
 				break;
@@ -109,6 +114,7 @@ class IranPayment
 		return [
 			self::ZARINPAL,
 			self::SAMAN,
+			self::PAYIR,
 		];
 	}
 

@@ -2,9 +2,7 @@
 
 namespace Dena\IranPayment\Exceptions;
 
-use Exception;
-
-class InvalidDataException extends Exception
+class InvalidDataException extends \Exception
 {
 
 	const UNKNOWN			= 0;
