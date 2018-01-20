@@ -6,7 +6,7 @@ return [
 	|--------------------------------------------------------------------------
 	| Default gateway
 	|--------------------------------------------------------------------------
-	| [saman|zarinpal]
+	| [saman|zarinpal|payir]
 	*/
 	'default' => 'saman',
 
@@ -62,6 +62,16 @@ return [
 		'email'			=> null, // Optional : user_email@example.com
 		'mobile'		=> null, // Optional : 0912XXXYYZZ
 		// 'callback-url'	=> 'http://example.com/payments/zarinpal/callback',
+	],
+
+	/*
+	|--------------------------------------------------------------------------
+	| Saman Pay.ir gateway
+	|--------------------------------------------------------------------------
+	*/
+	'payir' => [
+		'merchant-id'	=> env('PAYIR_MERCHANT_ID', 'test'), // api. set test for test
+		// 'callback-url'	=> 'http://example.com/payments/payir/callback',
 	],
 
 ];
