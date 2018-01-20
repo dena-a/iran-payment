@@ -3,6 +3,7 @@
 namespace Dena\IranPayment\Providers\Saman;
 
 use Dena\IranPayment\Exceptions\InvalidDataException;
+use Dena\IranPayment\Exceptions\PayBackNotPossibleException;
 
 use Dena\IranPayment\GatewayAbstract;
 
@@ -192,7 +193,7 @@ class Saman extends GatewayAbstract
 		$this->transactionSucceed();
 	}
 
-	public function redirect()
+	public function redirectView()
 	{
 		$this->transactionPending();
 		return view('iranpayment.pages.saman', [
@@ -201,6 +202,11 @@ class Saman extends GatewayAbstract
 			'bank_url'			=> $this->payment_url,
 			'redirect_url'		=> $this->callbackURL(),
 		]);
+	}
+
+	public function payBack()
+	{
+		throw new PayBackNotPossibleException;
 	}
 
 }

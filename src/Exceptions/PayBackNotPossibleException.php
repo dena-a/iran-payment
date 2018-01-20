@@ -4,4 +4,4 @@ namespace Dena\IranPayment\Exceptions;
 
 use Dena\IranPayment\Exceptions\IranPaymentException;
 
-class RetryException extends IranPaymentException {}
+class PayBackNotPossibleException extends IranPaymentException {}

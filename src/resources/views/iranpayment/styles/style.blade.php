@@ -86,9 +86,8 @@ body {
 button.pure-button-default {
 	color: white;
 	background: #455a64;
-	font-size: 150%;	
+	font-size: 150%;
 }
-
 
 footer {
 	background-color: #263238;

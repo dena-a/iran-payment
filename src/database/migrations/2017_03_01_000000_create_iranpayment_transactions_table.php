@@ -11,7 +11,7 @@ class CreateIranPaymentTransactionsTable extends Migration
 	public function up()
 	{
 		Schema::create('iranpayment_transactions', function (Blueprint $table) {
-			$table->increments('id');
+			$table->bigIncrements('id');
 			$table->integer('user_id')->unsigned()->nullable();
 			$table->string('transaction_code')->nullable()->index();
 			$table->string('gateway', 16)->index();
@@ -30,6 +30,6 @@ class CreateIranPaymentTransactionsTable extends Migration
 
 	public function down()
 	{
-		Schema::drop('iranpayment_transactions');
+		Schema::dropIfExists('iranpayment_transactions');
 	}
 }

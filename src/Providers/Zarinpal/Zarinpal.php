@@ -3,6 +3,7 @@
 namespace Dena\IranPayment\Providers\Zarinpal;
 
 use Dena\IranPayment\Exceptions\InvalidDataException;
+use Dena\IranPayment\Exceptions\PayBackNotPossibleException;
 
 use Dena\IranPayment\GatewayAbstract;
 
@@ -196,7 +197,7 @@ class Zarinpal extends GatewayAbstract
 		$this->transactionSucceed(['tracking_code' => $response->RefID]);
 	}
 
-	public function redirect()
+	public function redirectView()
 	{
 		$this->transactionPending();
 		switch (config('iranpayment.zarinpal.type')) {
@@ -208,6 +209,17 @@ class Zarinpal extends GatewayAbstract
 				$payment_url = $this->gate_url.$this->getReferenceNumber();
 				break;
 		}
-		return redirect($payment_url);
+
+		return view('iranpayment.pages.zarinpal', [
+			'transaction_code'	=> $this->getTransactionCode(),
+			'bank_url'			=> $payment_url,
+		]);
+
+		// return redirect($payment_url);
+	}
+
+	public function payBack()
+	{
+		throw new PayBackNotPossibleException;
 	}
 }

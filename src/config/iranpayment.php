@@ -8,7 +8,7 @@ return [
 	|--------------------------------------------------------------------------
 	| [saman|zarinpal]
 	*/
-	'default'		=> 'saman',
+	'default' => 'saman',
 
 	/*
 	|--------------------------------------------------------------------------
@@ -16,7 +16,7 @@ return [
 	|--------------------------------------------------------------------------
 	| [IRR|IRT]
 	*/
-	'currency'		=> 'IRR',
+	'currency' => 'IRR',
 
 	/*
 	|--------------------------------------------------------------------------
@@ -25,7 +25,7 @@ return [
 	| You can use setCallbackUrl method to set a custom callback url for a payment.
 	| You may set a specific callback url for each gateways in their config with callback-url parameter.
 	*/
-	'callback-url'			=> 'http://example.com/payments/callback',
+	'callback-url' => 'http://example.com/payments/callback',
 
 	/*
 	|--------------------------------------------------------------------------
@@ -34,7 +34,7 @@ return [
 	| Salt: use your own random string for hash-id.
 	*/
 	'hashids' => [
-		'salt'		=> 'your-salt-string',
+		'salt' => env('IRANPAYMENT_HASH_SALT', 'your-salt-string'),
 	],
 
 	/*
@@ -43,7 +43,8 @@ return [
 	|--------------------------------------------------------------------------
 	*/
 	'saman' => [
-		'merchant-id'	=> env('SAMAN_MERCHANT_ID', 'xxxxxxxx'),
+		'merchant-id' => env('SAMAN_MERCHANT_ID', 'xxxxxxxx'),
+		// 'callback-url' => 'http://example.com/payments/saman/callback',
 	],
 
 	/*
@@ -60,6 +61,7 @@ return [
 		'description'	=> 'payment description', // Required
 		'email'			=> null, // Optional : user_email@example.com
 		'mobile'		=> null, // Optional : 0912XXXYYZZ
+		// 'callback-url'	=> 'http://example.com/payments/zarinpal/callback',
 	],
 
 ];

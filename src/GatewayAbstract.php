@@ -24,10 +24,10 @@ abstract class GatewayAbstract
 
 	protected $amount;
 	protected $request;
+	protected $currency;
 	protected $callback_url;
 	protected $transaction_code;
 
-	protected $currency			= 'IRR';
 	protected $transaction		= null;
 	protected $card_number		= null;
 	protected $reference_number	= null;
@@ -41,7 +41,9 @@ abstract class GatewayAbstract
 
 	abstract protected function verifyRequest();
 
-	abstract protected function redirect();
+	abstract protected function redirectView();
+
+	abstract protected function payBack();
 
 	public function __construct()
 	{
@@ -258,11 +260,17 @@ abstract class GatewayAbstract
 		$this->transaction->save();
 	}
 
+	protected function transactionPaidBack()
+	{
+		$this->transaction			= IranPaymentTransaction::find($this->transaction->id);
+		$this->transaction->status	= IranPaymentTransaction::T_PAID_BACK;
+		$this->transaction->save();
+	}
+
 	protected function callbackURL()
 	{
 		return Helpers::urlQueryBuilder($this->getCallbackUrl(), [
 			'transaction' => $this->getTransactionCode()
 		]);
 	}
-
 }

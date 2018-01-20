@@ -2,9 +2,6 @@
 
 namespace Dena\IranPayment\Exceptions;
 
-use Exception;
+use Dena\IranPayment\Exceptions\IranPaymentException;
 
-class SucceedRetryException extends Exception
-{
-	
-}
+class SucceedRetryException extends IranPaymentException {}

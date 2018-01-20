@@ -11,12 +11,13 @@ class IranPaymentTransaction extends Model
 	const T_FAILED			= 2;
 	const T_PENDING			= 3;
 	const T_VERIFY_PENDING	= 4;
+	const T_PAID_BACK		= 5;
 
-	protected $table	= 'iranpayment_transactions';
+	protected $table		= 'iranpayment_transactions';
 
-	protected $guarded	= ['id'];
+	protected $guarded		= ['id'];
 
-	protected $fillable	= [
+	protected $fillable		= [
 		'transaction_code',
 		'gateway',
 		'amount',

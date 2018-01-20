@@ -2,6 +2,6 @@
 
 namespace Dena\IranPayment\Exceptions;
 
-use Exception;
+use Dena\IranPayment\Exceptions\IranPaymentException;
 
-class InvalidRequestException extends Exception {}
+class InvalidRequestException extends IranPaymentException {}
