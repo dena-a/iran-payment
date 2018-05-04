@@ -5,16 +5,17 @@ namespace Dena\IranPayment\Providers\Saman;
 use Dena\IranPayment\Exceptions\InvalidDataException;
 use Dena\IranPayment\Exceptions\PayBackNotPossibleException;
 
-use Dena\IranPayment\GatewayAbstract;
+use Dena\IranPayment\Providers\BaseProvider;
 
 use Dena\IranPayment\Helpers\Currency;
+use Dena\IranPayment\Providers\ProviderInterface;
 
 use Log;
 use Exception;
 use SoapFault;
 use SoapClient;
 
-class Saman extends GatewayAbstract
+class Saman extends BaseProvider implements ProviderInterface
 {
 	private $token;
 	private $token_url;
@@ -30,7 +31,7 @@ class Saman extends GatewayAbstract
 		$this->setDefaults();
 	}
 
-	public function getGateway()
+	public function getName()
 	{
 		return 'saman';
 	}

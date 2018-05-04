@@ -5,16 +5,17 @@ namespace Dena\IranPayment\Providers\Zarinpal;
 use Dena\IranPayment\Exceptions\InvalidDataException;
 use Dena\IranPayment\Exceptions\PayBackNotPossibleException;
 
-use Dena\IranPayment\GatewayAbstract;
+use Dena\IranPayment\Providers\BaseProvider;
 
 use Dena\IranPayment\Helpers\Currency;
+use Dena\IranPayment\Providers\ProviderInterface;
 
 use Log;
 use Exception;
 use SoapFault;
 use SoapClient;
 
-class Zarinpal extends GatewayAbstract
+class Zarinpal extends BaseProvider implements ProviderInterface
 {
 	private $server_url;
 	private $prepared_amount;
@@ -32,7 +33,7 @@ class Zarinpal extends GatewayAbstract
 		$this->setDefaults();
 	}
 
-	public function getGateway()
+	public function getName()
 	{
 		return 'zarinpal';
 	}
