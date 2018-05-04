@@ -1,6 +1,6 @@
 <?php
 
-namespace Dena\IranPayment;
+namespace Dena\IranPayment\Providers;
 
 use Dena\IranPayment\Exceptions\RetryException;
 use Dena\IranPayment\Exceptions\InvalidDataException;
@@ -17,7 +17,7 @@ use Carbon\Carbon;
 use Vinkla\Hashids\Facades\Hashids;
 use Dena\IranPayment\Helpers\Helpers;
 
-abstract class GatewayAbstract
+class BaseProvider
 {
 	const IRR	= 'IRR';
 	const IRT	= 'IRT';
@@ -34,16 +34,6 @@ abstract class GatewayAbstract
 	protected $tracking_code	= null;
 	protected $description		= null;
 	protected $extra			= null;
-
-	abstract protected function getGateway();
-
-	abstract protected function payRequest();
-
-	abstract protected function verifyRequest();
-
-	abstract protected function redirectView();
-
-	abstract protected function payBack();
 
 	public function __construct()
 	{
@@ -211,7 +201,7 @@ abstract class GatewayAbstract
 			$this->transaction	= new IranPaymentTransaction([
 				'amount'		=> $this->amount,
 				'currency'		=> $this->currency,
-				'gateway'		=> $this->getGateway(),
+				'gateway'		=> $this->getName(),
 				'extra'			=> $this->getExtra(),
 			]);
 			$this->transaction->status	= IranPaymentTransaction::T_INIT;

@@ -13,6 +13,7 @@ use Dena\IranPayment\Providers\Saman\Saman;
 use Dena\IranPayment\Providers\Zarinpal\Zarinpal;
 
 use Dena\IranPayment\Models\IranPaymentTransaction;
+use Dena\IranPayment\Providers\ProviderInterface;
 
 class IranPayment
 {
@@ -21,11 +22,13 @@ class IranPayment
 	const PAYIR		= 'pay.ir';
 
 	protected $gateway;
+	protected $extended;
 
 	public function __construct($gateway = null)
 	{
+		$this->extended = false;
 		$this->setDefaults();
-		if (!is_null($gateway)) {
+		if (!is_null($gateway) && $gateway instanceof ProviderInterface) {
 			$this->setGateway($gateway);
 		}
 	}
@@ -60,6 +63,12 @@ class IranPayment
 		$this->gateway = $gateway;
 	}
 
+	public function extends(ProviderInterface $gateway)
+	{
+		$this->extended = true;
+		$this->gateway = $gateway;
+	}
+
 	public function getGateway()
 	{
 		return $this->gateway;
@@ -78,7 +87,11 @@ class IranPayment
 				$this->gateway = new PayIr;
 				break;
 			default:
-				throw new GatewayNotFoundException;
+				if($this->extended) {
+					$this->gateway = new $this->gateway;
+				} else {
+					throw new GatewayNotFoundException;
+				}
 				break;
 		}
 		return $this;

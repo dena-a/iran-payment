@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-use Dena\IranPayment\GatewayAbstract;
+use Dena\IranPayment\Providers\BaseProvider;
 
 class CreateIranPaymentTransactionsTable extends Migration
 {
@@ -16,7 +16,7 @@ class CreateIranPaymentTransactionsTable extends Migration
 			$table->string('transaction_code')->nullable()->index();
 			$table->string('gateway', 16)->index();
 			$table->decimal('amount', 16, 4)->unsigned();
-			$table->string('currency', 3)->default(GatewayAbstract::IRR);
+			$table->string('currency', 3)->default(BaseProvider::IRR);
 			$table->tinyInteger('status')->unsigned()->length(1);
 			$table->string('tracking_code')->nullable()->index();
 			$table->string('reference_number')->nullable()->index();
