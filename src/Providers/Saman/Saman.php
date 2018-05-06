@@ -72,7 +72,7 @@ class Saman extends BaseProvider implements ProviderInterface
 		$this->prepareAmount();
 	}
 
-	protected function payRequest()
+	public function payRequest()
 	{
 		$this->payPrepare();
 
@@ -108,7 +108,7 @@ class Saman extends BaseProvider implements ProviderInterface
 		}
 	}
 
-	protected function verifyPrepare()
+	public function verifyPrepare()
 	{
 		$this->prepareAmount();
 		if ($this->request->State != 'OK' || $this->request->StateCode != '0' ) {
@@ -152,7 +152,7 @@ class Saman extends BaseProvider implements ProviderInterface
 		$this->transactionVerifyPending();
 	}
 
-	protected function verifyRequest()
+	public function verifyRequest()
 	{
 		$this->verifyPrepare();
 

@@ -26,6 +26,7 @@ class IranPayment
 
 	public function __construct($gateway = null)
 	{
+		dd(1);
 		$this->extended = false;
 		$this->setDefaults();
 		if (!is_null($gateway) && $gateway instanceof ProviderInterface) {
@@ -35,10 +36,18 @@ class IranPayment
 
 	public function __call($name, $arguments)
 	{
-		if ($this->gateway) {
-			return call_user_func_array([$this->gateway, $name], $arguments);
-		}
-		return false;
+		// if ($this->gateway) {
+		// 	return call_user_func_array([$this->gateway, $name], $arguments);
+		// }
+		// return false;
+		dd(1);
+		if (
+            !method_exists(__CLASS__, $name)
+            && $this->gateway instanceof ProviderInterface
+            && method_exists($this->gateway, $name) 
+        ) {
+            return call_user_func_array([$this->gateway, $name], $arguments);
+        }
 	}
 
 	private function setDefaults()
