@@ -17,7 +17,7 @@ use Carbon\Carbon;
 use Vinkla\Hashids\Facades\Hashids;
 use Dena\IranPayment\Helpers\Helpers;
 
-class BaseProvider
+abstract class BaseProvider
 {
 	const IRR	= 'IRR';
 	const IRT	= 'IRT';
@@ -191,9 +191,9 @@ class BaseProvider
 
 	protected function newTransaction()
 	{
-		if (empty($this->user_id)) {
-			throw new InvalidDataException(InvalidDataException::INVALID_USER_ID);
-		}
+		// if (empty($this->user_id)) {
+		// 	throw new InvalidDataException(InvalidDataException::INVALID_USER_ID);
+		// }
 		if (empty($this->amount) || $this->amount <= 0) {
 			throw new InvalidDataException(InvalidDataException::INVALID_AMOUNT);
 		}
@@ -205,7 +205,7 @@ class BaseProvider
 				'extra'			=> $this->getExtra(),
 			]);
 			$this->transaction->status	= IranPaymentTransaction::T_INIT;
-			$this->transaction->user_id	= $this->user_id;
+			$this->transaction->user_id	= isset($this->user_id) ? $this->user_id : null; // $this->user_id ?? null
 			$this->transaction->save();
 			$this->transaction->transaction_code = app('hashids')->connection('iranpayment')->encode($this->transaction->id);
 			$this->transaction->save();
