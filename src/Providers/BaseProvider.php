@@ -316,6 +316,8 @@ abstract class BaseProvider
 				return 'در انتظار تایید';
 			case IranPaymentTransaction::T_PAID_BACK:
 				return 'برگشت وجه';
+			case IranPaymentTransaction::T_CANCELED:
+				return 'انصراف';
 			default:
 				return '';
 		}
