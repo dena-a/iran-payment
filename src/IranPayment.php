@@ -21,7 +21,8 @@ class IranPayment
 {
 	const ZARINPAL	= 'zarinpal';
 	const SAMAN		= 'saman';
-	const PAYIR		= 'pay.ir';
+	const PAYIR		= 'payir';
+	const PAYDOTIR	= 'pay.ir';
 	const TEST		= 'test';
 
 	protected $gateway;
@@ -71,7 +72,7 @@ class IranPayment
 
 	public function setGateway($gateway)
 	{
-		$this->gateway = $gateway;
+		$this->gateway = strtolower($gateway);
 	}
 
 	public function extends($gateway)
@@ -96,6 +97,7 @@ class IranPayment
 				$this->gateway = new Saman;
 				break;
 			case self::PAYIR:
+			case self::PAYDOTIR:
 				$this->gateway = new PayIr;
 				break;
 			case self::TEST:
@@ -158,6 +160,7 @@ class IranPayment
 			self::ZARINPAL,
 			self::SAMAN,
 			self::PAYIR,
+			self::PAYDOTIR,
 			self::TEST
 		];
 	}

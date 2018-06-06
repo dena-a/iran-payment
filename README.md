@@ -51,29 +51,29 @@ class TestGateway extends BaseProvider implements ProviderInterface {
     public function getName() {
         return 'test-gateway';
     }
-
-	public function payRequest() {
+    
+    public function payRequest() {
         $code = rand(1, 10000);
         $this->setReferenceNumber($code);
         $this->transactionPending([
             'reference_number'	=> intval($code)
         ]);
     }
-
-	public function verifyRequest() {
+    
+    public function verifyRequest() {
         $this->transactionVerifyPending();
         $code = rand(1, 10000);
         $this->setTrackingCode($code);
 		$this->transactionSucceed(['tracking_code' => $code]);
     }
-
-	public function redirectView() {
+    
+    public function redirectView() {
         return view('welcome')->with([
             'transaction' => $this->getTransaction()
         ]);
     }
-
-	public function payBack() {
+    
+    public function payBack() {
     }
 }
 ```
@@ -82,7 +82,9 @@ class TestGateway extends BaseProvider implements ProviderInterface {
 ```php
 //default gateway
 $payment = new IranPayment();
-// OR
+// OR test gateway
+$payment = new IranPayment('test');
+// OR one of ['zarinpal', 'saman', 'payir']
 $payment = new IranPayment('zarinpal');
 // Custom gateway
 $payment->extends(TestGateway::class);

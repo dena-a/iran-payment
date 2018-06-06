@@ -110,10 +110,11 @@ abstract class BaseProvider
 	{
 		if($transaction instanceOf IranPaymentTransaction) {
 			$this->transaction = $transaction;
-		}
-		$this->transaction = IranPaymentTransaction::find($transaction);
-		if(!$this->transaction) {
-			$this->transaction = IranPaymentTransaction::where('transaction_code', $transaction)->first();
+		} else {
+			$this->transaction = IranPaymentTransaction::find($transaction);
+			if(!$this->transaction) {
+				$this->transaction = IranPaymentTransaction::where('transaction_code', $transaction)->first();
+			}
 		}
 		return $this;
 	}
@@ -136,7 +137,7 @@ abstract class BaseProvider
 
 	public function setCurrency($currency)
 	{
-		$this->currency = $currency;
+		$this->currency = strtoupper($currency);
 		return $this;
 	}
 
@@ -281,7 +282,7 @@ abstract class BaseProvider
 	}
 
 	public function getTransactionStatusText() {
-		//@TODO::add transaction
+		//@TODO::add translation
 		switch($this->transaction->status) {
 			case IranPaymentTransaction::T_INIT:
 				return 'ایجاد شده';
