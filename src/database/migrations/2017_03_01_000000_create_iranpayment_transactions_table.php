@@ -12,7 +12,7 @@ class CreateIranPaymentTransactionsTable extends Migration
 	{
 		Schema::create('iranpayment_transactions', function (Blueprint $table) {
 			$table->bigIncrements('id');
-			$table->integer('user_id')->unsigned()->nullable();
+			$table->integer('user_id')->unsigned()->nullable()->index();
 			$table->string('transaction_code')->nullable()->index();
 			$table->string('gateway', 16)->index();
 			$table->decimal('amount', 16, 4)->unsigned();

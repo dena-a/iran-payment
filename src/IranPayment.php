@@ -7,10 +7,12 @@ use Dena\IranPayment\Exceptions\SucceedRetryException;
 use Dena\IranPayment\Exceptions\InvalidRequestException;
 use Dena\IranPayment\Exceptions\GatewayNotFoundException;
 use Dena\IranPayment\Exceptions\TransactionNotFoundException;
+use Dena\IranPayment\Exceptions\OnlyWorkOnDebugModeException;
 
 use Dena\IranPayment\Providers\PayIr\PayIr;
 use Dena\IranPayment\Providers\Saman\Saman;
 use Dena\IranPayment\Providers\Zarinpal\Zarinpal;
+use Dena\IranPayment\Providers\Test\TestGateway;
 
 use Dena\IranPayment\Models\IranPaymentTransaction;
 use Dena\IranPayment\Providers\ProviderInterface;
@@ -20,6 +22,7 @@ class IranPayment
 	const ZARINPAL	= 'zarinpal';
 	const SAMAN		= 'saman';
 	const PAYIR		= 'pay.ir';
+	const TEST		= 'test';
 
 	protected $gateway;
 	protected $extended;
@@ -28,7 +31,7 @@ class IranPayment
 	{
 		$this->extended = false;
 		$this->setDefaults();
-		if (!is_null($gateway) && $gateway instanceof ProviderInterface) {
+		if ($gateway) {
 			$this->setGateway($gateway);
 		}
 	}
@@ -45,7 +48,7 @@ class IranPayment
             && method_exists($this->gateway, $name) 
         ) {
 			$res = call_user_func_array([$this->gateway, $name], $arguments);
-			return $res ? $res : $this->gateway;
+			return $res ?? $this->gateway;
 		}
 	}
 
@@ -71,10 +74,11 @@ class IranPayment
 		$this->gateway = $gateway;
 	}
 
-	public function extends(ProviderInterface $gateway)
+	public function extends($gateway)
 	{
 		$this->extended = true;
 		$this->gateway = $gateway;
+		return $this;
 	}
 
 	public function getGateway()
@@ -94,6 +98,13 @@ class IranPayment
 			case self::PAYIR:
 				$this->gateway = new PayIr;
 				break;
+			case self::TEST:
+				if(env('APP_DEBUG') == true) {
+					$this->gateway = new TestGateway;
+				} else {
+					throw new OnlyWorkOnDebugModeException;
+				}
+				break;
 			default:
 				if($this->extended) {
 					$this->gateway = new $this->gateway;
@@ -105,29 +116,40 @@ class IranPayment
 		return $this;
 	}
 
-	public function verify()
+	// public function verify()
+	// {
+	// 	$request = app('request');
+	// 	if (!isset($request->transaction)) {
+	// 		throw new InvalidRequestException;
+	// 	}
+	// 	$transaction_id	= $request->transaction;
+	// 	$transaction_id	= app('hashids')->connection('iranpayment')->decode($transaction_id);
+	// 	if (!isset($transaction_id[0])) {
+	// 		throw new InvalidRequestException;
+	// 	}
+	// 	$transaction_id	= $transaction_id[0];
+	// 	$transaction_id	= intval($transaction_id);
+	// 	$transaction	= IranPaymentTransaction::find($transaction_id);
+	// 	if (!$transaction) {
+	// 		throw new TransactionNotFoundException;
+	// 	}
+
+	// 	$this->setGateway($transaction->gateway);
+	// 	$this->build();
+	// 	$this->gateway->setTransaction($transaction);
+
+	// 	return $this->gateway->verify();
+	// }
+
+	/**
+	 * Fetch all user transaction
+	 *
+	 * @param [integer] $userId
+	 * @return IranPaymentTransaction object
+	 */
+	public static function userTransactions($userId)
 	{
-		$request = app('request');
-		if (!isset($request->transaction)) {
-			throw new InvalidRequestException;
-		}
-		$transaction_id	= $request->transaction;
-		$transaction_id	= app('hashids')->connection('iranpayment')->decode($transaction_id);
-		if (!isset($transaction_id[0])) {
-			throw new InvalidRequestException;
-		}
-		$transaction_id	= $transaction_id[0];
-		$transaction_id	= intval($transaction_id);
-		$transaction	= IranPaymentTransaction::find($transaction_id);
-		if (!$transaction) {
-			throw new TransactionNotFoundException;
-		}
-
-		$this->setGateway($transaction->gateway);
-		$this->build();
-		$this->gateway->setTransaction($transaction);
-
-		return $this->gateway->verify();
+		return IranPaymentTransaction::where('user_id', $userId);
 	}
 
 	public function getSupportedGateways()
@@ -136,6 +158,7 @@ class IranPayment
 			self::ZARINPAL,
 			self::SAMAN,
 			self::PAYIR,
+			self::TEST
 		];
 	}
 

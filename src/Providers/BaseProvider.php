@@ -49,6 +49,7 @@ abstract class BaseProvider
 	public function setDescription($description)
 	{
 		$this->description = $description;
+		return $this;
 	}
 
 	public function getDescription()
@@ -59,6 +60,7 @@ abstract class BaseProvider
 	public function setExtra($extra)
 	{
 		$this->extra = $extra;
+		return $this;
 	}
 
 	public function getExtra()
@@ -69,6 +71,7 @@ abstract class BaseProvider
 	public function setCardNumber($card_number)
 	{
 		$this->card_number = $card_number;
+		return $this;
 	}
 
 	public function getCardNumber()
@@ -79,6 +82,7 @@ abstract class BaseProvider
 	public function setTrackingCode($tracking_code)
 	{
 		$this->tracking_code = $tracking_code;
+		return $this;
 	}
 
 	public function getTrackingCode()
@@ -89,6 +93,7 @@ abstract class BaseProvider
 	public function setReferenceNumber($reference_number)
 	{
 		$this->reference_number = $reference_number;
+		return $this;
 	}
 
 	public function getReferenceNumber()
@@ -103,7 +108,14 @@ abstract class BaseProvider
 
 	public function setTransaction($transaction)
 	{
-		$this->transaction = $transaction;
+		if($transaction instanceOf IranPaymentTransaction) {
+			$this->transaction = $transaction;
+		}
+		$this->transaction = IranPaymentTransaction::find($transaction);
+		if(!$this->transaction) {
+			$this->transaction = IranPaymentTransaction::where('transaction_code', $transaction)->first();
+		}
+		return $this;
 	}
 
 	public function getTransaction()
@@ -114,6 +126,7 @@ abstract class BaseProvider
 	public function setUserId($user_id)
 	{
 		$this->user_id = $user_id;
+		return $this;
 	}
 
 	public function getUserId()
@@ -124,6 +137,7 @@ abstract class BaseProvider
 	public function setCurrency($currency)
 	{
 		$this->currency = $currency;
+		return $this;
 	}
 
 	public function getCurrency()
@@ -134,6 +148,7 @@ abstract class BaseProvider
 	public function setAmount($amount)
 	{
 		$this->amount = $amount;
+		return $this;
 	}
 
 	public function getAmount()
@@ -144,6 +159,7 @@ abstract class BaseProvider
 	public function setCallbackUrl($callback_url)
 	{
 		$this->callback_url = $callback_url;
+		return $this;
 	}
 
 	public function getCallbackUrl()
@@ -167,15 +183,19 @@ abstract class BaseProvider
 		return $this;
 	}
 
-	public function verify()
+	public function verify($transaction = null)
 	{
+		if($transaction) {
+			$this->setTransaction($transaction);
+		}
 		$this->setCardNumber($this->transaction->card_number);
 		$this->setReferenceNumber($this->transaction->reference_number);
 		$this->setTrackingCode($this->transaction->tracking_code);
 		$this->setCurrency($this->transaction->currency);
 		$this->setAmount($this->transaction->amount);
 		if ($this->transaction->status == IranPaymentTransaction::T_SUCCEED) {
-			throw new SucceedRetryException;
+			return $this;
+			// throw new SucceedRetryException;
 		} elseif ($this->transaction->status != IranPaymentTransaction::T_PENDING) {
 			throw new RetryException;
 		}
@@ -229,10 +249,13 @@ abstract class BaseProvider
 		$this->transaction->save();
 	}
 
-	protected function transactionPending()
+	protected function transactionPending(array $params)
 	{
 		$this->transaction			= IranPaymentTransaction::find($this->transaction->id);
 		$this->transaction->status	= IranPaymentTransaction::T_PENDING;
+		if($params) {
+			$this->transaction->fill($params);
+		}
 		$this->transaction->save();
 	}
 
@@ -255,6 +278,26 @@ abstract class BaseProvider
 		$this->transaction			= IranPaymentTransaction::find($this->transaction->id);
 		$this->transaction->status	= IranPaymentTransaction::T_PAID_BACK;
 		$this->transaction->save();
+	}
+
+	public function getTransactionStatusText() {
+		//@TODO::add transaction
+		switch($this->transaction->status) {
+			case IranPaymentTransaction::T_INIT:
+				return 'ایجاد شده';
+			case IranPaymentTransaction::T_SUCCEED:
+				return 'موفق';
+			case IranPaymentTransaction::T_FAILED:
+				return 'ناموفق';
+			case IranPaymentTransaction::T_PENDING:
+				return 'درجریان';
+			case IranPaymentTransaction::T_VERIFY_PENDING:
+				return 'در انتظار تایید';
+			case IranPaymentTransaction::T_PAID_BACK:
+				return 'برگشت وجه';
+			default:
+				return '';
+		}
 	}
 
 	protected function callbackURL()
