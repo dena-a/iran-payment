@@ -40,16 +40,40 @@ php artisan migrate
 
 ## Usage
 
+### New Payment:
+```php
+//default gateway
+$payment = new IranPayment();
+// OR one of ['zarinpal', 'saman', 'payir']
+$payment = new IranPayment('zarinpal');
+// OR test gateway (Only works on debug mode)
+$payment = new IranPayment('test');
 
+$payment->build()
+        ->setUserId($user->id)
+        ->setAmount($data['amount'])
+        ->setCallbackUrl(route('bank.callback'))
+        ->ready();
+
+return $payment->redirectView();
+```
+
+### Verify Payment:
+```php
+$payment = new IranPayment();
+$payment->build()->verify($transaction);
+$trackingCode = $payment->getTrackingCode();
+$statusText = $payment->getTransactionStatusText();
+```
 ### Extends
 ```php
 use Dena\IranPayment\Providers\BaseProvider;
 use Dena\IranPayment\Providers\ProviderInterface;
 
-class TestGateway extends BaseProvider implements ProviderInterface {
+class NewGateway extends BaseProvider implements ProviderInterface {
     
     public function getName() {
-        return 'test-gateway';
+        return 'new-gateway';
     }
     
     public function payRequest() {
@@ -76,34 +100,9 @@ class TestGateway extends BaseProvider implements ProviderInterface {
     public function payBack() {
     }
 }
-```
 
-### New Payment:
-```php
-//default gateway
 $payment = new IranPayment();
-// OR test gateway
-$payment = new IranPayment('test');
-// OR one of ['zarinpal', 'saman', 'payir']
-$payment = new IranPayment('zarinpal');
-// Custom gateway
-$payment->extends(TestGateway::class);
-$payment->build()
-        ->setUserId($user->id)
-        ->setAmount($data['amount'])
-        ->setCallbackUrl(route('bank.callback'))
-        ->ready();
-
-return $payment->redirectView();
-```
-
-### Verify Payment:
-```php
-$payment = new IranPayment();
-$payment->extends(TestGateway::class);
-$payment->build()->verify($transaction);
-$trackingCode = $payment->getTrackingCode();
-$statusText = $payment->getTransactionStatusText();
+$payment->extends(NewGateway::class);
 ```
 
 ## License

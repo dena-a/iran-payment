@@ -5,6 +5,7 @@ namespace Dena\IranPayment\Providers;
 use Dena\IranPayment\Exceptions\RetryException;
 use Dena\IranPayment\Exceptions\InvalidDataException;
 use Dena\IranPayment\Exceptions\SucceedRetryException;
+use Dena\IranPayment\Exceptions\TransactionNotFoundException;
 
 use Dena\IranPayment\Models\IranPaymentTransaction;
 
@@ -111,8 +112,9 @@ abstract class BaseProvider
 		if($transaction instanceOf IranPaymentTransaction) {
 			$this->transaction = $transaction;
 		} else {
-			$this->transaction = IranPaymentTransaction::find($transaction);
-			if(!$this->transaction) {
+			if(is_numeric($transaction)) {
+				$this->transaction = IranPaymentTransaction::find($transaction);
+			} else {
 				$this->transaction = IranPaymentTransaction::where('transaction_code', $transaction)->first();
 			}
 		}
@@ -250,9 +252,9 @@ abstract class BaseProvider
 		$this->transaction->save();
 	}
 
-	protected function transactionPending(array $params)
+	protected function transactionPending(array $params = null)
 	{
-		$this->transaction			= IranPaymentTransaction::find($this->transaction->id);
+		$this->checkTransaction();
 		$this->transaction->status	= IranPaymentTransaction::T_PENDING;
 		if($params) {
 			$this->transaction->fill($params);
@@ -262,23 +264,41 @@ abstract class BaseProvider
 
 	protected function transactionVerifyPending()
 	{
-		$this->transaction			= IranPaymentTransaction::find($this->transaction->id);
+		$this->checkTransaction();
 		$this->transaction->status	= IranPaymentTransaction::T_VERIFY_PENDING;
 		$this->transaction->save();
 	}
 
-	protected function transactionUpdate(array $params)
+	protected function transactionUpdate(array $params = null)
 	{
 		$this->transaction	= IranPaymentTransaction::find($this->transaction->id);
-		$this->transaction->fill($params);
+		if($params) {
+			$this->transaction->fill($params);
+		}
 		$this->transaction->save();
 	}
 
 	protected function transactionPaidBack()
 	{
-		$this->transaction			= IranPaymentTransaction::find($this->transaction->id);
+		$this->checkTransaction();
 		$this->transaction->status	= IranPaymentTransaction::T_PAID_BACK;
 		$this->transaction->save();
+	}
+
+	protected function transactionCanceled(array $params = null)
+	{
+		$this->checkTransaction();
+		if($params) {
+			$this->transaction->fill($params);
+		}
+		$this->transaction->status	= IranPaymentTransaction::T_CANCELED;
+		$this->transaction->save();
+	}
+
+	protected function checkTransaction() {
+		if(!$this->transaction || !$this->transaction instanceOf IranPaymentTransaction) {
+			throw new TransactionNotFoundException;
+		}
 	}
 
 	public function getTransactionStatusText() {

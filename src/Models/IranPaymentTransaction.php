@@ -12,6 +12,7 @@ class IranPaymentTransaction extends Model
 	const T_PENDING			= 3;
 	const T_VERIFY_PENDING	= 4;
 	const T_PAID_BACK		= 5;
+	const T_CANCELED		= 6;
 
 	protected $table		= 'iranpayment_transactions';
 
