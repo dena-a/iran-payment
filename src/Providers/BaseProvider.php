@@ -188,9 +188,14 @@ abstract class BaseProvider
 
 	public function verify($transaction = null)
 	{
-		if($transaction) {
-			$this->setTransaction($transaction);
+		if(!$transaction) {
+			if (isset($request->transaction)) {
+				$transaction = $request->transaction;
+			} else {
+				throw new InvalidRequestException;
+			}
 		}
+		$this->setTransaction($transaction);
 		$this->setCardNumber($this->transaction->card_number);
 		$this->setReferenceNumber($this->transaction->reference_number);
 		$this->setTrackingCode($this->transaction->tracking_code);
@@ -235,10 +240,12 @@ abstract class BaseProvider
 		});
 	}
 
-	protected function transactionSucceed(array $params = [])
+	protected function transactionSucceed(array $params = null)
 	{
 		$this->transaction	= IranPaymentTransaction::find($this->transaction->id);
-		$this->transaction->fill($params);
+		if($params) {
+			$this->transaction->fill($params);
+		}
 		$this->transaction->paid_at	= Carbon::now();
 		$this->transaction->status	= IranPaymentTransaction::T_SUCCEED;
 		$this->transaction->save();
