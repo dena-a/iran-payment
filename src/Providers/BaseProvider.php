@@ -326,7 +326,7 @@ abstract class BaseProvider
 	protected function callbackURL()
 	{
 		return Helpers::urlQueryBuilder($this->getCallbackUrl(), [
-			'transaction' => $this->getTransactionCode()
+			config('iranpayment.transaction_query_param') => $this->getTransactionCode()
 		]);
 	}
 }

@@ -25,6 +25,9 @@ class IranPayment
 	const PAYDOTIR	= 'pay.ir';
 	const TEST		= 'test';
 
+	const CURRENCY_IRR	= 'IRR';
+	const CURRENCY_IRT	= 'IRT';
+
 	protected $gateway;
 	protected $extended;
 
