@@ -40,18 +40,69 @@ php artisan migrate
 
 ## Usage
 
-New Payment:
+### New Payment:
 ```php
+//default gateway
 $payment = new IranPayment();
-$payment = $payment->build()->setUserId($user_id)->setAmount(1000)->ready();
-return $payment->redirect();
+// OR one of ['zarinpal', 'saman', 'payir']
+$payment = new IranPayment('zarinpal');
+// OR test gateway (Only works on debug mode)
+$payment = new IranPayment('test');
+
+$payment->build()
+        ->setUserId($user->id)
+        ->setAmount($data['amount'])
+        ->setCallbackUrl(route('bank.callback'))
+        ->ready();
+
+return $payment->redirectView();
 ```
 
-Verify Payment:
+### Verify Payment:
 ```php
 $payment = new IranPayment();
-$tracking_code = $payment->verify()->trackingCode();
-return $tracking_code;
+$payment->build()->verify($transaction);
+$trackingCode = $payment->getTrackingCode();
+$statusText = $payment->getTransactionStatusText();
+```
+### Extends
+```php
+use Dena\IranPayment\Providers\BaseProvider;
+use Dena\IranPayment\Providers\ProviderInterface;
+
+class NewGateway extends BaseProvider implements ProviderInterface {
+    
+    public function getName() {
+        return 'new-gateway';
+    }
+    
+    public function payRequest() {
+        $code = rand(1, 10000);
+        $this->setReferenceNumber($code);
+        $this->transactionPending([
+            'reference_number'	=> intval($code)
+        ]);
+    }
+    
+    public function verifyRequest() {
+        $this->transactionVerifyPending();
+        $code = rand(1, 10000);
+        $this->setTrackingCode($code);
+		$this->transactionSucceed(['tracking_code' => $code]);
+    }
+    
+    public function redirectView() {
+        return view('welcome')->with([
+            'transaction' => $this->getTransaction()
+        ]);
+    }
+    
+    public function payBack() {
+    }
+}
+
+$payment = new IranPayment();
+$payment->extends(NewGateway::class);
 ```
 
 ## License

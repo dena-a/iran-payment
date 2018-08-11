@@ -1,10 +1,11 @@
 <?php
 
-namespace Dena\IranPayment;
+namespace Dena\IranPayment\Providers;
 
 use Dena\IranPayment\Exceptions\RetryException;
 use Dena\IranPayment\Exceptions\InvalidDataException;
 use Dena\IranPayment\Exceptions\SucceedRetryException;
+use Dena\IranPayment\Exceptions\TransactionNotFoundException;
 
 use Dena\IranPayment\Models\IranPaymentTransaction;
 
@@ -17,7 +18,7 @@ use Carbon\Carbon;
 use Vinkla\Hashids\Facades\Hashids;
 use Dena\IranPayment\Helpers\Helpers;
 
-abstract class GatewayAbstract
+abstract class BaseProvider
 {
 	const IRR	= 'IRR';
 	const IRT	= 'IRT';
@@ -35,16 +36,6 @@ abstract class GatewayAbstract
 	protected $description		= null;
 	protected $extra			= null;
 
-	abstract protected function getGateway();
-
-	abstract protected function payRequest();
-
-	abstract protected function verifyRequest();
-
-	abstract protected function redirectView();
-
-	abstract protected function payBack();
-
 	public function __construct()
 	{
 		$this->setDefaults();
@@ -59,6 +50,7 @@ abstract class GatewayAbstract
 	public function setDescription($description)
 	{
 		$this->description = $description;
+		return $this;
 	}
 
 	public function getDescription()
@@ -69,6 +61,7 @@ abstract class GatewayAbstract
 	public function setExtra($extra)
 	{
 		$this->extra = $extra;
+		return $this;
 	}
 
 	public function getExtra()
@@ -79,6 +72,7 @@ abstract class GatewayAbstract
 	public function setCardNumber($card_number)
 	{
 		$this->card_number = $card_number;
+		return $this;
 	}
 
 	public function getCardNumber()
@@ -89,6 +83,7 @@ abstract class GatewayAbstract
 	public function setTrackingCode($tracking_code)
 	{
 		$this->tracking_code = $tracking_code;
+		return $this;
 	}
 
 	public function getTrackingCode()
@@ -99,6 +94,7 @@ abstract class GatewayAbstract
 	public function setReferenceNumber($reference_number)
 	{
 		$this->reference_number = $reference_number;
+		return $this;
 	}
 
 	public function getReferenceNumber()
@@ -113,7 +109,16 @@ abstract class GatewayAbstract
 
 	public function setTransaction($transaction)
 	{
-		$this->transaction = $transaction;
+		if($transaction instanceOf IranPaymentTransaction) {
+			$this->transaction = $transaction;
+		} else {
+			if(is_numeric($transaction)) {
+				$this->transaction = IranPaymentTransaction::find($transaction);
+			} else {
+				$this->transaction = IranPaymentTransaction::where('transaction_code', $transaction)->first();
+			}
+		}
+		return $this;
 	}
 
 	public function getTransaction()
@@ -124,6 +129,7 @@ abstract class GatewayAbstract
 	public function setUserId($user_id)
 	{
 		$this->user_id = $user_id;
+		return $this;
 	}
 
 	public function getUserId()
@@ -133,7 +139,8 @@ abstract class GatewayAbstract
 
 	public function setCurrency($currency)
 	{
-		$this->currency = $currency;
+		$this->currency = strtoupper($currency);
+		return $this;
 	}
 
 	public function getCurrency()
@@ -144,6 +151,7 @@ abstract class GatewayAbstract
 	public function setAmount($amount)
 	{
 		$this->amount = $amount;
+		return $this;
 	}
 
 	public function getAmount()
@@ -154,6 +162,7 @@ abstract class GatewayAbstract
 	public function setCallbackUrl($callback_url)
 	{
 		$this->callback_url = $callback_url;
+		return $this;
 	}
 
 	public function getCallbackUrl()
@@ -177,15 +186,24 @@ abstract class GatewayAbstract
 		return $this;
 	}
 
-	public function verify()
+	public function verify($transaction = null)
 	{
+		if(!$transaction) {
+			if (isset($request->transaction)) {
+				$transaction = $request->transaction;
+			} else {
+				throw new InvalidRequestException;
+			}
+		}
+		$this->setTransaction($transaction);
 		$this->setCardNumber($this->transaction->card_number);
 		$this->setReferenceNumber($this->transaction->reference_number);
 		$this->setTrackingCode($this->transaction->tracking_code);
 		$this->setCurrency($this->transaction->currency);
 		$this->setAmount($this->transaction->amount);
 		if ($this->transaction->status == IranPaymentTransaction::T_SUCCEED) {
-			throw new SucceedRetryException;
+			return $this;
+			// throw new SucceedRetryException;
 		} elseif ($this->transaction->status != IranPaymentTransaction::T_PENDING) {
 			throw new RetryException;
 		}
@@ -201,9 +219,9 @@ abstract class GatewayAbstract
 
 	protected function newTransaction()
 	{
-		if (empty($this->user_id)) {
-			throw new InvalidDataException(InvalidDataException::INVALID_USER_ID);
-		}
+		// if (empty($this->user_id)) {
+		// 	throw new InvalidDataException(InvalidDataException::INVALID_USER_ID);
+		// }
 		if (empty($this->amount) || $this->amount <= 0) {
 			throw new InvalidDataException(InvalidDataException::INVALID_AMOUNT);
 		}
@@ -211,21 +229,23 @@ abstract class GatewayAbstract
 			$this->transaction	= new IranPaymentTransaction([
 				'amount'		=> $this->amount,
 				'currency'		=> $this->currency,
-				'gateway'		=> $this->getGateway(),
+				'gateway'		=> $this->getName(),
 				'extra'			=> $this->getExtra(),
 			]);
 			$this->transaction->status	= IranPaymentTransaction::T_INIT;
-			$this->transaction->user_id	= $this->user_id;
+			$this->transaction->user_id	= isset($this->user_id) ? $this->user_id : null; // $this->user_id ?? null
 			$this->transaction->save();
 			$this->transaction->transaction_code = app('hashids')->connection('iranpayment')->encode($this->transaction->id);
 			$this->transaction->save();
 		});
 	}
 
-	protected function transactionSucceed(array $params = [])
+	protected function transactionSucceed(array $params = null)
 	{
 		$this->transaction	= IranPaymentTransaction::find($this->transaction->id);
-		$this->transaction->fill($params);
+		if($params) {
+			$this->transaction->fill($params);
+		}
 		$this->transaction->paid_at	= Carbon::now();
 		$this->transaction->status	= IranPaymentTransaction::T_SUCCEED;
 		$this->transaction->save();
@@ -239,38 +259,81 @@ abstract class GatewayAbstract
 		$this->transaction->save();
 	}
 
-	protected function transactionPending()
+	protected function transactionPending(array $params = null)
 	{
-		$this->transaction			= IranPaymentTransaction::find($this->transaction->id);
+		$this->checkTransaction();
 		$this->transaction->status	= IranPaymentTransaction::T_PENDING;
+		if($params) {
+			$this->transaction->fill($params);
+		}
 		$this->transaction->save();
 	}
 
 	protected function transactionVerifyPending()
 	{
-		$this->transaction			= IranPaymentTransaction::find($this->transaction->id);
+		$this->checkTransaction();
 		$this->transaction->status	= IranPaymentTransaction::T_VERIFY_PENDING;
 		$this->transaction->save();
 	}
 
-	protected function transactionUpdate(array $params)
+	protected function transactionUpdate(array $params = null)
 	{
 		$this->transaction	= IranPaymentTransaction::find($this->transaction->id);
-		$this->transaction->fill($params);
+		if($params) {
+			$this->transaction->fill($params);
+		}
 		$this->transaction->save();
 	}
 
 	protected function transactionPaidBack()
 	{
-		$this->transaction			= IranPaymentTransaction::find($this->transaction->id);
+		$this->checkTransaction();
 		$this->transaction->status	= IranPaymentTransaction::T_PAID_BACK;
 		$this->transaction->save();
+	}
+
+	protected function transactionCanceled(array $params = null)
+	{
+		$this->checkTransaction();
+		if($params) {
+			$this->transaction->fill($params);
+		}
+		$this->transaction->status	= IranPaymentTransaction::T_CANCELED;
+		$this->transaction->save();
+	}
+
+	protected function checkTransaction() {
+		if(!$this->transaction || !$this->transaction instanceOf IranPaymentTransaction) {
+			throw new TransactionNotFoundException;
+		}
+	}
+
+	public function getTransactionStatusText() {
+		//@TODO::add translation
+		switch($this->transaction->status) {
+			case IranPaymentTransaction::T_INIT:
+				return 'ایجاد شده';
+			case IranPaymentTransaction::T_SUCCEED:
+				return 'موفق';
+			case IranPaymentTransaction::T_FAILED:
+				return 'ناموفق';
+			case IranPaymentTransaction::T_PENDING:
+				return 'درجریان';
+			case IranPaymentTransaction::T_VERIFY_PENDING:
+				return 'در انتظار تایید';
+			case IranPaymentTransaction::T_PAID_BACK:
+				return 'برگشت وجه';
+			case IranPaymentTransaction::T_CANCELED:
+				return 'انصراف';
+			default:
+				return '';
+		}
 	}
 
 	protected function callbackURL()
 	{
 		return Helpers::urlQueryBuilder($this->getCallbackUrl(), [
-			'transaction' => $this->getTransactionCode()
+			config('iranpayment.transaction_query_param') => $this->getTransactionCode()
 		]);
 	}
 }

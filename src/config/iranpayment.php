@@ -74,4 +74,6 @@ return [
 		// 'callback-url'	=> 'http://example.com/payments/payir/callback',
 	],
 
+	'transaction_query_param' => 'tc'
+
 ];

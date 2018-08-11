@@ -4,9 +4,10 @@ namespace Dena\IranPayment\Providers\PayIr;
 
 use Dena\IranPayment\Exceptions\InvalidDataException;
 
-use Dena\IranPayment\GatewayAbstract;
+use Dena\IranPayment\Providers\BaseProvider;
 
 use Dena\IranPayment\Helpers\Currency;
+use Dena\IranPayment\Providers\ProviderInterface;
 
 use Log;
 use Config;
@@ -14,7 +15,7 @@ use Exception;
 use SoapFault;
 use SoapClient;
 
-class PayIr extends GatewayAbstract
+class PayIr extends BaseProvider implements ProviderInterface
 {
 	protected $timeout;
 	protected $callback_url;
@@ -27,7 +28,7 @@ class PayIr extends GatewayAbstract
 		$this->setDefaults();
 	}
 
-	public function getGateway()
+	public function getName()
 	{
 		return 'pay.ir';
 	}
@@ -109,7 +110,7 @@ class PayIr extends GatewayAbstract
 	{
 		$this->prepareAmount();
 
-		if (!isset($this->request->transId, $this->request->status) {
+		if (!isset($this->request->transId, $this->request->status)) {
 			$e = new ZarinpalException(-11);
 			$this->setDescription($e->getMessage());
 			$this->transactionFailed();
