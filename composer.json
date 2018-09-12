@@ -24,9 +24,9 @@
 	"minimum-stability": "dev",
 	"require": {
 		"php": ">=5.5.0",
-		"illuminate/support": "5.2.* || 5.3.* || 5.4.* || 5.5.*",
-		"illuminate/database": "5.2.* || 5.3.* || 5.4.* || 5.5.*",
-		"vinkla/hashids": "^3.1"
+		"illuminate/support": ">=5.2.0",
+		"illuminate/database": ">=5.2.0",
+		"vinkla/hashids": "^5.1"
 	},
 	"autoload": {
 		"psr-4": {
