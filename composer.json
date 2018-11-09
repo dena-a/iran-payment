@@ -18,7 +18,10 @@
 	"authors": [
 		{
 			"name": "Dena Ajdari",
-			"email": "dena.ajdari@gmail.com"
+			"homepage": "https://github.com/dena-a",
+		}, {
+			"name": "YekNava",
+			"homepage": "https://github.com/yeknava",
 		}
 	],
 	"minimum-stability": "dev",
