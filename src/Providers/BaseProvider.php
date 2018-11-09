@@ -64,6 +64,23 @@ abstract class BaseProvider
 		return $this;
 	}
 
+	public function addExtra($val, $key = null)
+	{
+		if(is_null($this->extra)) {
+			$this->extra = [];
+		}
+		if(is_array($this->extra)) {
+			if(!is_null($key)) {
+				$this->extra[$key] = $val;
+			} else {
+				$this->extra[] = $val;
+			}
+		} else {
+			throw new \Exception('addExtra method only works when extra field is an array');
+		}
+		return $this;
+	}
+
 	public function getExtra()
 	{
 		return $this->extra;
@@ -118,6 +135,7 @@ abstract class BaseProvider
 				$this->transaction = IranPaymentTransaction::where('transaction_code', $transaction)->first();
 			}
 		}
+		$this->fillAllFields();
 		return $this;
 	}
 
@@ -170,6 +188,19 @@ abstract class BaseProvider
 		return $this->callback_url;
 	}
 
+	protected function fillAllFields() {
+		if($this->transaction) {
+			$this->currency = $this->transaction->currency;
+			$this->callback_url = $this->transaction->callback_url;
+			$this->transaction_code = $this->transaction->transaction_code;
+			$this->card_number = $this->transaction->card_number;
+			$this->reference_number = $this->transaction->reference_number;
+			$this->tracking_code = $this->transaction->tracking_code;
+			$this->description = $this->transaction->description;
+			$this->extra = $this->transaction->extra;
+		}
+	}
+
 	public function ready()
 	{
 		if ($this->amount <= 0) {
@@ -188,14 +219,18 @@ abstract class BaseProvider
 
 	public function verify($transaction = null)
 	{
-		if(!$transaction) {
-			if (isset($request->transaction)) {
-				$transaction = $request->transaction;
-			} else {
-				throw new InvalidRequestException;
+		if($transaction) {
+			$this->setTransaction($transaction);
+		} else {
+			if(!$this->transaction) {
+				if (isset($request->transaction)) {
+					$this->setTransaction($request->transaction);
+				} else {
+					throw new InvalidRequestException;
+				}
 			}
 		}
-		$this->setTransaction($transaction);
+		
 		$this->setCardNumber($this->transaction->card_number);
 		$this->setReferenceNumber($this->transaction->reference_number);
 		$this->setTrackingCode($this->transaction->tracking_code);
@@ -230,7 +265,7 @@ abstract class BaseProvider
 				'amount'		=> $this->amount,
 				'currency'		=> $this->currency,
 				'gateway'		=> $this->getName(),
-				'extra'			=> $this->getExtra(),
+				'extra'			=> is_array($this->getExtra()) ? json_encode($this->getExtra()) : $this->getExtra(),
 			]);
 			$this->transaction->status	= IranPaymentTransaction::T_INIT;
 			$this->transaction->user_id	= isset($this->user_id) ? $this->user_id : null; // $this->user_id ?? null
