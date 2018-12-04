@@ -59,18 +59,6 @@ class IranPayment
 	private function setDefaults()
 	{
 		$this->setGateway(config('iranpayment.default'));
-		$this->setHashidsConfig();
-	}
-
-	private function setHashidsConfig()
-	{
-		if (!config('hashids.connections.iranpayment', false)) {
-			config(['hashids.connections.iranpayment' => [
-				'salt'		=> config('iranpayment.hashids.salt' ,'your-salt-string'),
-				'length'	=> config('iranpayment.hashids.length' ,16),
-				'alphabet'	=> config('iranpayment.hashids.alphabet' ,'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'),
-			]]);
-		}
 	}
 
 	public function setGateway($gateway)
@@ -120,32 +108,7 @@ class IranPayment
 		}
 		return $this;
 	}
-
-	// public function verify()
-	// {
-	// 	$request = app('request');
-	// 	if (!isset($request->transaction)) {
-	// 		throw new InvalidRequestException;
-	// 	}
-	// 	$transaction_id	= $request->transaction;
-	// 	$transaction_id	= app('hashids')->connection('iranpayment')->decode($transaction_id);
-	// 	if (!isset($transaction_id[0])) {
-	// 		throw new InvalidRequestException;
-	// 	}
-	// 	$transaction_id	= $transaction_id[0];
-	// 	$transaction_id	= intval($transaction_id);
-	// 	$transaction	= IranPaymentTransaction::find($transaction_id);
-	// 	if (!$transaction) {
-	// 		throw new TransactionNotFoundException;
-	// 	}
-
-	// 	$this->setGateway($transaction->gateway);
-	// 	$this->build();
-	// 	$this->gateway->setTransaction($transaction);
-
-	// 	return $this->gateway->verify();
-	// }
-
+	
 	/**
 	 * Fetch all user transaction
 	 *

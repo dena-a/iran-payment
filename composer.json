@@ -29,7 +29,7 @@
 		"php": ">=5.5.0",
 		"illuminate/support": ">=5.2.0",
 		"illuminate/database": ">=5.2.0",
-		"vinkla/hashids": "^5.1"
+        "hashids/hashids": "^3.0"
 	},
 	"autoload": {
 		"psr-4": {

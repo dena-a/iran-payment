@@ -15,8 +15,8 @@ use Dena\IranPayment\Providers\Saman\Saman;
 use Dena\IranPayment\Providers\Zarinpal\Zarinpal;
 
 use Carbon\Carbon;
-use Vinkla\Hashids\Facades\Hashids;
 use Dena\IranPayment\Helpers\Helpers;
+use Dena\IranPayment\Helpers\Hashids;
 
 abstract class BaseProvider
 {
@@ -270,7 +270,7 @@ abstract class BaseProvider
 			$this->transaction->status	= IranPaymentTransaction::T_INIT;
 			$this->transaction->user_id	= isset($this->user_id) ? $this->user_id : null; // $this->user_id ?? null
 			$this->transaction->save();
-			$this->transaction->transaction_code = app('hashids')->connection('iranpayment')->encode($this->transaction->id);
+			$this->transaction->transaction_code = Hashids::encode($this->transaction->id);
 			$this->transaction->save();
 		});
 	}

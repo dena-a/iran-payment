@@ -4,13 +4,15 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use Dena\IranPayment\Providers\BaseProvider;
+use Dena\IranPayment\Traits\IranPaymentDatabase;
 
 class CreateIranPaymentTransactionsTable extends Migration
 {
-
+	use IranPaymentDatabaseabase;
+	
 	public function up()
 	{
-		Schema::create('iranpayment_transactions', function (Blueprint $table) {
+		Schema::create($this->getTable(), function (Blueprint $table) {
 			$table->bigIncrements('id');
 			$table->integer('user_id')->unsigned()->nullable()->index();
 			$table->string('transaction_code')->nullable()->index();
@@ -30,6 +32,6 @@ class CreateIranPaymentTransactionsTable extends Migration
 
 	public function down()
 	{
-		Schema::dropIfExists('iranpayment_transactions');
+		Schema::dropIfExists($this->getTable());
 	}
 }

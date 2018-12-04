@@ -25,6 +25,7 @@ class PayIr extends BaseProvider implements ProviderInterface
 	public function __construct()
 	{
 		parent::__construct();
+		
 		$this->setDefaults();
 	}
 

@@ -4,12 +4,15 @@ namespace Dena\IranPayment\Helpers;
 
 class Currency
 {
-	public static function TomanToRial($rial)
+	const IRR	= 'IRR';
+	const IRT	= 'IRT';
+
+	public static function TomanToRial($rial): int
 	{
 		return abs(intval($rial) * 10);
 	}
 
-	public static function RialToToman($toman)
+	public static function RialToToman($toman): int
 	{
 		$toman = abs(intval($toman));
 		return ($toman == 0) ? 0 : intval($toman / 10);

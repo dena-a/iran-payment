@@ -4,8 +4,12 @@ namespace Dena\IranPayment\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+use Dena\IranPayment\Traits\IranPaymentDatabase as DatabaseTrait;
+
 class IranPaymentTransaction extends Model
 {
+	use DatabaseTrait;
+
 	const T_INIT			= 0;
 	const T_SUCCEED			= 1;
 	const T_FAILED			= 2;
@@ -13,10 +17,6 @@ class IranPaymentTransaction extends Model
 	const T_VERIFY_PENDING	= 4;
 	const T_PAID_BACK		= 5;
 	const T_CANCELED		= 6;
-
-	protected $table		= 'iranpayment_transactions';
-
-	protected $guarded		= ['id'];
 
 	protected $fillable		= [
 		'transaction_code',
@@ -32,5 +32,13 @@ class IranPaymentTransaction extends Model
 
 	protected $hidden	= [
 	];
+
+	/**
+     * Get all of the owning payable models.
+     */
+    public function payable()
+    {
+        return $this->morphedByMany();
+    }
 
 }
