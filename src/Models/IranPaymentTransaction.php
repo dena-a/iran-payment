@@ -38,7 +38,7 @@ class IranPaymentTransaction extends Model
      */
     public function payable()
     {
-        return $this->morphedByMany();
+        return $this->morphTo();
     }
 
 }

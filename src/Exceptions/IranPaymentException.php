@@ -2,4 +2,9 @@
 
 namespace Dena\IranPayment\Exceptions;
 
-class IranPaymentException extends \Exception {}
+use Exception;
+
+class IranPaymentException extends Exception
+{
+    //
+}
