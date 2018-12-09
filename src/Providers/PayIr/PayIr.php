@@ -50,21 +50,22 @@ class PayIr extends BaseProvider implements ProviderInterface
 
 	private function prepareAmount()
 	{
-		$amount		= $this->getAmount();
-		$amount		= intval($amount);
-		if ($amount <= 0) {
-			throw new InvalidDataException(InvalidDataException::INVALID_AMOUNT);
-		}
 		$currency	= $this->getCurrency();
 		if (!in_array($currency, [parent::IRR, parent::IRT])) {
 			throw new InvalidDataException(InvalidDataException::INVALID_CURRENCY);
 		}
+
+		$amount		= $this->getAmount();
+		$amount		= intval($amount);
+
 		if ($currency == parent::IRT) {
 			$amount	= Currency::TomanToRial($amount);
 		}
+
 		if ($amount < 1000) {
 			throw new InvalidDataException(InvalidDataException::INVALID_AMOUNT);
 		}
+		
 		$this->prepared_amount	= $amount;
 	}
 
@@ -77,10 +78,19 @@ class PayIr extends BaseProvider implements ProviderInterface
 	{
 		$this->payPrepare();
 
-		$fields		= "api=$this->api&amount=$this->prepared_amount&redirect=".urlencode($this->callback_url)."&factorNumber=$this->factor_number";
+		// $fields		= "api=$this->api&amount=$this->prepared_amount&redirect=".urlencode($this->callback_url)."&factorNumber=$this->factor_number";
+		$fields = http_build_query([
+			'api'			=> $this->api,
+			'amount'		=> $this->prepared_amount,
+			'redirect'		=> urlencode($this->callback_url),
+			'factorNumber'	=> $this->factor_number,
+			'mobile'		=> $this->mobile,
+			'description'	=> $this->description,
+		]);
+
 		try {
 			$ch		= curl_init();
-			curl_setopt($ch, CURLOPT_URL, 'https://pay.ir/payment/send');
+			curl_setopt($ch, CURLOPT_URL, 'https://pay.ir/pg/send');
 			curl_setopt($ch, CURLOPT_POSTFIELDS, $fields);
 			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);

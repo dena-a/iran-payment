@@ -9,10 +9,8 @@ use Dena\IranPayment\Exceptions\TransactionNotFoundException;
 
 use Dena\IranPayment\Models\IranPaymentTransaction;
 
-use Dena\IranPayment\IranPayment;
-
-use Dena\IranPayment\Providers\Saman\Saman;
-use Dena\IranPayment\Providers\Zarinpal\Zarinpal;
+use Dena\IranPayment\Traits\UserData;
+use Dena\IranPayment\Traits\PaymentData;
 
 use Carbon\Carbon;
 use Dena\IranPayment\Helpers\Helpers;
@@ -20,12 +18,12 @@ use Dena\IranPayment\Helpers\Hashids;
 
 abstract class BaseProvider
 {
+	use UserData, PaymentData;
+
 	const IRR	= 'IRR';
 	const IRT	= 'IRT';
 
-	protected $amount;
 	protected $request;
-	protected $currency;
 	protected $callback_url;
 	protected $transaction_code;
 
@@ -153,28 +151,6 @@ abstract class BaseProvider
 	public function getUserId()
 	{
 		return $this->user_id;
-	}
-
-	public function setCurrency($currency)
-	{
-		$this->currency = strtoupper($currency);
-		return $this;
-	}
-
-	public function getCurrency()
-	{
-		return $this->currency;
-	}
-
-	public function setAmount($amount)
-	{
-		$this->amount = $amount;
-		return $this;
-	}
-
-	public function getAmount()
-	{
-		return $this->amount;
 	}
 
 	public function setCallbackUrl($callback_url)
