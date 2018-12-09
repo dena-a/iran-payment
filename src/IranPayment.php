@@ -2,11 +2,7 @@
 
 namespace Dena\IranPayment;
 
-use Dena\IranPayment\Exceptions\RetryException;
-use Dena\IranPayment\Exceptions\SucceedRetryException;
-use Dena\IranPayment\Exceptions\InvalidRequestException;
 use Dena\IranPayment\Exceptions\GatewayNotFoundException;
-use Dena\IranPayment\Exceptions\TransactionNotFoundException;
 use Dena\IranPayment\Exceptions\OnlyWorkOnDebugModeException;
 
 use Dena\IranPayment\Providers\PayIr\PayIr;
@@ -14,7 +10,6 @@ use Dena\IranPayment\Providers\Saman\Saman;
 use Dena\IranPayment\Providers\Zarinpal\Zarinpal;
 use Dena\IranPayment\Providers\Test\TestGateway;
 
-use Dena\IranPayment\Models\IranPaymentTransaction;
 use Dena\IranPayment\Providers\ProviderInterface;
 
 class IranPayment
@@ -29,11 +24,10 @@ class IranPayment
 	const CURRENCY_IRT	= 'IRT';
 
 	protected $gateway;
-	protected $extended;
+	protected $extended = false;
 
 	public function __construct($gateway = null)
 	{
-		$this->extended = false;
 		$this->setDefaults();
 		if ($gateway) {
 			$this->setGateway($gateway);
@@ -58,7 +52,7 @@ class IranPayment
 
 	private function setDefaults()
 	{
-		$this->setGateway(config('iranpayment.default'));
+		$this->setGateway(config('iranpayment.default', 'saman'));
 	}
 
 	public function setGateway($gateway)
@@ -109,17 +103,6 @@ class IranPayment
 		return $this;
 	}
 	
-	/**
-	 * Fetch all user transaction
-	 *
-	 * @param [integer] $userId
-	 * @return IranPaymentTransaction object
-	 */
-	public static function userTransactions($userId)
-	{
-		return IranPaymentTransaction::where('user_id', $userId);
-	}
-
 	public function getSupportedGateways()
 	{
 		return [
