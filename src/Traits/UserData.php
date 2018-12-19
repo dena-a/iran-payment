@@ -35,32 +35,32 @@ trait UserData
     }
 
     /**
-     * User Description variable
+     * Description variable
      *
      * @var string
      */
-    protected $user_description = null;
+    protected $description = null;
     
     /**
      * Set User Description function
      *
-     * @param string $user_description
+     * @param string $description
      * @return void
      */
-    public function setUserDescription(string $user_description)
+    public function setDescription(string $description)
     {
-        $this->user_description = $user_description;
+        $this->description = $description;
 
         return $this;
     }
 
     /**
-     * Get User Description function
+     * Get Description function
      *
      * @return void
      */
-    public function getUserDescription()
+    public function getDescription()
     {
-        return $this->user_description;
+        return $this->description;
     }
 }

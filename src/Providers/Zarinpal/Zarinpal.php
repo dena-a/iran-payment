@@ -8,14 +8,14 @@ use Dena\IranPayment\Exceptions\PayBackNotPossibleException;
 use Dena\IranPayment\Providers\BaseProvider;
 
 use Dena\IranPayment\Helpers\Currency;
-use Dena\IranPayment\Providers\ProviderInterface;
+use Dena\IranPayment\Providers\GatewayInterface;
 
 use Log;
 use Exception;
 use SoapFault;
 use SoapClient;
 
-class Zarinpal extends BaseProvider implements ProviderInterface
+class Zarinpal extends BaseProvider implements GatewayInterface
 {
 	private $server_url;
 	private $prepared_amount;
@@ -80,10 +80,10 @@ class Zarinpal extends BaseProvider implements ProviderInterface
 			throw new InvalidDataException(InvalidDataException::INVALID_AMOUNT);
 		}
 		$currency	= $this->getCurrency();
-		if (!in_array($currency, [parent::IRR, parent::IRT])) {
+		if (!in_array($currency, [Currency::IRR, Currency::IRT])) {
 			throw new InvalidDataException(InvalidDataException::INVALID_CURRENCY);
 		}
-		if ($currency == parent::IRR) {
+		if ($currency == Currency::IRR) {
 			$amount	= Currency::RialToToman($amount);
 		}
 		if ($amount < 100) {
@@ -103,7 +103,7 @@ class Zarinpal extends BaseProvider implements ProviderInterface
 
 		$fields = [
 			'MerchantID'	=> config('iranpayment.zarinpal.merchant-id'),
-			'CallbackURL'	=> $this->callbackURL(),
+			'CallbackURL'	=> $this->getCallbackUrl(),
 			'Description'	=> $this->zp_description,
 			'Email'			=> $this->zp_email,
 			'Mobile'		=> $this->zp_mobile,

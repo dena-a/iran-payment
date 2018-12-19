@@ -25,7 +25,8 @@ return [
 	| You can use setCallbackUrl method to set a custom callback url for a payment.
 	| You may set a specific callback url for each gateways in their config with callback-url parameter.
 	*/
-	'callback-url' => 'http://example.com/payments/callback',
+	// 'callback-url' => 'http://example.com/payments/callback',
+	'callback-url' => url('/payments/callback'),
 
 	/*
 	|--------------------------------------------------------------------------

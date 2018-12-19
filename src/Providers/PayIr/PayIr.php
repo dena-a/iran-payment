@@ -5,23 +5,33 @@ namespace Dena\IranPayment\Providers\PayIr;
 use Dena\IranPayment\Exceptions\InvalidDataException;
 
 use Dena\IranPayment\Providers\BaseProvider;
+use Dena\IranPayment\Providers\GatewayInterface;
 
 use Dena\IranPayment\Helpers\Currency;
-use Dena\IranPayment\Providers\ProviderInterface;
 
-use Log;
-use Config;
 use Exception;
-use SoapFault;
-use SoapClient;
+use Dena\IranPayment\Exceptions\GatewayException;
+use Dena\IranPayment\Exceptions\InvalidRequestException;
 
-class PayIr extends BaseProvider implements ProviderInterface
+class PayIr extends BaseProvider implements GatewayInterface
 {
-	protected $timeout;
-	protected $callback_url;
+	/**
+	 * API variable
+	 *
+	 * @var string
+	 */
 	protected $api;
-	protected $factor_number	= null;
 
+	/**
+	 * Factor Number variable
+	 *
+	 * @var [type]
+	 */
+	protected $factor_number = null;
+
+	/**
+	 * Constructor function
+	 */
 	public function __construct()
 	{
 		parent::__construct();
@@ -29,160 +39,226 @@ class PayIr extends BaseProvider implements ProviderInterface
 		$this->setDefaults();
 	}
 
-	public function getName()
+	/**
+	 * Gateway Name function
+	 *
+	 * @return string
+	 */
+	public function gatewayName()
 	{
 		return 'pay.ir';
 	}
 
+	/**
+	 * Set Defaults function
+	 *
+	 * @return void
+	 */
 	private function setDefaults()
 	{
-		$this->api					= config('iranpayment.payir.merchant-id', 'test');
-		$this->connection_timeout	= config('iranpayment.timeout', 30);
+		$this->setGatewayCurrency(Currency::IRR);
+		$this->setApi(config('iranpayment.payir.merchant-id'));
 		$this->setCallbackUrl(config('iranpayment.payir.callback-url', config('iranpayment.callback-url')));
 	}
 
-	public function setParams(array $params)
+	/**
+	 * Set API function
+	 *
+	 * @param string $api
+	 * @return void
+	 */
+	public function setApi(string $api)
 	{
-		if (!empty($params['factor_number'])) {
-			$this->factor_number	= $params['factor_number'];
-		}
+		$this->api = $api;
+
+		return $this;
 	}
 
-	private function prepareAmount()
+	/**
+	 * Set Factor Number function
+	 *
+	 * @param $factor_number
+	 * @return void
+	 */
+	public function setFactorNumber($factor_number)
 	{
-		$currency	= $this->getCurrency();
-		if (!in_array($currency, [parent::IRR, parent::IRT])) {
-			throw new InvalidDataException(InvalidDataException::INVALID_CURRENCY);
-		}
+		$this->factor_number = $factor_number;
 
-		$amount		= $this->getAmount();
-		$amount		= intval($amount);
-
-		if ($currency == parent::IRT) {
-			$amount	= Currency::TomanToRial($amount);
-		}
-
-		if ($amount < 1000) {
-			throw new InvalidDataException(InvalidDataException::INVALID_AMOUNT);
-		}
-		
-		$this->prepared_amount	= $amount;
+		return $this;
 	}
 
-	public function payPrepare()
-	{	
-		$this->prepareAmount();
+	/**
+	 * Get Factor Number function
+	 *
+	 * @return void
+	 */
+	public function getFactorNumber()
+	{
+		return $this->factor_number;
 	}
 
-	protected function payRequest()
+	public function gatewayPayPrepare()
 	{
-		$this->payPrepare();
+		if ($this->getPreparedAmount() < 1000) {
+			throw InvalidDataException::invalidAmount();
+		}
 
-		// $fields		= "api=$this->api&amount=$this->prepared_amount&redirect=".urlencode($this->callback_url)."&factorNumber=$this->factor_number";
+		$this->setFactorNumber($this->transaction->code);
+	}
+
+	public function gatewayPay()
+	{
 		$fields = http_build_query([
 			'api'			=> $this->api,
-			'amount'		=> $this->prepared_amount,
-			'redirect'		=> urlencode($this->callback_url),
-			'factorNumber'	=> $this->factor_number,
-			'mobile'		=> $this->mobile,
-			'description'	=> $this->description,
+			'amount'		=> $this->getPreparedAmount(),
+			'redirect'		=> urlencode($this->getCallbackUrl()),
+			'factorNumber'	=> $this->getFactorNumber(),
+			'mobile'		=> $this->getMobile(),
+			'description'	=> $this->getDescription(),
 		]);
 
 		try {
-			$ch		= curl_init();
+			$ch = curl_init();
 			curl_setopt($ch, CURLOPT_URL, 'https://pay.ir/pg/send');
 			curl_setopt($ch, CURLOPT_POSTFIELDS, $fields);
-			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10); 
-			curl_setopt($ch, CURLOPT_TIMEOUT, $this->connection_timeout);
+			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeout);
+			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->connection_timeout);
 			$result	= curl_exec($ch);
+			$ch_error = curl_error($ch);
 			curl_close($ch);
+
+			if ($ch_error) {
+				$this->transactionFailed($ch_error);
+				throw GatewayException::connectionProblem();
+			}
+
 			$result = json_decode($result);
-		} catch(Exception $e) {
-			$this->setDescription($e->getMessage());
-			$this->transactionFailed();
-			throw $e;
+		} catch(Exception $ex) {
+			$this->transactionFailed($ex->getMessage());
+			throw $ex;
 		}
 
-		if(!isset($result->status)) {
-			$this->setDescription($result->errorMessage);
-			$this->transactionFailed();
-			throw new Exception($result->errorMessage, 400);
+		if(!isset($result->token)) {
+			if (isset($result->errorCode, $result->errorMessage)) {
+				$this->transactionFailed($result->errorMessage);
+				throw PayIrException::pay($result->errorCode);
+			}
+
+			$this->transactionFailed(json_encode($result));
+			throw GatewayException::unknownResponse();
 		}
 
-		$this->setReferenceNumber($result->transId);
 		$this->transactionUpdate([
-			'reference_number'	=> $result->transId
+			'reference_number'	=> $result->token
 		]);
 	}
 
-	protected function verifyPrepare()
+	/**
+	 * Pay Link function
+	 *
+	 * @return void
+	 */
+	private function payLink()
 	{
-		$this->prepareAmount();
+		$reference_number = $this->getReferenceNumber();
+		return "https://pay.ir/pg/$reference_number";
+	}
 
-		if (!isset($this->request->transId, $this->request->status)) {
-			$e = new ZarinpalException(-11);
+	/**
+	 * Pay View function
+	 *
+	 * @return void
+	 */
+	public function gatewayPayView()
+	{
+		return view('iranpayment.pages.payir', [
+			'transaction_code'	=> $this->getTransactionCode(),
+			'bank_url'			=> $this->payLink(),
+		]);
+	}
+
+	/**
+	 * Pay Redirect function
+	 *
+	 * @return void
+	 */
+	public function gatewayPayRedirect()
+	{
+		return redirect($this->payLink());
+	}
+
+	public function gatewayVerifyPrepare()
+	{
+		//
+	}
+
+	public function gatewayVerify()
+	{
+		if (!isset($this->request->token, $this->request->status)) {
+			$ex = InvalidRequestException::notFound();
 			$this->setDescription($e->getMessage());
 			$this->transactionFailed();
-			throw $e;
+			throw $ex;
 		}
 
 		$this->transactionVerifyPending();
-	}
 
-	protected function verifyRequest()
-	{
-		$this->verifyPrepare();
-
-		$payload	= $this->getReferenceNumber();
-		$fields		= "api=$this->api&transId=$payload";
-		try {
-			$ch		= curl_init();
-			curl_setopt($ch, CURLOPT_URL, 'https://pay.ir/payment/verify');
-			curl_setopt($ch, CURLOPT_POSTFIELDS, $fields);
-			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10); 
-			curl_setopt($ch, CURLOPT_TIMEOUT, $this->connection_timeout);
-			$result	= curl_exec($ch);
-			curl_close($ch);
-			$result = json_decode($result);
-		} catch(Exception $e){
-			$this->setDescription($result->errorMessage);
-			$this->transactionFailed();
-			throw new Exception($result->errorMessage, 400);
-		}
-
-		if (!isset($result->status) || !$result->status) {
-			$this->setDescription($result->errorMessage);
-			$this->transactionFailed();
-			throw new Exception($result->errorMessage, 400);
-		} elseif ($result->amount != $amount) {
-			$this->setDescription($result->errorMessage);
-			$this->transactionFailed();
-			throw new Exception($result->errorMessage, 400);
-		}
-
-		$this->transactionSucceed();
-	}
-
-	public function redirectView()
-	{
-		$this->transactionPending();
-
-		$reference_number = $this->getReferenceNumber();
-		$payment_url = "https://pay.ir/payment/gateway/$reference_number";
-
-		return view('iranpayment.pages.payir', [
-			'transaction_code'	=> $this->getTransactionCode(),
-			'bank_url'			=> $payment_url,
+		$token = $this->getReferenceNumber();
+		$fields = http_build_query([
+			'api'	=> $this->api,
+			'token'	=> $token,
 		]);
 
-		// return redirect("https://pay.ir/payment/gateway/$reference_number");
+		try {
+			$ch		= curl_init();
+			curl_setopt($ch, CURLOPT_URL, 'https://pay.ir/pg/verify');
+			curl_setopt($ch, CURLOPT_POSTFIELDS, $fields);
+			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeout);
+			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->connection_timeout); 
+			$result	= curl_exec($ch);
+			$ch_error = curl_error($ch);
+			curl_close($ch);
+
+			if ($ch_error) {
+				$this->transactionFailed($ch_error);
+				throw GatewayException::connectionProblem();
+			}
+
+			$result = json_decode($result);
+		} catch(Exception $ex) {
+			$this->transactionFailed($ex->getMessage());
+			throw $ex;
+		}
+
+		dd($result);
+
+		if(!isset($result->amount, $result->transId, $result->cardNumber)) {
+			if (isset($result->errorCode, $result->errorMessage)) {
+				$this->transactionFailed($result->errorMessage);
+				throw PayIrException::pay($result->errorCode);
+			}
+
+			$this->transactionFailed(json_encode($result));
+			throw GatewayException::unknownResponse();
+		}
+
+		if ($result->amount !== $this->getPreparedAmount()) {
+			$gwex = GatewayException::inconsistentResponse();
+			$this->transactionFailed($gwex->getMessage());
+			throw $gwex;
+		}
 	}
 
-	public function payBack()
+	/**
+	 * Pay Back function
+	 *
+	 * @return void
+	 */
+	public function gatewayPayBack()
 	{
 		throw new PayBackNotPossibleException;
 	}

@@ -4,9 +4,9 @@ namespace Dena\IranPayment\Providers\Test;
 
 use Dena\IranPayment\Models\IranPaymentTransaction;
 use Dena\IranPayment\Providers\BaseProvider;
-use Dena\IranPayment\Providers\ProviderInterface;
+use Dena\IranPayment\Providers\GatewayInterface;
 
-class TestGateway extends BaseProvider implements ProviderInterface {
+class TestGateway extends BaseProvider implements GatewayInterface {
     
     public function getName() {
         return 'test-gateway';

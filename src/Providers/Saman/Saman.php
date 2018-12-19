@@ -8,14 +8,14 @@ use Dena\IranPayment\Exceptions\PayBackNotPossibleException;
 use Dena\IranPayment\Providers\BaseProvider;
 
 use Dena\IranPayment\Helpers\Currency;
-use Dena\IranPayment\Providers\ProviderInterface;
+use Dena\IranPayment\Providers\GatewayInterface;
 
 use Log;
 use Exception;
 use SoapFault;
 use SoapClient;
 
-class Saman extends BaseProvider implements ProviderInterface
+class Saman extends BaseProvider implements GatewayInterface
 {
 	private $token;
 	private $token_url;
@@ -55,10 +55,10 @@ class Saman extends BaseProvider implements ProviderInterface
 			throw new InvalidDataException(InvalidDataException::INVALID_AMOUNT);
 		}
 		$currency	= $this->getCurrency();
-		if (!in_array($currency, [parent::IRR, parent::IRT])) {
+		if (!in_array($currency, [Currency::IRR, Currency::IRT])) {
 			throw new InvalidDataException(InvalidDataException::INVALID_CURRENCY);
 		}
-		if ($currency == parent::IRT) {
+		if ($currency == Currency::IRT) {
 			$amount	= Currency::TomanToRial($amount);
 		}
 		if ($amount < 100) {
@@ -201,7 +201,7 @@ class Saman extends BaseProvider implements ProviderInterface
 			'transaction_code'	=> $this->getTransactionCode(),
 			'token'				=> $this->token,
 			'bank_url'			=> $this->payment_url,
-			'redirect_url'		=> $this->callbackURL(),
+			'redirect_url'		=> $this->getCallbackUrl(),
 		]);
 	}
 

@@ -3,9 +3,9 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-use Dena\IranPayment\Providers\BaseProvider;
 use Dena\IranPayment\Traits\IranPaymentDatabase;
 use Dena\IranPayment\Models\IranPaymentTransaction;
+use Dena\IranPayment\Helpers\Currency;
 
 class CreateIranPaymentTransactionsTable extends Migration
 {
@@ -15,19 +15,19 @@ class CreateIranPaymentTransactionsTable extends Migration
 	{
 		Schema::create($this->getTable(), function (Blueprint $table) {
 			$table->bigIncrements('id');
+			$table->string('code')->nullable()->index();
 			$table->unsignedBigInteger('payable_id')->nullable();
 			$table->string('payable_type')->nullable();
-			$table->string('transaction_code')->nullable()->index();
-			$table->string('gateway', 16)->index();
+			$table->string('gateway')->index();
 			$table->unsignedDecimal('amount', 16, 4);
-			$table->string('currency', 3)->default(BaseProvider::IRR);
+			$table->string('currency')->default(Currency::IRR);
 			$table->unsignedTinyInteger('status')->default(IranPaymentTransaction::T_INIT);
 			$table->string('tracking_code')->nullable()->index();
 			$table->string('reference_number')->nullable()->index();
 			$table->string('card_number')->nullable();
 			$table->string('mobile')->nullable();
-			$table->string('user_description')->nullable();
-			$table->text('description')->nullable();
+			$table->string('description')->nullable();
+			$table->text('errors')->nullable();
 			$table->text('extra')->nullable();
 			$table->timestamp('paid_at')->nullable();
 			$table->timestamps();

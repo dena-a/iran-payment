@@ -28,7 +28,7 @@ class PayIrException extends GatewayException
         'failed'    => 'تراکنش با خطا مواجه شد',
     ];
 
-    public static function send($error_code)
+    public static function pay($error_code)
     {
         $error_code = isset(self::$send_errors[$error_code]) ? $error_code : 'failed';
         return new self(self::$send_errors[$error_code], $error_code);

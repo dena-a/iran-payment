@@ -68,9 +68,9 @@ $statusText = $payment->getTransactionStatusText();
 ### Extends
 ```php
 use Dena\IranPayment\Providers\BaseProvider;
-use Dena\IranPayment\Providers\ProviderInterface;
+use Dena\IranPayment\Providers\GatewayInterface;
 
-class NewGateway extends BaseProvider implements ProviderInterface {
+class NewGateway extends BaseProvider implements GatewayInterface {
     
     public function getName() {
         return 'new-gateway';

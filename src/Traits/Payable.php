@@ -9,21 +9,21 @@ use Dena\IranPayment\IranPayment;
 trait Payable
 {
     /**
-     * Payment Amount variable
+     * IranPayment Amount variable
      *
      * @var integer
      */
-    private $payment_amount;
+    private $iranpayment_amount;
 
     /**
-     * Payment Amount Model Field Name variable
+     * IranPayment Amount Model Field Name variable
      * 
-     * There is no need to call setPaymentAmount function
+     * There is no need to call setIranPaymentAmount function
      * if this variable has been set in model.
      *
      * @var string
      */
-    // private $payment_amount_field;
+    // private $iranpayment_amount_field;
 
     /**
      * Get all of the payment's transactions.
@@ -39,9 +39,9 @@ trait Payable
      * @param integer $amount
      * @return void
      */
-    protected function setPaymentAmount(int $amount)
+    protected function setIranPaymentAmount(int $amount)
     {
-        $this->payment_amount = $amount;
+        $this->iranpayment_amount = $amount;
         return $this;
     }
 
@@ -52,12 +52,11 @@ trait Payable
      */
     public function pay()
     {
-        if (!isset($this->amount) && isset($this->payment_amount_field)) {
-            $payment_amount_field = $this->payment_amount_field;
-            $this->payment_amount = $this->$payment_amount_field;
+        if (!isset($this->iranpayment_amount) && isset($this->iranpayment_amount_field)) {
+            $iranpayment_amount_field = $this->iranpayment_amount_field;
+            $this->iranpayment_amount = $this->$iranpayment_amount_field;
         }
 
-        $payment = new IranPayment;
-		return $payment->build()->setAmount($this->payment_amount)->ready();
+		return (new IranPayment)->build()->setAmount($this->iranpayment_amount)->setPayable($this)->ready();
     }
 }
