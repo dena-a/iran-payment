@@ -23,7 +23,7 @@ trait Payable
      *
      * @var string
      */
-    // private $iranpayment_amount_field;
+    // protected $iranpayment_amount_field;
 
     /**
      * Get all of the payment's transactions.
@@ -50,13 +50,13 @@ trait Payable
      *
      * @return void
      */
-    public function pay()
+    public function pay($gateway = null)
     {
         if (!isset($this->iranpayment_amount) && isset($this->iranpayment_amount_field)) {
             $iranpayment_amount_field = $this->iranpayment_amount_field;
             $this->iranpayment_amount = $this->$iranpayment_amount_field;
         }
 
-		return (new IranPayment)->build()->setAmount($this->iranpayment_amount)->setPayable($this)->ready();
+        return (new IranPayment($gateway))->build()->setAmount($this->iranpayment_amount)->setPayable($this)->ready();
     }
 }

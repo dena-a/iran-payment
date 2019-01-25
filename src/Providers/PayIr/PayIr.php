@@ -2,16 +2,15 @@
 
 namespace Dena\IranPayment\Providers\PayIr;
 
+use Exception;
+use Dena\IranPayment\Exceptions\GatewayException;
+use Dena\IranPayment\Exceptions\InvalidRequestException;
 use Dena\IranPayment\Exceptions\InvalidDataException;
 
 use Dena\IranPayment\Providers\BaseProvider;
 use Dena\IranPayment\Providers\GatewayInterface;
 
 use Dena\IranPayment\Helpers\Currency;
-
-use Exception;
-use Dena\IranPayment\Exceptions\GatewayException;
-use Dena\IranPayment\Exceptions\InvalidRequestException;
 
 class PayIr extends BaseProvider implements GatewayInterface
 {
@@ -35,7 +34,6 @@ class PayIr extends BaseProvider implements GatewayInterface
 	public function __construct()
 	{
 		parent::__construct();
-		
 		$this->setDefaults();
 	}
 
@@ -234,12 +232,13 @@ class PayIr extends BaseProvider implements GatewayInterface
 			throw $ex;
 		}
 
+
 		dd($result);
 
 		if(!isset($result->amount, $result->transId, $result->cardNumber)) {
 			if (isset($result->errorCode, $result->errorMessage)) {
 				$this->transactionFailed($result->errorMessage);
-				throw PayIrException::pay($result->errorCode);
+				throw PayIrException::verify($result->errorCode);
 			}
 
 			$this->transactionFailed(json_encode($result));
@@ -247,10 +246,13 @@ class PayIr extends BaseProvider implements GatewayInterface
 		}
 
 		if ($result->amount !== $this->getPreparedAmount()) {
+			dd($result->amount, $this->getPreparedAmount());
 			$gwex = GatewayException::inconsistentResponse();
 			$this->transactionFailed($gwex->getMessage());
 			throw $gwex;
 		}
+
+		$this->transactionUpdate(['card_number' => $result->cardNumber]);
 	}
 
 	/**

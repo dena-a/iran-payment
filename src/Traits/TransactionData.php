@@ -10,6 +10,8 @@ use Dena\IranPayment\Models\IranPaymentTransaction;
 use Dena\IranPayment\Helpers\Hashids;
 use Dena\IranPayment\Helpers\Currency;
 
+use Carbon\Carbon;
+
 trait TransactionData
 {
     /**

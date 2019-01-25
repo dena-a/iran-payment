@@ -64,6 +64,7 @@ return [
 		'description'	=> 'payment description', // Required
 		'email'			=> null, // Optional : user_email@example.com
 		'mobile'		=> null, // Optional : 0912XXXYYZZ
+		'add_fees'		=> false,
 		// 'callback-url'	=> 'http://example.com/payments/zarinpal/callback',
 	],
 

@@ -16,7 +16,6 @@ use Dena\IranPayment\Traits\UserData;
 use Dena\IranPayment\Traits\PaymentData;
 use Dena\IranPayment\Traits\TransactionData;
 
-use Carbon\Carbon;
 use Dena\IranPayment\Helpers\Helpers;
 use Dena\IranPayment\Helpers\Currency;
 use Dena\IranPayment\Exceptions\GatewayException;
@@ -220,7 +219,7 @@ abstract class BaseProvider
 
 			$this->gatewayVerify();
 
-			$this->transaction->succeed();
+			$this->transactionSucceed();
 		} catch (Exception $ex) {
 			throw $ex;
 		}
