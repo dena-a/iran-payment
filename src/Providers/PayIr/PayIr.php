@@ -242,7 +242,7 @@ class PayIr extends BaseProvider implements GatewayInterface
 			throw GatewayException::unknownResponse();
 		}
 
-		if ($result->amount !== $this->getPreparedAmount()) {
+		if (intval($result->amount) != $this->getPreparedAmount()) {
 			$gwex = GatewayException::inconsistentResponse();
 			$this->transactionFailed($gwex->getMessage());
 			throw $gwex;
