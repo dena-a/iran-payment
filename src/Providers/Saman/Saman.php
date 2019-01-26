@@ -3,17 +3,19 @@
 namespace Dena\IranPayment\Providers\Saman;
 
 use Dena\IranPayment\Exceptions\InvalidDataException;
+use Dena\IranPayment\Exceptions\PayBackNotPossibleException;
 
-use Dena\IranPayment\GatewayAbstract;
+use Dena\IranPayment\Providers\BaseProvider;
 
 use Dena\IranPayment\Helpers\Currency;
+use Dena\IranPayment\Providers\GatewayInterface;
 
 use Log;
 use Exception;
 use SoapFault;
 use SoapClient;
 
-class Saman extends GatewayAbstract
+class Saman extends BaseProvider implements GatewayInterface
 {
 	private $token;
 	private $token_url;
@@ -29,7 +31,7 @@ class Saman extends GatewayAbstract
 		$this->setDefaults();
 	}
 
-	public function getGateway()
+	public function getName()
 	{
 		return 'saman';
 	}
@@ -53,10 +55,10 @@ class Saman extends GatewayAbstract
 			throw new InvalidDataException(InvalidDataException::INVALID_AMOUNT);
 		}
 		$currency	= $this->getCurrency();
-		if (!in_array($currency, [parent::IRR, parent::IRT])) {
+		if (!in_array($currency, [Currency::IRR, Currency::IRT])) {
 			throw new InvalidDataException(InvalidDataException::INVALID_CURRENCY);
 		}
-		if ($currency == parent::IRT) {
+		if ($currency == Currency::IRT) {
 			$amount	= Currency::TomanToRial($amount);
 		}
 		if ($amount < 100) {
@@ -70,7 +72,7 @@ class Saman extends GatewayAbstract
 		$this->prepareAmount();
 	}
 
-	protected function payRequest()
+	public function payRequest()
 	{
 		$this->payPrepare();
 
@@ -106,11 +108,11 @@ class Saman extends GatewayAbstract
 		}
 	}
 
-	protected function verifyPrepare()
+	public function verifyPrepare()
 	{
 		$this->prepareAmount();
-		if (request()->State != 'OK' || request()->StateCode != '0' ) {
-			switch (request()->StateCode) {
+		if ($this->request->State != 'OK' || $this->request->StateCode != '0' ) {
+			switch ($this->request->StateCode) {
 				case '-1':
 					$e	= new SamanException(-101);
 					break;
@@ -125,32 +127,32 @@ class Saman extends GatewayAbstract
 			$this->transactionFailed();
 			throw $e;
 		}
-		if (request()->transaction !== $this->getTransactionCode()) {
+		if ($this->request->transaction !== $this->getTransactionCode()) {
 			$e	= new SamanException(-14);
 			$this->setDescription($e->getMessage());
 			$this->transactionFailed();
 			throw $e;
 		}
-		if (request()->MID !== $this->merchant_id) {
+		if ($this->request->MID !== $this->merchant_id) {
 			$e	= new SamanException(-4);
 			$this->setDescription($e->getMessage());
 			$this->transactionFailed();
 			throw $e;
 		}
 
-		$this->setTrackingCode(request()->TRACENO);
-		$this->setCardNumber(request()->SecurePan);
-		$this->setReferenceNumber(request()->RefNum);
+		$this->setTrackingCode($this->request->TRACENO);
+		$this->setCardNumber($this->request->SecurePan);
+		$this->setReferenceNumber($this->request->RefNum);
 		
 		$this->transactionUpdate([
-			'card_number'		=> request()->SecurePan,
-			'tracking_code'		=> request()->TRACENO,
-			'reference_number'	=> request()->RefNum,
+			'card_number'		=> $this->request->SecurePan,
+			'tracking_code'		=> $this->request->TRACENO,
+			'reference_number'	=> $this->request->RefNum,
 		]);
 		$this->transactionVerifyPending();
 	}
 
-	protected function verifyRequest()
+	public function verifyRequest()
 	{
 		$this->verifyPrepare();
 
@@ -192,15 +194,20 @@ class Saman extends GatewayAbstract
 		$this->transactionSucceed();
 	}
 
-	public function redirect()
+	public function redirectView()
 	{
 		$this->transactionPending();
 		return view('iranpayment.pages.saman', [
 			'transaction_code'	=> $this->getTransactionCode(),
 			'token'				=> $this->token,
 			'bank_url'			=> $this->payment_url,
-			'redirect_url'		=> $this->callbackURL(),
+			'redirect_url'		=> $this->getCallbackUrl(),
 		]);
+	}
+
+	public function payBack()
+	{
+		throw new PayBackNotPossibleException;
 	}
 
 }

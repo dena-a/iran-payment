@@ -2,6 +2,12 @@
 
 namespace Dena\IranPayment\Exceptions;
 
-use Exception;
+use Dena\IranPayment\Exceptions\IranPaymentException;
 
-class InvalidRequestException extends Exception {}
+class InvalidRequestException extends IranPaymentException
+{
+    public static function notFound()
+    {
+        return new self('درخواست مورد نظر یافت نشد');
+    }
+}

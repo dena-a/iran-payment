@@ -2,31 +2,29 @@
 
 namespace Dena\IranPayment\Exceptions;
 
-use Exception;
+use Dena\IranPayment\Exceptions\IranPaymentException;
 
-class InvalidDataException extends Exception
+use Throwable;
+
+class InvalidDataException extends IranPaymentException
 {
-
-	const UNKNOWN			= 0;
-	const INVALID_USER_ID	= 1;
-	const INVALID_AMOUNT	= 2;
-	const INVALID_CURRENCY	= 3;
-	const INVALID_CALLBACK	= 4;
-	const INVALID_RESNUM	= 5;
-
-	public static $errors = [
-		0	=> 'Unknown Error:',
-		1	=> 'User not found:',
-		2	=> 'Amount is invalid:',
-		3	=> 'Currency is invalid:',
-		4	=> 'Callback url is invalid:',
-		5	=> 'Reservation Number url is invalid:',
-	];
-
-	public function __construct($error_id = 0)
+	public function __construct(string $message = 'اطلاعات وارد شده نامعتبر است.', int $code = 0, Throwable $previous = null)
 	{
-		$this->error_id = intval($error_id);
+		parent::__construct($message, $code, $previous);
+	}
 
-		parent::__construct(@self::$errors[$this->error_id].' #'.$this->error_id, $this->error_id);
+	public static function invalidAmount()
+	{
+		throw new self('امکان پرداخت مبلغ مورد نظر وجود ندارد.');
+	}
+
+	public static function invalidCurrency()
+	{
+		throw new self('امکان پرداخت برای ارز مورد نظر وجود ندارد.');
+	}
+
+	public static function invalidCallbackUrl()
+	{
+		throw new self('آدرس بازگشتی وارد شده معتبر نمی‌باشد.');
 	}
 }

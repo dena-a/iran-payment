@@ -2,116 +2,128 @@
 
 namespace Dena\IranPayment;
 
-use Dena\IranPayment\Exceptions\RetryException;
-use Dena\IranPayment\Exceptions\InvalidRequestException;
 use Dena\IranPayment\Exceptions\GatewayNotFoundException;
-use Dena\IranPayment\Exceptions\TransactionNotFoundException;
+use Dena\IranPayment\Exceptions\OnlyWorkOnDebugModeException;
 
+use Dena\IranPayment\Providers\BaseProvider;
+use Dena\IranPayment\Providers\PayIr\PayIr;
 use Dena\IranPayment\Providers\Saman\Saman;
 use Dena\IranPayment\Providers\Zarinpal\Zarinpal;
+use Dena\IranPayment\Providers\Test\TestGateway;
 
-use Dena\IranPayment\Models\IranPaymentTransaction;
-
-use Vinkla\Hashids\Facades\Hashids;
+use Dena\IranPayment\Providers\GatewayInterface;
 
 class IranPayment
 {
 	const ZARINPAL	= 'zarinpal';
 	const SAMAN		= 'saman';
+	const PAYIR		= 'payir';
+	const PAYDOTIR	= 'pay.ir';
+	const TEST		= 'test';
 
 	protected $gateway;
 
 	public function __construct($gateway = null)
 	{
 		$this->setDefaults();
+
 		if (!is_null($gateway)) {
+			$this->setGateway($gateway);
+		} elseif ($gateway = BaseProvider::detectGateway()) {
 			$this->setGateway($gateway);
 		}
 	}
 
 	public function __call($name, $arguments)
 	{
-		if ($this->gateway) {
-			return call_user_func_array([$this->gateway, $name], $arguments);
+		if (
+            !method_exists(__CLASS__, $name)
+            && $this->gateway instanceof GatewayInterface
+            && method_exists($this->gateway, $name) 
+        ) {
+			$res = call_user_func_array([$this->gateway, $name], $arguments);
+			return $res ?? $this->gateway;
 		}
-		return false;
 	}
 
+	/**
+	 * Set Defaults function
+	 *
+	 * @return void
+	 */
 	private function setDefaults()
 	{
-		$this->setGateway(config('iranpayment.default'));
-		$this->setHashidsConfig();
+		$this->setGateway(config('iranpayment.default', Saman::class));
 	}
 
-	private function setHashidsConfig()
+	/**
+	 * set Gateway function
+	 *
+	 * @param $gateway
+	 * @return void
+	 */
+	public function setGateway($gateway)
 	{
-		if (!config('hashids.connections.iranpayment', false)) {
-			config(['hashids.connections.iranpayment' => [
-				'salt'		=> config('iranpayment.hashids.salt' ,'your-salt-string'),
-				'length'	=> config('iranpayment.hashids.length' ,16),
-				'alphabet'	=> config('iranpayment.hashids.alphabet' ,'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'),
-			]]);
+		if (is_string($gateway)) {
+			switch (strtolower($gateway)) {
+				case self::ZARINPAL:
+					$this->gateway = new Zarinpal;
+					break;
+				case self::SAMAN:
+					$this->gateway = new Saman;
+					break;
+				case self::PAYIR:
+				case self::PAYDOTIR:
+					$this->gateway = new PayIr;
+					break;
+				case self::TEST:
+					if(env('APP_DEBUG') !== true)
+						throw new OnlyWorkOnDebugModeException;
+					$this->gateway = new TestGateway;
+					break;
+			}
+		} else {
+			$this->gateway  = $gateway;
 		}
 	}
 
-	public function setGateway($gateway)
-	{
-		$this->gateway = $gateway;
-	}
-
+	/**
+	 * get Gateway function
+	 *
+	 * @return void
+	 */
 	public function getGateway()
 	{
 		return $this->gateway;
 	}
 
+	/**
+	 * Build Gateway function
+	 *
+	 * @return void
+	 */
 	public function build()
 	{
-		switch ($this->gateway) {
-			case self::ZARINPAL:
-				$this->gateway = new Zarinpal;
-				break;
-			case self::SAMAN:
-				$this->gateway = new Saman;
-				break;
-			default:
-				throw new GatewayNotFoundException;
-				break;
+		if (!$this->gateway instanceof GatewayInterface) {
+			throw new GatewayNotFoundException;
 		}
-		return $this;
+
+		return $this->gateway;
 	}
 
-	public function verify()
-	{
-		if (!isset(request()->transaction)) {
-			throw new InvalidRequestException;
-		}
-		$transaction_id	= request()->transaction;
-		$transaction_id	= Hashids::connection('iranpayment')->decode($transaction_id);
-		if (!isset($transaction_id[0])) {
-			throw new InvalidRequestException;
-		}
-		$transaction_id	= $transaction_id[0];
-		$transaction_id	= intval($transaction_id);
-		$transaction	= IranPaymentTransaction::find($transaction_id);
-		if (!$transaction) {
-			throw new TransactionNotFoundException;
-		}
-		if ($transaction->status != IranPaymentTransaction::T_PENDING) {
-			throw new RetryException;
-		}
-
-		$this->setGateway($transaction->gateway);
-		$this->build();
-		$this->gateway->setTransaction($transaction);
-		return $this->gateway->verify();
-	}
-
-	public function getSupportedGateways()
+	/**
+	 * get Supported Gateways function
+	 *
+	 * @return array
+	 */
+	public function getSupportedGateways(): array
 	{
 		return [
 			self::ZARINPAL,
 			self::SAMAN,
+			self::PAYIR,
+			self::PAYDOTIR,
+			self::TEST
 		];
 	}
-
 }

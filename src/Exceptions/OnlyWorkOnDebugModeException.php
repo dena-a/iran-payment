@@ -4,7 +4,4 @@ namespace Dena\IranPayment\Exceptions;
 
 use Dena\IranPayment\Exceptions\IranPaymentException;
 
-class RetryException extends IranPaymentException
-{
-    //
-}
+class OnlyWorkOnDebugModeException extends IranPaymentException {}

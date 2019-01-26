@@ -3,8 +3,10 @@
 namespace Dena\IranPayment\Providers\Zarinpal;
 
 use Dena\IranPayment\Exceptions\InvalidDataException;
+use Dena\IranPayment\Exceptions\PayBackNotPossibleException;
 
-use Dena\IranPayment\GatewayAbstract;
+use Dena\IranPayment\Providers\BaseProvider;
+use Dena\IranPayment\Providers\GatewayInterface;
 
 use Dena\IranPayment\Helpers\Currency;
 
@@ -13,17 +15,21 @@ use Exception;
 use SoapFault;
 use SoapClient;
 
-class Zarinpal extends GatewayAbstract
+class Zarinpal extends BaseProvider implements GatewayInterface
 {
-	private $server_url;
-	private $prepared_amount;
-	private $connection_timeout;
-	private $zp_email;
-	private $zp_mobile;
-	private $zp_description;
+	/**
+	 * Merchant ID variable
+	 *
+	 * @var string
+	 */
+	protected $merchant_id;
 
-	private $gate_url		= 'https://www.zarinpal.com/pg/StartPay/';
-	private $zaringate_url	= 'https://www.zarinpal.com/pg/StartPay/$Authority/ZarinGate';
+	/**
+	 * Add Fees variable
+	 *
+	 * @var bool
+	 */
+	private $add_fees;
 
 	public function __construct()
 	{
@@ -31,85 +37,70 @@ class Zarinpal extends GatewayAbstract
 		$this->setDefaults();
 	}
 
-	public function getGateway()
+	/**
+	 * Gateway Name function
+	 *
+	 * @return string
+	 */
+	public function gatewayName()
 	{
 		return 'zarinpal';
 	}
 
+	private function getServerUrl()
+	{
+		if (config('iranpayment.zarinpal.server') == 'germany') {
+			return 'https://de.zarinpal.com/pg/services/WebGate/wsdl';
+		}
+
+		return 'https://ir.zarinpal.com/pg/services/WebGate/wsdl';
+	}
+
 	private function setDefaults()
 	{
-		switch (config('iranpayment.zarinpal.server', 'germany'))
-		{
-			case 'iran':
-				$this->server_url	= config('iranpayment.zarinpal.iran_server_url', 'https://ir.zarinpal.com/pg/services/WebGate/wsdl');
-			break;
-			case 'germany':
-			default:
-				$this->server_url	= config('iranpayment.zarinpal.germany_server_url', 'https://de.zarinpal.com/pg/services/WebGate/wsdl');
-			break;
-		}
-		$this->connection_timeout	= config('iranpayment.timeout', 30);
-
+		$this->setGatewayCurrency(Currency::IRT);
+		$this->setMerchantId(config('iranpayment.zarinpal.merchant-id'));
 		$this->setCallbackUrl(config('iranpayment.zarinpal.callback-url', config('iranpayment.callback-url')));
+		$this->setDescription(config('iranpayment.zarinpal.description', 'پرداخت'));
 
-		$this->zp_description	= config('iranpayment.zarinpal.description', 'description');
-		$this->zp_email			= config('iranpayment.zarinpal.email', null);
-		$this->zp_mobile		= config('iranpayment.zarinpal.mobile', null);
+		$this->add_fees				= config('iranpayment.zarinpal.add_fees', false);
 	}
 
-	public function setParams(array $params)
+	/**
+	 * Set Merchant ID function
+	 *
+	 * @param string $merchant_id
+	 * @return void
+	 */
+	public function setMerchantId(string $merchant_id)
 	{
-		if (isset($params['description']) && mb_strlen($params['description'])) {
-			$this->zp_description	= $params['description'];
-		}
-		if (isset($params['email']) && mb_strlen($params['email'])) {
-			$this->zp_email			= $params['email'];
-		}
-		if (isset($params['mobile']) && mb_strlen($params['mobile'])) {
-			$this->zp_mobile		= $params['mobile'];
-		}
+		$this->merchant_id = $merchant_id;
+
+		return $this;
 	}
 
-	private function prepareAmount()
-	{
-		$amount		= $this->getAmount();
-		$amount		= intval($amount);
-		if ($amount <= 0) {
-			throw new InvalidDataException(InvalidDataException::INVALID_AMOUNT);
-		}
-		$currency	= $this->getCurrency();
-		if (!in_array($currency, [parent::IRR, parent::IRT])) {
-			throw new InvalidDataException(InvalidDataException::INVALID_CURRENCY);
-		}
-		if ($currency == parent::IRR) {
-			$amount	= Currency::RialToToman($amount);
-		}
-		if ($amount < 100) {
-			throw new InvalidDataException(InvalidDataException::INVALID_AMOUNT);
-		}
-		$this->prepared_amount	= $amount;
-	}
-
-	public function payPrepare()
+	public function gatewayPayPrepare()
 	{	
-		$this->prepareAmount();
+		//
 	}
 
-	protected function payRequest()
+	public function gatewayPay()
 	{
-		$this->payPrepare();
+		$amount = $this->getPreparedAmount();
+		if ($this->add_fees) {
+			$amount += $amount * 1 / 100;
+		}
 
 		$fields = [
-			'MerchantID'	=> config('iranpayment.zarinpal.merchant-id'),
-			'CallbackURL'	=> $this->callbackURL(),
-			'Description'	=> $this->zp_description,
-			'Email'			=> $this->zp_email,
-			'Mobile'		=> $this->zp_mobile,
-			'Amount'		=> $this->prepared_amount,
+			'MerchantID'	=> $this->merchant_id,
+			'CallbackURL'	=> $this->getCallbackUrl(),
+			'Mobile'		=> $this->getMobile(),
+			'Description'	=> $this->getDescription(),
+			'Amount'		=> $amount,
 		];
 
 		try {
-			$soap = new SoapClient($this->server_url, [
+			$soap = new SoapClient($this->getServerUrl(), [
 				'encoding'				=> 'UTF-8', 
 				'trace'					=> 1,
 				'exceptions'			=> 1,
@@ -133,23 +124,59 @@ class Zarinpal extends GatewayAbstract
 			throw $e;
 		}
 
-		$this->setReferenceNumber(intval($response->Authority));
 		$this->transactionUpdate([
 			'reference_number'	=> intval($response->Authority)
 		]);
 	}
 
-	protected function verifyPrepare()
+	/**
+	 * Pay Link function
+	 *
+	 * @return void
+	 */
+	private function payLink()
 	{
-		$this->prepareAmount();
+		if (config('iranpayment.zarinpal.type') == 'zarin-gate') {
+			return "https://www.zarinpal.com/pg/StartPay/{$this->getReferenceNumber()}/ZarinGate";
+		}
+		
+		return "https://www.zarinpal.com/pg/StartPay/{$this->getReferenceNumber()}";
+	}
 
-		if (intval(request()->Authority) !== intval($this->transaction->reference_number)) {
+	/**
+	 * Pay View function
+	 *
+	 * @return void
+	 */
+	public function gatewayPayView()
+	{
+		$this->transactionPending();
+
+		return view('iranpayment.pages.zarinpal', [
+			'transaction_code'	=> $this->getTransactionCode(),
+			'bank_url'			=> $this->payLink(),
+		]);
+	}
+
+	/**
+	 * Pay Redirect function
+	 *
+	 * @return void
+	 */
+	public function gatewayPayRedirect()
+	{
+		return redirect($this->payLink());
+	}
+
+	public function gatewayVerifyPrepare()
+	{
+		if (intval($this->request->Authority) !== intval($this->transaction->reference_number)) {
 			$e = new ZarinpalException(-11);
 			$this->setDescription($e->getMessage());
 			$this->transactionFailed();
 			throw $e;
 		}
-		if (request()->Status != 'OK') {
+		if ($this->request->Status != 'OK') {
 			$e = new ZarinpalException(-22);
 			$this->setDescription($e->getMessage());
 			$this->transactionFailed();
@@ -158,18 +185,21 @@ class Zarinpal extends GatewayAbstract
 		$this->transactionVerifyPending();
 	}
 
-	protected function verifyRequest()
+	public function gatewayVerify()
 	{
-		$this->verifyPrepare();
+		$amount = $this->getPreparedAmount();
+		if ($this->add_fees) {
+			$amount += $amount * 1 / 100;
+		}
 
 		$fields				= [
-			'MerchantID'	=> config('iranpayment.zarinpal.merchant-id'),
+			'MerchantID'	=> $this->merchant_id,
 			'Authority'		=> intval($this->transaction->reference_number)	,
-			'Amount'		=> $this->prepared_amount,
+			'Amount'		=> $amount,
 		];
 
 		try {
-			$soap = new SoapClient($this->server_url, [
+			$soap = new SoapClient($this->getServerUrl(), [
 				'encoding'				=> 'UTF-8', 
 				'trace'					=> 1,
 				'exceptions'			=> 1,
@@ -192,22 +222,11 @@ class Zarinpal extends GatewayAbstract
 			throw $e;
 		}
 
-		$this->setTrackingCode($response->RefID);
 		$this->transactionSucceed(['tracking_code' => $response->RefID]);
 	}
 
-	public function redirect()
+	public function gatewayPayBack()
 	{
-		$this->transactionPending();
-		switch (config('iranpayment.zarinpal.type')) {
-			case 'zarin-gate':
-				$payment_url = str_replace('$Authority', $this->getReferenceNumber(), $this->zaringate_url);
-				break;
-			case 'normal':
-			default:
-				$payment_url = $this->gate_url.$this->getReferenceNumber();
-				break;
-		}
-		return redirect($payment_url);
+		throw new PayBackNotPossibleException;
 	}
 }

@@ -2,6 +2,9 @@
 
 namespace Dena\IranPayment\Exceptions;
 
-use Exception;
+use Dena\IranPayment\Exceptions\IranPaymentException;
 
-class GatewayNotFoundException extends Exception {}
+class GatewayNotFoundException extends IranPaymentException
+{
+    //
+}
