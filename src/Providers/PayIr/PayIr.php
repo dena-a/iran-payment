@@ -248,7 +248,10 @@ class PayIr extends BaseProvider implements GatewayInterface
 			throw $gwex;
 		}
 
-		$this->transactionUpdate(['card_number' => $result->cardNumber]);
+		$this->transactionUpdate([
+			'tracking_code' => $result->transId,
+			'card_number' 	=> $result->cardNumber,
+		]);
 	}
 
 	/**
