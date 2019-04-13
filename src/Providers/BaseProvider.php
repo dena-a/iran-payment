@@ -134,7 +134,7 @@ abstract class BaseProvider
 	public function view()
 	{
 		if (!isset($this->transaction)) {
-			throw new TransactionNotFoundException;
+			throw new TransactionNotFoundException();
 		}
 
 		try {
@@ -156,7 +156,7 @@ abstract class BaseProvider
 	public function redirect()
 	{
 		if (!isset($this->transaction)) {
-			throw new TransactionNotFoundException;
+			throw new TransactionNotFoundException();
 		}
 
 		try {
@@ -202,12 +202,15 @@ abstract class BaseProvider
 		}
 
 		if (!isset($this->transaction)) {
-			throw new TransactionNotFoundException;
+			throw new TransactionNotFoundException();
 		}
 
 		if ($this->transaction->status == IranPaymentTransaction::T_SUCCEED) {
 			throw new SucceedRetryException;
-		} elseif ($this->transaction->status != IranPaymentTransaction::T_PENDING) {
+		} elseif (!in_array($this->transaction->status, [
+			IranPaymentTransaction::T_PENDING,
+			IranPaymentTransaction::T_VERIFY_PENDING,
+		])) {
 			throw new RetryException;
 		}
 
@@ -235,7 +238,7 @@ abstract class BaseProvider
 	protected function payBack()
 	{
 		if (!isset($this->transaction)) {
-			throw new TransactionNotFoundException;
+			throw new TransactionNotFoundException();
 		}
 
 		try {
