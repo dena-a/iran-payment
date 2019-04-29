@@ -1,6 +1,6 @@
-@extends('iranpayment.layouts.master')
+@extends('iranpayment::layouts.master')
 
-@section('title', 'انتقال به درگاه زرین‌پال')
+@section('title', 'انتقال به درگاه سامان (Pay.ir)')
 
 @section('content')
 <div id="loading-bar" class="loading-bar" style="width:0%;"></div>
@@ -8,9 +8,9 @@
 	<div class="content">
 		<h1>شناسه خرید شما</h1>
 		<h1 class="content-head">{!! $transaction_code !!}</h1>
-		<h2>درحال انتقال به درگاه زرین‌پال...</h2>
+		<h2>درحال انتقال به درگاه سامان (Pay.ir)...</h2>
 		<div class="l-box-lrg is-center pure-u-1 pure-u-md-1-2 pure-u-lg-2-5">
-			<img class="pure-img-responsive" src="https://raw.githubusercontent.com/dena-a/iran-payment/master/src/resources/assets/img/zp.png">
+			<img class="pure-img-responsive" src="https://raw.githubusercontent.com/dena-a/iran-payment/master/resources/assets/img/pay.png">
 		</div>
 		<form id="bankForm" method="GET" action="{!! $bank_url !!}">
 			<button type="submit" class="pure-button pure-button-default">انتقال به صفحه پرداخت</button>

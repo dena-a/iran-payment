@@ -197,7 +197,7 @@ class Saman extends BaseProvider implements GatewayInterface
 	public function redirectView()
 	{
 		$this->transactionPending();
-		return view('iranpayment.pages.saman', [
+		return view('iranpayment::pages.saman', [
 			'transaction_code'	=> $this->getTransactionCode(),
 			'token'				=> $this->token,
 			'bank_url'			=> $this->payment_url,

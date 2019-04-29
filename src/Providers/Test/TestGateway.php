@@ -28,8 +28,9 @@ class TestGateway extends BaseProvider implements GatewayInterface {
     }
 
 	public function redirectView() {
-        return view('iranpayment.pages.test')->with([
-            'transaction' => $this->getTransaction(),
+        return view('iranpayment::pages.test')->with([
+            'transaction_code' => $this->getTransaction()->transaction_code,
+            'reference_number' => $this->getReferenceNumber(),
         ]);
     }
 

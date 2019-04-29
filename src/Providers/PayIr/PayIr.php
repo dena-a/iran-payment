@@ -171,7 +171,7 @@ class PayIr extends BaseProvider implements GatewayInterface
 	 */
 	public function gatewayPayView()
 	{
-		return view('iranpayment.pages.payir', [
+		return view('iranpayment::pages.payir', [
 			'transaction_code'	=> $this->getTransactionCode(),
 			'bank_url'			=> $this->payLink(),
 		]);
@@ -196,7 +196,7 @@ class PayIr extends BaseProvider implements GatewayInterface
 	{
 		if (!isset($this->request->token, $this->request->status)) {
 			$ex = InvalidRequestException::notFound();
-			$this->setDescription($e->getMessage());
+			$this->setDescription($ex->getMessage());
 			$this->transactionFailed();
 			throw $ex;
 		}

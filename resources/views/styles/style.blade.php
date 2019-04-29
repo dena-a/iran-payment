@@ -1,22 +1,42 @@
+@if (file_exists(public_path('assets/vendor/iranpayment/fonts/IRANSansWeb_Bold.woff2')))
+	<style type="text/css">
+	@font-face {
+		font-family: "IranSans";
+		font-style: normal;
+		font-weight: bold;
+		src: url("assets/vendor/iranpayment/fonts/IRANSansWeb_Bold.woff2") format("woff2");
+	}
+
+	@font-face {
+		font-family: "IranSans";
+		font-weight: 300;
+		font-style: normal;
+		src: url("assets/vendor/iranpayment/fonts/IRANSansWeb_Light.woff2") format("woff2");
+	}
+	</style>
+@else
+	<style type="text/css">
+	@font-face {
+		font-family: "IranSans";
+		font-style: normal;
+		font-weight: bold;
+		src: url("https://raw.githubusercontent.com/dena-a/iran-payment/master/resources/assets/fonts/IRANSansWeb_Bold.woff2") format("woff2");
+	}
+
+	@font-face {
+		font-family: "IranSans";
+		font-weight: 300;
+		font-style: normal;
+		src: url("https://raw.githubusercontent.com/dena-a/iran-payment/master/resources/assets/fonts/IRANSansWeb_Light.woff2") format("woff2");
+	}
+	</style>
+@endif
+
 <style type="text/css">
 * {
 	-webkit-box-sizing: border-box;
 	-moz-box-sizing: border-box;
 	box-sizing: border-box;
-}
-
-@font-face {
-	font-family: "IranSans";
-	font-style: normal;
-	font-weight: bold;
-	src: url("https://raw.githubusercontent.com/dena-a/iran-payment/master/src/resources/assets/fonts/IRANSansWeb_Bold.woff2") format("woff2");
-}
-
-@font-face {
-	font-family: "IranSans";
-	font-weight: 300;
-	font-style: normal;
-	src: url("https://raw.githubusercontent.com/dena-a/iran-payment/master/src/resources/assets/fonts/IRANSansWeb_Light.woff2") format("woff2");
 }
 
 h1,

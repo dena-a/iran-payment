@@ -152,7 +152,7 @@ class Zarinpal extends BaseProvider implements GatewayInterface
 	{
 		$this->transactionPending();
 
-		return view('iranpayment.pages.zarinpal', [
+		return view('iranpayment::pages.zarinpal', [
 			'transaction_code'	=> $this->getTransactionCode(),
 			'bank_url'			=> $this->payLink(),
 		]);

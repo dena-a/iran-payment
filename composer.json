@@ -35,5 +35,12 @@
 		"psr-4": {
 			"Dena\\IranPayment\\": "src"
 		}
+	},
+	"extra": {
+		"laravel": {
+			"providers": [
+				"Dena\\IranPayment\\IranPaymentServiceProvider"
+			]
+		}
 	}
 }
