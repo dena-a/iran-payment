@@ -74,7 +74,7 @@ return [
 	|--------------------------------------------------------------------------
 	*/
 	'payir' => [
-		'merchant-id'	=> env('PAYIR_MERCHANT_ID', 'test'), // api. set test for test
+		'merchant-id'	=> env('PAYIR_MERCHANT_ID', 'xxxxxxxx'), // api. set test for test
 		// 'callback-url'	=> 'http://example.com/payments/payir/callback',
 	],
 
@@ -84,7 +84,7 @@ return [
 	|--------------------------------------------------------------------------
 	*/
 	'payping' => [
-		'merchant-id'	=> env('PAYPING_MERCHANT_ID', 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'),
+		'merchant-id'	=> env('PAYPING_MERCHANT_ID', 'xxxxxxxx'),
 		// 'callback-url'	=> 'http://example.com/payments/payping/callback',
 	],
 

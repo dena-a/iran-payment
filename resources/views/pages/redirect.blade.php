@@ -2,9 +2,9 @@
 
 @php
 	if (isset($title)) {
-		$title = "درحال انتقال به درگاه $title...");
+		$title = "درحال انتقال به درگاه $title...";
 	} else {
-		$title = "درحال انتقال به درگاه پرداخت...");
+		$title = "درحال انتقال به درگاه پرداخت...";
 	}
 @endphp
 
@@ -15,7 +15,7 @@
 <div class="container">
 	<div class="content">
 		<h1>شناسه خرید شما</h1>
-		<h1 class="content-head">{!! $transaction_code !!}</h1>
+		<h1 class="content-head">{{ $transaction_code }}</h1>
 		<h2>{{ $title }}</h2>
 		@if (isset($image) && file_exists($image))
 			<div class="l-box-lrg is-center pure-u-1 pure-u-md-1-2 pure-u-lg-2-5">
