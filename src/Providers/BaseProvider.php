@@ -170,6 +170,29 @@ abstract class BaseProvider
 		}
 	}
 
+	/**
+	 * General Redirect View function
+	 *
+	 * @return void
+	 */
+	public function generalRedirectView()
+	{
+		if (method_exists($this, 'gatewayTitle')) {
+			$title = $this->gatewayTitle();
+		}
+		
+		if (method_exists($this, 'gatewayImage')) {
+			$image = $this->gatewayImage();
+		}
+
+		return view('iranpayment::pages.redirect', [
+			'title'				=> $title ?? 'درحال انتقال به درگاه پرداخت...',
+			'image'				=> $image ?? null,
+			'transaction_code'	=> $this->getTransactionCode(),
+			'bank_url'			=> $this->payLink(),
+		]);
+	}
+
 	public static function detectGateway(Request $request = null)
 	{
 		if (!isset($request)) {

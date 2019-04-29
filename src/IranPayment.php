@@ -8,6 +8,7 @@ use Dena\IranPayment\Exceptions\OnlyWorkOnDebugModeException;
 use Dena\IranPayment\Providers\BaseProvider;
 use Dena\IranPayment\Providers\PayIr\PayIr;
 use Dena\IranPayment\Providers\Saman\Saman;
+use Dena\IranPayment\Providers\PayPing\PayPing;
 use Dena\IranPayment\Providers\Zarinpal\Zarinpal;
 use Dena\IranPayment\Providers\Test\TestGateway;
 
@@ -19,6 +20,7 @@ class IranPayment
 	const SAMAN		= 'saman';
 	const PAYIR		= 'payir';
 	const PAYDOTIR	= 'pay.ir';
+	const PAYPING	= 'payping';
 	const TEST		= 'test';
 
 	protected $gateway;
@@ -76,6 +78,9 @@ class IranPayment
 				case self::PAYDOTIR:
 					$this->gateway = new PayIr;
 					break;
+				case self::PAYPING:
+					$this->gateway = new PayPing;
+					break;
 				case self::TEST:
 					if(env('APP_DEBUG') !== true)
 						throw new OnlyWorkOnDebugModeException;
@@ -123,6 +128,7 @@ class IranPayment
 			self::SAMAN,
 			self::PAYIR,
 			self::PAYDOTIR,
+			self::PAYPING,
 			self::TEST
 		];
 	}

@@ -78,6 +78,16 @@ return [
 		// 'callback-url'	=> 'http://example.com/payments/payir/callback',
 	],
 
+	/*
+	|--------------------------------------------------------------------------
+	| PayPing gateway
+	|--------------------------------------------------------------------------
+	*/
+	'payping' => [
+		'merchant-id'	=> env('PAYPING_MERCHANT_ID', 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'),
+		// 'callback-url'	=> 'http://example.com/payments/payping/callback',
+	],
+
 	'transaction_query_param' => 'tc'
 
 ];
