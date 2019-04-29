@@ -64,7 +64,7 @@ class PayPing extends BaseProvider implements GatewayInterface
 	 */
 	public function gatewayImage()
 	{
-		return 'https://raw.githubusercontent.com/dena-a/iran-payment/master/src/resources/assets/img/payping.png';
+		return 'https://raw.githubusercontent.com/dena-a/iran-payment/master/resources/assets/img/payping.png';
 	}
 
 	/**
@@ -162,8 +162,8 @@ class PayPing extends BaseProvider implements GatewayInterface
 			$this->transactionFailed($ex->getMessage());
 			throw $ex;
 		}
-				
-		if(!isset($result->code)) {
+
+		if($httpcode != 200 || !isset($result->code)) {
 			if (isset($result->Error)) {
 				$this->transactionFailed($result->Error);
 				throw new PayPingException($result->Error, $httpcode);
