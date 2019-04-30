@@ -6,7 +6,7 @@ return [
 	|--------------------------------------------------------------------------
 	| Default gateway
 	|--------------------------------------------------------------------------
-	| [saman|zarinpal|payir]
+	| [saman|zarinpal|payir|payping]
 	*/
 	'default' => 'saman',
 
@@ -85,6 +85,7 @@ return [
 	*/
 	'payping' => [
 		'merchant-id'	=> env('PAYPING_MERCHANT_ID', 'xxxxxxxx'),
+		'add_fees'		=> false,
 		// 'callback-url'	=> 'http://example.com/payments/payping/callback',
 	],
 

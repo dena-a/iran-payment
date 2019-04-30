@@ -63,7 +63,7 @@ class Zarinpal extends BaseProvider implements GatewayInterface
 		$this->setCallbackUrl(config('iranpayment.zarinpal.callback-url', config('iranpayment.callback-url')));
 		$this->setDescription(config('iranpayment.zarinpal.description', 'پرداخت'));
 
-		$this->add_fees				= config('iranpayment.zarinpal.add_fees', false);
+		$this->add_fees = config('iranpayment.zarinpal.add_fees', false);
 	}
 
 	/**

@@ -17,7 +17,7 @@
 		<h1>شناسه خرید شما</h1>
 		<h1 class="content-head">{{ $transaction_code }}</h1>
 		<h2>{{ $title }}</h2>
-		@if (isset($image) && file_exists($image))
+		@if (isset($image))
 			<div class="l-box-lrg is-center pure-u-1 pure-u-md-1-2 pure-u-lg-2-5">
 				<img class="pure-img-responsive" src="{{ $image }}">
 			</div>

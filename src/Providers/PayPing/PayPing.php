@@ -29,6 +29,13 @@ class PayPing extends BaseProvider implements GatewayInterface
 	protected $client_ref_id = null;
 
 	/**
+	 * Add Fees variable
+	 *
+	 * @var bool
+	 */
+	private $add_fees;
+
+	/**
 	 * Constructor function
 	 */
 	public function __construct()
@@ -77,6 +84,8 @@ class PayPing extends BaseProvider implements GatewayInterface
 		$this->setGatewayCurrency(Currency::IRT);
 		$this->setToken(config('iranpayment.payping.merchant-id'));
 		$this->setCallbackUrl(config('iranpayment.payping.callback-url', config('iranpayment.callback-url')));
+
+		$this->add_fees = config('iranpayment.payping.add_fees', false);
 	}
 
 	/**
@@ -126,8 +135,14 @@ class PayPing extends BaseProvider implements GatewayInterface
 
 	public function gatewayPay()
 	{
+		$amount = $this->getPreparedAmount();
+		if ($this->add_fees) {
+			$fees = $amount * 1 / 100;
+			$amount += $fees > 5000 ? 5000 : $fees;
+		}
+
 		$fields = json_encode([
-			'amount'		=> $this->getPreparedAmount(),
+			'amount'		=> $amount,
 			'returnUrl'		=> $this->getCallbackUrl(),
 			'clientRefId'	=> $this->getClientRefId(),
 			'payerIdentity'	=> $this->getMobile(),
@@ -227,9 +242,15 @@ class PayPing extends BaseProvider implements GatewayInterface
 			'tracking_code' => $this->request->refid,
 		]);
 
+		$amount = $this->getPreparedAmount();
+		if ($this->add_fees) {
+			$fees = $amount * 1 / 100;
+			$amount += $fees > 5000 ? 5000 : $fees;
+		}
+
 		$fields = json_encode([
 			'refId'	=> $this->request->refid,
-			'amount'=> $this->getPreparedAmount(),
+			'amount'=> $amount,
 		]);
 
 		try {
