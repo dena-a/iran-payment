@@ -139,6 +139,7 @@ class PayPing extends BaseProvider implements GatewayInterface
 		if ($this->add_fees) {
 			$fees = $amount * 1 / 100;
 			$amount += $fees > 5000 ? 5000 : $fees;
+			$amount = intval($amount);
 		}
 
 		$fields = json_encode([
@@ -246,6 +247,7 @@ class PayPing extends BaseProvider implements GatewayInterface
 		if ($this->add_fees) {
 			$fees = $amount * 1 / 100;
 			$amount += $fees > 5000 ? 5000 : $fees;
+			$amount = intval($amount);
 		}
 
 		$fields = json_encode([
