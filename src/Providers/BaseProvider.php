@@ -3,10 +3,13 @@
 namespace Dena\IranPayment\Providers;
 
 use Exception;
-use Dena\IranPayment\Exceptions\RetryException;
+use Dena\IranPayment\Exceptions\GatewayException;
 use Dena\IranPayment\Exceptions\InvalidDataException;
 use Dena\IranPayment\Exceptions\SucceedRetryException;
+use Dena\IranPayment\Exceptions\InvalidRequestException;
 use Dena\IranPayment\Exceptions\TransactionNotFoundException;
+use Dena\IranPayment\Exceptions\GatewayPaymentNotSupportViewException;
+use Dena\IranPayment\Exceptions\GatewayPaymentNotSupportRedirectException;
 
 use Illuminate\Http\Request;
 
@@ -18,10 +21,6 @@ use Dena\IranPayment\Traits\TransactionData;
 
 use Dena\IranPayment\Helpers\Helpers;
 use Dena\IranPayment\Helpers\Currency;
-use Dena\IranPayment\Exceptions\GatewayException;
-use Dena\IranPayment\Exceptions\GatewayPaymentNotSupportViewException;
-use Dena\IranPayment\Exceptions\GatewayPaymentNotSupportRedirectException;
-use Dena\IranPayment\Exceptions\GatewayNotFoundException;
 
 abstract class BaseProvider
 {
@@ -234,7 +233,7 @@ abstract class BaseProvider
 			IranPaymentTransaction::T_PENDING,
 			IranPaymentTransaction::T_VERIFY_PENDING,
 		])) {
-			throw new RetryException;
+			throw InvalidRequestException::unProcessableVerify();
 		}
 
 		$this->setCurrency($this->transaction->currency);

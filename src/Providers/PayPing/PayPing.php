@@ -278,6 +278,7 @@ class PayPing extends BaseProvider implements GatewayInterface
 				throw GatewayException::connectionProblem();
 			}
 			
+			$raw_result = $result;
 			$result = json_decode($result, true);
 		} catch(Exception $ex) {
 			$this->transactionFailed($ex->getMessage());
@@ -285,12 +286,19 @@ class PayPing extends BaseProvider implements GatewayInterface
 		}
 
 		if($httpcode != 200) {
+			#TODO: Check PayPing error codes. No documents published
 			if (isset($result->Error)) {
 				$this->transactionFailed($result->Error);
 				throw new PayPingException($result->Error, $httpcode);
+			} elseif (isset($result[12])) {
+				$this->transactionFailed($result[12]);
+				throw new PayPingException($result[12], $httpcode);
+			} elseif (isset($result[120])) {
+				$this->transactionFailed($result[120]);
+				throw new PayPingException($result[120], $httpcode);
 			}
 
-			$this->transactionFailed(json_encode($result));
+			$this->transactionFailed($raw_result);
 			throw GatewayException::unknownResponse();
 		}
 	}
