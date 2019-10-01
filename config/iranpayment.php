@@ -30,15 +30,10 @@ return [
 
 	/*
 	|--------------------------------------------------------------------------
-	| Hashid
+	| Settings
 	|--------------------------------------------------------------------------
-	| Salt: use your own random string for hash-id.
 	*/
-	'hashids' => [
-		'salt'		=> env('IRANPAYMENT_HASH_SALT', 'your-salt-string'),
-		'length'	=> 16,
-		'alphabet'	=> 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890',
-	],
+	'code_length' => 16,
 
 	/*
 	|--------------------------------------------------------------------------

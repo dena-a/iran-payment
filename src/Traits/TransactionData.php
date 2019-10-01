@@ -4,13 +4,12 @@ namespace Dena\IranPayment\Traits;
 
 use Dena\IranPayment\Exceptions\TransactionNotFoundException;
 
-use Illuminate\Database\Eloquent\Model;
+use Dena\IranPayment\Helpers\Currency;
 use Dena\IranPayment\Models\IranPaymentTransaction;
 
-use Dena\IranPayment\Helpers\Hashids;
-use Dena\IranPayment\Helpers\Currency;
-
 use Carbon\Carbon;
+use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\Model;
 
 trait TransactionData
 {
@@ -206,7 +205,7 @@ trait TransactionData
 			$this->transaction->status	= IranPaymentTransaction::T_INIT;
 			$this->transaction->payable()->associate($this->payable);
 			$this->transaction->save();
-			$this->transaction->code = Hashids::encode($this->transaction->id);
+			$this->transaction->code = Str::random(config('iranpayment.code_length' ,16));
 			$this->transaction->save();
 		});
 	}
