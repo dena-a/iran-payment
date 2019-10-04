@@ -8,32 +8,51 @@ use Dena\IranPayment\Providers\GatewayInterface;
 
 class TestGateway extends BaseProvider implements GatewayInterface {
     
-    public function getName() {
+    public function gatewayName() {
         return 'test-gateway';
     }
 
-	public function payRequest() {
-        $code = rand(1, 10000);
-        $this->setReferenceNumber($code);
-        $this->transactionPending([
-            'reference_number'	=> intval($code)
-        ]);
+	public function gatewayPayPrepare() {
+        $this->transactionPending();
     }
 
-	public function verifyRequest() {
+    public function gatewayVerifyPrepare() {
+    }
+
+	public function gatewayVerify() {
         $this->transactionVerifyPending();
         $code = rand(1, 10000);
-        $this->setTrackingCode($code);
 		$this->transactionSucceed(['tracking_code' => $code]);
     }
 
-	public function redirectView() {
+	public function gatewayPayRedirect() {
+        $this->transactionUpdate([
+            'transaction_code'	=> uniqid(),
+        ]);
+        $this->addExtra($this->getCallbackUrl(), 'callback_url');
         return view('iranpayment::pages.test')->with([
-            'transaction_code' => $this->getTransaction()->transaction_code,
+            'transaction_code' => $this->getTransaction()->code,
             'reference_number' => $this->getReferenceNumber(),
         ]);
     }
 
-	public function payBack() {
+	public function gatewayPayBack() {
+    }
+
+	public function gatewayPay() {
+        $this->transactionUpdate([
+            'reference_number'	=> uniqid(),
+		]);
+    }
+
+	public function gatewayPayView() {
+        return view('iranpayment::pages.test', [
+            'reference_number'	=> uniqid(),
+			'transaction_code'	=> $this->getTransactionCode(),
+		]);
+    }
+
+    public function gatewayPayUri() {
+        return route('iranpayment.test.pay', $this->getPayable());
     }
 }

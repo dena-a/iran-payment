@@ -6,6 +6,8 @@ use Exception;
 
 class ZarinpalException extends Exception
 {
+	protected $error_id;
+	
 	public static $errors = [
 		-1	=> 'اطلاعات ارسال شده ناقص است.',
 		-2	=> 'IP و یا مرچنت کد پذیرنده صحیح نیست',

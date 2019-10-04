@@ -6,7 +6,7 @@ use Exception;
 use Dena\IranPayment\Exceptions\GatewayException;
 use Dena\IranPayment\Exceptions\InvalidRequestException;
 use Dena\IranPayment\Exceptions\InvalidDataException;
-
+use Dena\IranPayment\Exceptions\PayBackNotPossibleException;
 use Dena\IranPayment\Providers\BaseProvider;
 use Dena\IranPayment\Providers\GatewayInterface;
 
@@ -92,7 +92,7 @@ class PayPing extends BaseProvider implements GatewayInterface
 	 * Set Token function
 	 *
 	 * @param string $token
-	 * @return void
+	 * @return self
 	 */
 	public function setToken(string $token)
 	{
@@ -105,7 +105,7 @@ class PayPing extends BaseProvider implements GatewayInterface
 	 * Set Client Ref ID function
 	 *
 	 * @param $client_ref_id
-	 * @return void
+	 * @return self
 	 */
 	public function setClientRefId($client_ref_id)
 	{
@@ -117,7 +117,7 @@ class PayPing extends BaseProvider implements GatewayInterface
 	/**
 	 * Get Client Ref ID function
 	 *
-	 * @return void
+	 * @return string
 	 */
 	public function getClientRefId()
 	{
@@ -197,9 +197,9 @@ class PayPing extends BaseProvider implements GatewayInterface
 	/**
 	 * Pay Link function
 	 *
-	 * @return void
+	 * @return string
 	 */
-	public function payLink()
+	public function gatewayPayUri()
 	{
 		$reference_number = $this->getReferenceNumber();
 		return "https://api.payping.ir/v1/pay/gotoipg/$reference_number";
@@ -208,21 +208,16 @@ class PayPing extends BaseProvider implements GatewayInterface
 	/**
 	 * Pay View function
 	 *
-	 * @return void
+	 * @return View
 	 */
 	public function gatewayPayView()
 	{
 		return $this->generalRedirectView();
 	}
 
-	/**
-	 * Pay Redirect function
-	 *
-	 * @return void
-	 */
 	public function gatewayPayRedirect()
 	{
-		return redirect($this->payLink());
+		return redirect($this->gatewayPayUri());
 	}
 
 	public function gatewayVerifyPrepare()
@@ -306,7 +301,7 @@ class PayPing extends BaseProvider implements GatewayInterface
 	/**
 	 * Pay Back function
 	 *
-	 * @return void
+	 * @throws PayBackNotPossibleException
 	 */
 	public function gatewayPayBack()
 	{

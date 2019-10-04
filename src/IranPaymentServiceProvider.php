@@ -34,6 +34,8 @@ class IranPaymentServiceProvider extends ServiceProvider
 		$this->publishes([
 			__DIR__.'/../resources/assets' => public_path('vendor/iranpayment'),
 		]);
+
+		$this->loadRoutesFrom(__DIR__.'/routes.php');
 	}
 
 	/**

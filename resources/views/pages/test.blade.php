@@ -10,9 +10,7 @@
 		<h1>شناسه پرداخت شما</h1>
         <h1 class="content-head">{!! $reference_number ?? '' !!}</h1>
 		<h2>پرداخت با موفقیت انجام شد</h2>
-		<h3><a href="{{url('bank', [$transaction_code, 'verify'])}}">تایید پرداخت</a></h3>
-		<p>برای تایید پرداخت مسیر زیر را در فایل web.php ایجاد کنید.</p>
-		<p>/bank/{transaction}/verify</p>
+		<h3><a href="{{route('iranpayment.test.verify', $transaction_code)}}">تایید پرداخت</a></h3>
 	</div>
 </div>
 @endsection

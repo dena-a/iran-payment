@@ -1,0 +1,20 @@
+parameters:
+	paths:
+		- %currentWorkingDirectory%
+	excludes_analyse:
+		- %currentWorkingDirectory%/vendor
+		- %currentWorkingDirectory%/database
+	level: 1
+	ignoreErrors:
+		- '#Function config not found.#'
+		- '#Function view not found.#'
+		- '#Function route not found.#'
+		- '#Function redirect not found.#'
+		- '#Function config_path not found.#'
+		- '#Class Laravel\\Lumen\\Application not found.#'
+		- '#Function resource_path not found.#'
+		- '#Function public_path not found.#'
+		- '#Function url not found.#'
+		- '#Function app not found.#'
+		- '#Caught class SoapFault not found.#'
+		- '#Instantiated class SoapClient not found.#'

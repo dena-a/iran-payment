@@ -3,6 +3,7 @@
 namespace Dena\IranPayment\Providers\Saman;
 
 use Dena\IranPayment\Exceptions\InvalidDataException;
+use Dena\IranPayment\Exceptions\InvalidGatewayMethodException;
 use Dena\IranPayment\Exceptions\PayBackNotPossibleException;
 
 use Dena\IranPayment\Providers\BaseProvider;
@@ -15,6 +16,13 @@ use Exception;
 use SoapFault;
 use SoapClient;
 
+/**
+ * 'Saman'
+ *
+ * @method setTrackingCode($code)
+ * @method setCardNumber($number)
+ * @method setReferenceNumber($number)
+ */
 class Saman extends BaseProvider implements GatewayInterface
 {
 	private $token;
@@ -23,7 +31,7 @@ class Saman extends BaseProvider implements GatewayInterface
 	private $payment_url;
 	private $merchant_id;
 	private $prepared_amount;
-	private $connection_timeout;
+	protected $connection_timeout;
 
 	public function __construct()
 	{
@@ -31,7 +39,7 @@ class Saman extends BaseProvider implements GatewayInterface
 		$this->setDefaults();
 	}
 
-	public function getName()
+	public function gatewayName()
 	{
 		return 'saman';
 	}
@@ -52,29 +60,29 @@ class Saman extends BaseProvider implements GatewayInterface
 		$amount		= $this->getAmount();
 		$amount		= intval($amount);
 		if ($amount <= 0) {
-			throw new InvalidDataException(InvalidDataException::INVALID_AMOUNT);
+			throw InvalidDataException::invalidAmount();
 		}
 		$currency	= $this->getCurrency();
 		if (!in_array($currency, [Currency::IRR, Currency::IRT])) {
-			throw new InvalidDataException(InvalidDataException::INVALID_CURRENCY);
+			throw InvalidDataException::invalidCurrency();
 		}
 		if ($currency == Currency::IRT) {
 			$amount	= Currency::TomanToRial($amount);
 		}
 		if ($amount < 100) {
-			throw new InvalidDataException(InvalidDataException::INVALID_AMOUNT);
+			throw InvalidDataException::invalidAmount();
 		}
 		$this->prepared_amount	= $amount;
 	}
 
-	public function payPrepare()
+	public function gatewayPayPrepare()
 	{
 		$this->prepareAmount();
 	}
 
-	public function payRequest()
+	public function gatewayPay()
 	{
-		$this->payPrepare();
+		$this->gatewayPayPrepare();
 
 		try{
 			$soap = new SoapClient($this->token_url, [
@@ -108,7 +116,7 @@ class Saman extends BaseProvider implements GatewayInterface
 		}
 	}
 
-	public function verifyPrepare()
+	public function gatewayVerifyPrepare()
 	{
 		$this->prepareAmount();
 		if ($this->request->State != 'OK' || $this->request->StateCode != '0' ) {
@@ -152,9 +160,9 @@ class Saman extends BaseProvider implements GatewayInterface
 		$this->transactionVerifyPending();
 	}
 
-	public function verifyRequest()
+	public function gatewayVerify()
 	{
-		$this->verifyPrepare();
+		$this->gatewayVerifyPrepare();
 
 		try{
 			$soap = new SoapClient($this->verify_url, [
@@ -194,7 +202,7 @@ class Saman extends BaseProvider implements GatewayInterface
 		$this->transactionSucceed();
 	}
 
-	public function redirectView()
+	public function gatewayRedirectView()
 	{
 		$this->transactionPending();
 		return view('iranpayment::pages.saman', [
@@ -205,9 +213,21 @@ class Saman extends BaseProvider implements GatewayInterface
 		]);
 	}
 
-	public function payBack()
+	public function gatewayPayBack()
 	{
 		throw new PayBackNotPossibleException;
 	}
 
+	public function gatewayPayView()
+	{
+		return $this->gatewayRedirectView();
+	}
+
+	public function gatewayPayUri() {
+		throw new InvalidGatewayMethodException;
+	}
+
+	public function gatewayPayRedirect() {
+		throw new InvalidGatewayMethodException;
+	}
 }

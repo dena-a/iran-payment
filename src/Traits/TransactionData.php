@@ -24,7 +24,7 @@ trait TransactionData
 	 * Set Transaction  function
 	 *
 	 * @param IranPaymentTransaction $transaction
-	 * @return void
+	 * @return self
 	 */
 	public function setTransaction(IranPaymentTransaction $transaction)
 	{
@@ -37,12 +37,12 @@ trait TransactionData
 	 * Find Transaction function
 	 *
 	 * @param int $transaction_id
-	 * @return void
+	 * @return self
 	 */
 	public function findTransaction(int $transaction_id)
 	{
 		$transaction = IranPaymentTransaction::find($transaction_id);
-		if (!isset($transaction)) {
+		if (!$transaction) {
 			throw new TransactionNotFoundException;
 		}
 
@@ -53,7 +53,7 @@ trait TransactionData
 	 * Search Transaction Code function
 	 *
 	 * @param string $transaction_code
-	 * @return void
+	 * @return self
 	 */
 	public function searchTransactionCode(string $transaction_code)
 	{
@@ -68,7 +68,7 @@ trait TransactionData
 	/**
      * Get Transaction function
      *
-     * @return void
+     * @return IranPaymentTransaction
      */
 	public function getTransaction()
 	{
@@ -78,7 +78,7 @@ trait TransactionData
 	/**
 	 * Get Transaction Gateway function
 	 *
-	 * @return void
+	 * @return string
 	 */
 	public function getGateway()
 	{
@@ -88,7 +88,7 @@ trait TransactionData
 	/**
 	 * Get Transaction Card Number function
 	 *
-	 * @return void
+	 * @return int
 	 */
 	public function getCardNumber()
 	{
@@ -98,7 +98,7 @@ trait TransactionData
 	/**
      * Get Transaction Tracking Code function
      *
-     * @return void
+     * @return int
      */
 	public function getTrackingCode()
 	{
@@ -108,7 +108,7 @@ trait TransactionData
 	/**
      * Get Transaction Reference Number function
      *
-     * @return void
+     * @return int
      */
 	public function getReferenceNumber()
 	{
@@ -116,9 +116,9 @@ trait TransactionData
 	}
 
 	/**
-     * Get Transaction Code( function
+     * Get Transaction Code function
      *
-     * @return void
+     * @return string
      */
 	public function getTransactionCode()
 	{
@@ -128,7 +128,7 @@ trait TransactionData
 	/**
      * Get Transaction Extra Data function
      *
-     * @return void
+     * @return array
      */
 	public function getExtra()
 	{
@@ -140,7 +140,7 @@ trait TransactionData
 	 *
 	 * @param [type] $val
 	 * @param [type] $key
-	 * @return void
+	 * @return self
 	 */
 	public function addExtra($val, $key = null)
 	{
@@ -175,7 +175,7 @@ trait TransactionData
      * Set Payable function
      *
      * @param Model $payable
-     * @return void
+     * @return self
      */
 	public function setPayable(Model $payable)
 	{
@@ -186,7 +186,7 @@ trait TransactionData
     /**
      * Get Payable function
      *
-     * @return void
+     * @return Model
      */
 	public function getPayable()
 	{

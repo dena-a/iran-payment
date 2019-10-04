@@ -15,7 +15,7 @@ trait UserData
      * Set Mobile function
      *
      * @param string $mobile
-     * @return void
+     * @return self
      */
     public function setMobile(string $mobile)
     {
@@ -27,7 +27,7 @@ trait UserData
     /**
      * Get Mobile function
      *
-     * @return void
+     * @return string
      */
     public function getMobile()
     {
@@ -45,7 +45,7 @@ trait UserData
      * Set User Description function
      *
      * @param string $description
-     * @return void
+     * @return self
      */
     public function setDescription(string $description)
     {
@@ -57,7 +57,7 @@ trait UserData
     /**
      * Get Description function
      *
-     * @return void
+     * @return string
      */
     public function getDescription()
     {

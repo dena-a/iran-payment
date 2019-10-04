@@ -6,6 +6,8 @@ use Exception;
 
 class SamanException extends Exception
 {
+	protected $error_id;
+
 	public static $errors = [
 		-1		=> 'خطا در پردازش اطلاعات ارسالی (مشکل در یکی از ورودی‌ها و ناموفق بودن فراخوانی متد برگشت تراکنش)',
 		-3		=> 'ورودی‌ها حاوی کارکترهای غیرمجاز می‌باشند.',

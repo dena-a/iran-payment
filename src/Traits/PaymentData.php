@@ -18,7 +18,7 @@ trait PaymentData
      * Set Amount function
      *
      * @param int $amount
-     * @return void
+     * @return self
      */
     public function setAmount(int $amount)
     {
@@ -30,7 +30,7 @@ trait PaymentData
     /**
      * Get Amount function
      *
-     * @return void
+     * @return int
      */
     public function getAmount()
     {
@@ -48,14 +48,14 @@ trait PaymentData
      * Set Payment Currency function
      *
      * @param string $currency
-     * @return void
+     * @return self
      */
     public function setCurrency(string $currency)
     {
         $currency = strtoupper($currency);
 
 		if (!in_array($currency, [Currency::IRR, Currency::IRT])) {
-			throw new InvalidDataException(InvalidDataException::INVALID_CURRENCY);
+			throw InvalidDataException::invalidCurrency();
         }
         
         $this->currency = $currency;
@@ -66,7 +66,7 @@ trait PaymentData
     /**
      * Get Payment Currency function
      *
-     * @return void
+     * @return string
      */
     public function getCurrency()
     {
@@ -84,14 +84,14 @@ trait PaymentData
      * Set Gateway Currency function
      *
      * @param string $currency
-     * @return void
+     * @return self
      */
     public function setGatewayCurrency(string $gateway_currency)
     {
         $gateway_currency = strtoupper($gateway_currency);
 
 		if (!in_array($gateway_currency, [Currency::IRR, Currency::IRT])) {
-			throw new InvalidDataException(InvalidDataException::INVALID_CURRENCY);
+			throw InvalidDataException::invalidCurrency();
         }
         
         $this->gateway_currency = $gateway_currency;
@@ -102,7 +102,7 @@ trait PaymentData
     /**
      * Get Payment Currency function
      *
-     * @return void
+     * @return string
      */
     public function getGatewayCurrency()
     {
@@ -112,7 +112,7 @@ trait PaymentData
     /**
      * Get Prepared Amount function
      *
-     * @return void
+     * @return int
      */
     public function getPreparedAmount()
     {        
