@@ -11,7 +11,7 @@ use Dena\IranPayment\Exceptions\TransactionNotFoundException;
 use Dena\IranPayment\Exceptions\GatewayPaymentNotSupportViewException;
 use Dena\IranPayment\Exceptions\GatewayPaymentNotSupportRedirectException;
 use Dena\IranPayment\Exceptions\PayBackNotPossibleException;
-use Illuminate\Support\Facades\Request;
+use Illuminate\Http\Request;
 use Dena\IranPayment\Models\IranPaymentTransaction;
 
 use Dena\IranPayment\Traits\UserData;
