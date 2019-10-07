@@ -10,9 +10,8 @@ use Dena\IranPayment\Exceptions\InvalidRequestException;
 use Dena\IranPayment\Exceptions\TransactionNotFoundException;
 use Dena\IranPayment\Exceptions\GatewayPaymentNotSupportViewException;
 use Dena\IranPayment\Exceptions\GatewayPaymentNotSupportRedirectException;
-
+use Dena\IranPayment\Exceptions\PayBackNotPossibleException;
 use Illuminate\Http\Request;
-
 use Dena\IranPayment\Models\IranPaymentTransaction;
 
 use Dena\IranPayment\Traits\UserData;
@@ -21,7 +20,23 @@ use Dena\IranPayment\Traits\TransactionData;
 
 use Dena\IranPayment\Helpers\Helpers;
 use Dena\IranPayment\Helpers\Currency;
+use Illuminate\Support\Facades\View;
 
+/**
+ * 'BaseProvider'
+ *
+ * @method gatewayPayPrepare()
+ * @method gatewayName()
+ * @method gatewayPay()
+ * @method gatewayPayLink()
+ * @method gatewayPayRedirect()
+ * @method gatewayPayUri()
+ * @method gatewayPayView()
+ * @method detectGateway()
+ * @method gatewayVerifyPrepare()
+ * @method gatewayVerify()
+ * @method gatewayPayBack()
+ */
 abstract class BaseProvider
 {
 	use UserData, PaymentData, TransactionData;
@@ -57,8 +72,8 @@ abstract class BaseProvider
 	/**
 	 * Set Request function
 	 *
-	 * @param $request
-	 * @return void
+	 * @param Request $request
+	 * @return self
 	 */
 	public function setRequest(Request $request)
 	{
@@ -70,7 +85,7 @@ abstract class BaseProvider
 	 * Set Callback Url function
 	 *
 	 * @param string $callback_url
-	 * @return void
+	 * @return self
 	 */
 	public function setCallbackUrl(string $callback_url)
 	{
@@ -82,7 +97,7 @@ abstract class BaseProvider
 	/**
 	 * Get Callback Url function
 	 *
-	 * @return void
+	 * @return string
 	 */
 	public function getCallbackUrl()
 	{
@@ -94,7 +109,7 @@ abstract class BaseProvider
 	/**
 	 * Pay function
 	 *
-	 * @return void
+	 * @return self
 	 */
 	public function ready()
 	{
@@ -128,7 +143,7 @@ abstract class BaseProvider
 	/**
 	 * Pay View function
 	 *
-	 * @return void
+	 * @return View
 	 */
 	public function view()
 	{
@@ -148,9 +163,29 @@ abstract class BaseProvider
 	}
 
 	/**
+	 * Pay Uri function
+	 *
+	 * @return string
+	 */
+	public function uri()
+	{
+		if (!isset($this->transaction)) {
+			throw new TransactionNotFoundException();
+		}
+
+		try {
+			$this->transactionPending();
+
+			return $this->gatewayPayUri();
+		} catch (Exception $ex) {
+			throw $ex;
+		}
+	}
+
+	/**
 	 * Pay Redirect function
 	 *
-	 * @return void
+	 * @return View
 	 */
 	public function redirect()
 	{
@@ -172,7 +207,7 @@ abstract class BaseProvider
 	/**
 	 * General Redirect View function
 	 *
-	 * @return void
+	 * @return View
 	 */
 	public function generalRedirectView()
 	{
@@ -188,13 +223,16 @@ abstract class BaseProvider
 			'title'				=> $title ?? 'درحال انتقال به درگاه پرداخت...',
 			'image'				=> $image ?? null,
 			'transaction_code'	=> $this->getTransactionCode(),
-			'bank_url'			=> $this->payLink(),
+			'bank_url'			=> $this->gatewayPayUri(),
 		]);
 	}
 
 	public static function detectGateway(Request $request = null)
 	{
 		if (!isset($request)) {
+			/**
+			 * @return Request
+			*/
 			$request = app('request');
 		}
 
@@ -210,7 +248,7 @@ abstract class BaseProvider
 	/**
 	 * Verify function
 	 *
-	 * @return void
+	 * @return self
 	 */
 	public function verify(IranPaymentTransaction $transaction = null)
 	{
@@ -257,8 +295,17 @@ abstract class BaseProvider
 	 *
 	 * @return void
 	 */
-	protected function payBack()
+	protected function payBack(IranPaymentTransaction $transaction = null)
 	{
+		if(isset($transaction)) {
+			$this->setTransaction($transaction);
+		} elseif(!isset($this->transaction)) {
+			$transaction_code_field = config('iranpayment.transaction_query_param', 'tc');
+			if (isset($this->request->$transaction_code_field)) {
+				$this->searchTransactionCode($this->request->$transaction_code_field);
+			}
+		}
+
 		if (!isset($this->transaction)) {
 			throw new TransactionNotFoundException();
 		}
@@ -266,7 +313,7 @@ abstract class BaseProvider
 		try {
 			$this->gatewayPayBack();
 
-			$this->transaction->paidBack();
+			$this->transactionPaidBack();
 		} catch (PayBackNotPossibleException $pbex) {
 			throw $pbex;
 		} catch (GatewayException $gwex) {

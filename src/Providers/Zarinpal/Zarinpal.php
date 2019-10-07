@@ -132,9 +132,9 @@ class Zarinpal extends BaseProvider implements GatewayInterface
 	/**
 	 * Pay Link function
 	 *
-	 * @return void
+	 * @return string
 	 */
-	private function payLink()
+	public function gatewayPayUri()
 	{
 		if (config('iranpayment.zarinpal.type') == 'zarin-gate') {
 			return "https://www.zarinpal.com/pg/StartPay/{$this->getReferenceNumber()}/ZarinGate";
@@ -154,7 +154,7 @@ class Zarinpal extends BaseProvider implements GatewayInterface
 
 		return view('iranpayment::pages.zarinpal', [
 			'transaction_code'	=> $this->getTransactionCode(),
-			'bank_url'			=> $this->payLink(),
+			'bank_url'			=> $this->gatewayPayUri(),
 		]);
 	}
 
@@ -165,7 +165,7 @@ class Zarinpal extends BaseProvider implements GatewayInterface
 	 */
 	public function gatewayPayRedirect()
 	{
-		return redirect($this->payLink());
+		return redirect($this->gatewayPayUri());
 	}
 
 	public function gatewayVerifyPrepare()

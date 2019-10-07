@@ -6,6 +6,20 @@ use Illuminate\Database\Eloquent\Model;
 
 use Dena\IranPayment\Traits\IranPaymentDatabase as DatabaseTrait;
 
+/**
+ * An Eloquent Model: 'IranPaymentTransaction'
+ *
+ * @property integer $id
+ * @property integer $amount
+ * @property string $gateway
+ * @property string $status
+ * @property string $mobile
+ * @property string $currency
+ * @property \Illuminate\Support\Carbon $created_at
+ * @property \Illuminate\Support\Carbon $updated_at
+ * @method static Model find(integer $id)
+ * @method static Model where($key, $val)
+ */
 class IranPaymentTransaction extends Model
 {
 	use DatabaseTrait;
@@ -69,19 +83,6 @@ class IranPaymentTransaction extends Model
     public function payable()
     {
         return $this->morphTo();
-	}
-	
-	/**
-	 * Paid Back function
-	 *
-	 * @param array $params
-	 * @return void
-	 */
-	public function paidBack(array $params = null)
-	{
-		$this->fill($params);
-		$this->status = self::T_PAID_BACK;
-		$this->save();
 	}
 
 	public function getStatusTextAttribute()

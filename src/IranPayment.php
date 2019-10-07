@@ -16,6 +16,9 @@ use Dena\IranPayment\Providers\GatewayInterface;
 
 class IranPayment
 {
+	/**
+	 * Gateways classes constant names
+	 */
 	const ZARINPAL	= 'zarinpal';
 	const SAMAN		= 'saman';
 	const PAYIR		= 'payir';
@@ -23,8 +26,18 @@ class IranPayment
 	const PAYPING	= 'payping';
 	const TEST		= 'test';
 
+	/**
+	 * Gateway variable
+	 *
+	 * @var GatewayInterface
+	 */
 	protected $gateway;
 
+	/**
+	 * Constructor function
+	 *
+	 * @param mixed $gateway
+	 */
 	public function __construct($gateway = null)
 	{
 		$this->setDefaults();
@@ -123,13 +136,18 @@ class IranPayment
 	 */
 	public function getSupportedGateways(): array
 	{
-		return [
+		$gateways = [
 			self::ZARINPAL,
 			self::SAMAN,
 			self::PAYIR,
 			self::PAYDOTIR,
 			self::PAYPING,
-			self::TEST
 		];
+
+		if (env('APP_DEBUG') === true) {
+			$gateways[] = self::TEST;
+		}
+
+		return $gateways;
 	}
 }

@@ -2,9 +2,9 @@
 
 namespace Dena\IranPayment\Providers\Zarinpal;
 
-use Exception;
+use Dena\IranPayment\Exceptions\GatewayException;
 
-class ZarinpalException extends Exception
+class ZarinpalException extends GatewayException
 {
 	public static $errors = [
 		-1	=> 'اطلاعات ارسال شده ناقص است.',
@@ -23,8 +23,8 @@ class ZarinpalException extends Exception
 
 	public function __construct($error_id)
 	{
-		$this->error_id = intval($error_id);
+		$error_id = intval($error_id);
 
-		parent::__construct(@self::$errors[$this->error_id].' #'.$this->error_id, $this->error_id);
+		parent::__construct(@self::$errors[$error_id]);
 	}
 }

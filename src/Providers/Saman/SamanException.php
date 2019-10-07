@@ -2,9 +2,9 @@
 
 namespace Dena\IranPayment\Providers\Saman;
 
-use Exception;
+use Dena\IranPayment\Exceptions\GatewayException;
 
-class SamanException extends Exception
+class SamanException extends GatewayException
 {
 	public static $errors = [
 		-1		=> 'خطا در پردازش اطلاعات ارسالی (مشکل در یکی از ورودی‌ها و ناموفق بودن فراخوانی متد برگشت تراکنش)',
@@ -33,8 +33,8 @@ class SamanException extends Exception
 
 	public function __construct($error_id)
 	{
-		$this->error_id = intval($error_id);
+		$error_id = intval($error_id);
 
-		parent::__construct(@self::$errors[$this->error_id].' #'.$this->error_id, $this->error_id);
+		parent::__construct(@self::$errors[$error_id]);
 	}
 }

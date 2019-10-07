@@ -18,6 +18,7 @@ class PayPingException extends GatewayException
     public static function httpCode($httpcode)
     {
         $httpcode = isset(self::$httpcode_errors[$httpcode]) ? $httpcode : '400';
-        return new self(self::$httpcode_errors[$httpcode], $httpcode);
+
+        return new self(self::$httpcode_errors[$httpcode]);
     }
 }
