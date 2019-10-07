@@ -295,8 +295,17 @@ abstract class BaseProvider
 	 *
 	 * @return void
 	 */
-	protected function payBack()
+	protected function payBack(IranPaymentTransaction $transaction = null)
 	{
+		if(isset($transaction)) {
+			$this->setTransaction($transaction);
+		} elseif(!isset($this->transaction)) {
+			$transaction_code_field = config('iranpayment.transaction_query_param', 'tc');
+			if (isset($this->request->$transaction_code_field)) {
+				$this->searchTransactionCode($this->request->$transaction_code_field);
+			}
+		}
+
 		if (!isset($this->transaction)) {
 			throw new TransactionNotFoundException();
 		}
@@ -304,7 +313,7 @@ abstract class BaseProvider
 		try {
 			$this->gatewayPayBack();
 
-			$this->transaction->paidBack();
+			$this->transactionPaidBack();
 		} catch (PayBackNotPossibleException $pbex) {
 			throw $pbex;
 		} catch (GatewayException $gwex) {

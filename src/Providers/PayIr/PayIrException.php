@@ -6,7 +6,7 @@ use Dena\IranPayment\Exceptions\GatewayException;
 
 class PayIrException extends GatewayException
 {
-    public static $send_errors = [
+    public static $pay_errors = [
         '-1'        => 'ارسال api الزامی می باشد',
         '-2'        => 'ارسال مبلغ الزامی می باشد',
         '-3'        => 'مبلغ باید به صورت عددی باشد',
@@ -30,8 +30,8 @@ class PayIrException extends GatewayException
 
     public static function pay($error_code)
     {
-        $error_code = isset(self::$send_errors[$error_code]) ? $error_code : 'failed';
-        return new self(self::$send_errors[$error_code], $error_code);
+        $error_code = isset(self::$pay_errors[$error_code]) ? $error_code : 'failed';
+        return new self(self::$pay_errors[$error_code], $error_code);
     }
 
     public static function verify($error_code)

@@ -84,19 +84,6 @@ class IranPaymentTransaction extends Model
     {
         return $this->morphTo();
 	}
-	
-	/**
-	 * Paid Back function
-	 *
-	 * @param array $params
-	 * @return void
-	 */
-	public function paidBack(array $params = null)
-	{
-		$this->fill($params);
-		$this->status = self::T_PAID_BACK;
-		$this->save();
-	}
 
 	public function getStatusTextAttribute()
 	{

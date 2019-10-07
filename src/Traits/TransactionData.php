@@ -244,4 +244,11 @@ trait TransactionData
 		$this->transaction->fill($params);
 		$this->transaction->save();
 	}
+
+	protected function transactionPaidBack(array $params = [])
+	{
+		$this->fill($params);
+		$this->status = IranPaymentTransaction::T_PAID_BACK;
+		$this->save();
+	}
 }
