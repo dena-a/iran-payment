@@ -276,7 +276,6 @@ trait TransactionData
 				$this->transaction->payable_id = $this->payable_id;
 				$this->transaction->payable_type = $this->payable_type;
 			}
-			$this->transaction->save();
 			$this->transaction->code = Str::random(config('iranpayment.code_length' ,16));
 			$this->transaction->save();
 		});
