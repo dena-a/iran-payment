@@ -89,8 +89,12 @@ abstract class BaseProvider
 	 */
 	public function setCallbackUrl(string $callback_url)
 	{
-		$this->callback_url = $callback_url;
-
+		if (filter_var($callback_url, FILTER_VALIDATE_URL) === false) {
+			$this->callback_url = url($callback_url);
+		} else {
+			$this->callback_url = $callback_url;
+		}
+		
 		return $this;
 	}
 

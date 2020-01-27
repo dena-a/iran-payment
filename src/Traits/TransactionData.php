@@ -135,6 +135,7 @@ trait TransactionData
 		return isset($this->transaction) ? $this->transaction->extra : null;
 	}
 
+
 	/**
 	 * Add Extra function
 	 *
@@ -159,7 +160,11 @@ trait TransactionData
 				throw new \Exception('addExtra method only works when extra field is an array');
 			}
 
-			$this->transactionUpdate(compact('extra'));
+			if(!empty($this->transaction['id'])) {
+				$this->transactionUpdate(compact('extra'));
+			} else {
+				$this->transaction->extra = $extra;
+			}
 		}
 		return $this;
 	}
@@ -170,6 +175,20 @@ trait TransactionData
      * @var Model
      */
 	protected $payable;
+	
+	/**
+     * Payable id
+     *
+     * @var int
+     */
+	protected $payable_id;
+
+	/**
+     * Payable type
+     *
+     * @var string
+     */
+	protected $payable_type;
 
     /**
      * Set Payable function
@@ -186,11 +205,59 @@ trait TransactionData
     /**
      * Get Payable function
      *
-     * @return Model
+     * @return Model|int|null
      */
 	public function getPayable()
 	{
-		return $this->payable;
+		if($this->payable) return $this->payable;
+		elseif($this->payable_id) {
+			return $this->payable_id;
+		}
+		return null;
+	}
+
+	/**
+     * Set Payable function
+     *
+     * @param int $payableId
+     * @return self
+     */
+	public function setPayableId(int $payableId) : self
+	{
+		$this->payable_id = $payableId;
+		return $this;
+	}
+
+    /**
+     * Get Payable id function
+     *
+     * @return int
+     */
+	public function getPayableId()
+	{
+		return $this->payable_id;
+	}
+
+	/**
+     * Set Payable function
+     *
+     * @param string $payableType
+     * @return self
+     */
+	public function setPayableType(string $payableType) : self
+	{
+		$this->payable_type = $payableType;
+		return $this;
+	}
+
+    /**
+     * Get Payable id function
+     *
+     * @return string
+     */
+	public function getPayableType() : string
+	{
+		return $this->payable_type;
 	}
 	
 	protected function newTransaction()
@@ -203,8 +270,12 @@ trait TransactionData
 				'extra'			=> is_array($this->getExtra()) ? json_encode($this->getExtra()) : $this->getExtra(),
 			]);
 			$this->transaction->status	= IranPaymentTransaction::T_INIT;
-			$this->transaction->payable()->associate($this->payable);
-			$this->transaction->save();
+			if (!empty($this->payable)) {
+				$this->transaction->payable()->associate($this->payable);
+			} elseif (!empty($this->payable_id)) {
+				$this->transaction->payable_id = $this->payable_id;
+				$this->transaction->payable_type = $this->payable_type;
+			}
 			$this->transaction->code = Str::random(config('iranpayment.code_length' ,16));
 			$this->transaction->save();
 		});
