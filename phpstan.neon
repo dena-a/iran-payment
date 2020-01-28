@@ -16,5 +16,4 @@ parameters:
 		- '#Function public_path not found.#'
 		- '#Function url not found.#'
 		- '#Function app not found.#'
-		- '#Caught class SoapFault not found.#'
-		- '#Instantiated class SoapClient not found.#'
+		- '#Constant \bCURL.*\b not found.#'

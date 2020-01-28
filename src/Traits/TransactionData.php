@@ -205,7 +205,7 @@ trait TransactionData
     /**
      * Get Payable function
      *
-     * @return Model|int|null
+     * @return Model|int|string|null
      */
 	public function getPayable()
 	{
