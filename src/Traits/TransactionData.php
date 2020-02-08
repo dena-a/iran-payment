@@ -50,6 +50,27 @@ trait TransactionData
 	}
 
 	/**
+	 * Find Item Transactions
+	 *
+	 * @param string $payable_id
+	 * @param string $payable_type
+	 * @param string $status
+	 * @return array
+	 */
+	public function payableTransactions($payable_id, $payable_type = null, $status = null)
+	{
+		$transactions = IranPaymentTransaction::where('payable_id', $payable_id);
+		if (!empty($payable_type)) {
+			$transactions->where('payable_type', $payable_type);
+		}
+		if (!empty($status)) {
+			$transactions->where('status', $status);
+		}
+
+		return $transactions->get();
+	}
+
+	/**
 	 * Search Transaction Code function
 	 *
 	 * @param string $transaction_code
