@@ -119,8 +119,8 @@ class Saman extends BaseProvider implements GatewayInterface
 	public function gatewayVerifyPrepare()
 	{
 		$this->prepareAmount();
-		if ($this->request->State != 'OK' || $this->request->StateCode != '0' ) {
-			switch ($this->request->StateCode) {
+		if ($this->request->get('State') !== 'OK' || $this->request->get('StateCode') !== '0' ) {
+			switch ($this->request->get('StateCode')) {
 				case '-1':
 					$e	= new SamanException(-101);
 					break;
@@ -135,28 +135,26 @@ class Saman extends BaseProvider implements GatewayInterface
 			$this->transactionFailed();
 			throw $e;
 		}
-		if ($this->request->transaction !== $this->getTransactionCode()) {
+
+		if ($this->request->get(config('iranpayment.transaction_query_param', 'tc')) !== $this->getTransactionCode()) {
 			$e	= new SamanException(-14);
 			$this->setDescription($e->getMessage());
 			$this->transactionFailed();
 			throw $e;
 		}
-		if ($this->request->MID !== $this->merchant_id) {
+		if ($this->request->get('MID') !== $this->merchant_id) {
 			$e	= new SamanException(-4);
 			$this->setDescription($e->getMessage());
 			$this->transactionFailed();
 			throw $e;
 		}
-
-		$this->setTrackingCode($this->request->TRACENO);
-		$this->setCardNumber($this->request->SecurePan);
-		$this->setReferenceNumber($this->request->RefNum);
 		
 		$this->transactionUpdate([
-			'card_number'		=> $this->request->SecurePan,
-			'tracking_code'		=> $this->request->TRACENO,
-			'reference_number'	=> $this->request->RefNum,
+			'card_number'		=> $this->request->get('SecurePan'),
+			'tracking_code'		=> $this->request->get('TRACENO'),
+			'reference_number'	=> $this->request->get('RefNum'),
 		]);
+
 		$this->transactionVerifyPending();
 	}
 
@@ -205,6 +203,7 @@ class Saman extends BaseProvider implements GatewayInterface
 	public function gatewayRedirectView()
 	{
 		$this->transactionPending();
+		
 		return view('iranpayment::pages.saman', [
 			'transaction_code'	=> $this->getTransactionCode(),
 			'token'				=> $this->token,
