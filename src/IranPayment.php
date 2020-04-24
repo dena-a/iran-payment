@@ -49,18 +49,6 @@ class IranPayment
 		}
 	}
 
-	public function __call($name, $arguments)
-	{
-		if (
-            !method_exists(__CLASS__, $name)
-            && $this->gateway instanceof GatewayInterface
-            && method_exists($this->gateway, $name) 
-        ) {
-			$res = call_user_func_array([$this->gateway, $name], $arguments);
-			return $res ?? $this->gateway;
-		}
-	}
-
 	/**
 	 * Set Defaults function
 	 *
@@ -118,7 +106,7 @@ class IranPayment
 	/**
 	 * Build Gateway function
 	 *
-	 * @return void
+	 * @return GatewayInterface
 	 */
 	public function build()
 	{
@@ -150,4 +138,19 @@ class IranPayment
 
 		return $gateways;
 	}
+
+    public function __call($name, $arguments)
+    {
+        if (
+            !method_exists(__CLASS__, $name)
+            && method_exists($this->gateway, $name)
+        ) {
+            if (!$this->gateway instanceof GatewayInterface) {
+                $this->build();
+            }
+
+            $res = call_user_func_array([$this->gateway, $name], $arguments);
+            return $res ?? $this->gateway;
+        }
+    }
 }

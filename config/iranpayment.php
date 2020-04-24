@@ -8,7 +8,7 @@ return [
 	|--------------------------------------------------------------------------
 	| [saman|zarinpal|payir|payping]
 	*/
-	'default' => 'saman',
+	'default' => env('IRANPAYMENT_DEFAULT', 'saman'),
 
 	/*
 	|--------------------------------------------------------------------------
@@ -16,7 +16,7 @@ return [
 	|--------------------------------------------------------------------------
 	| [IRR|IRT]
 	*/
-	'currency' => 'IRR',
+	'currency' => env('IRANPAYMENT_CURRENCY', 'IRR'),
 
 	/*
 	|--------------------------------------------------------------------------
@@ -26,7 +26,7 @@ return [
 	| You may set a specific callback url for each gateways in their config with callback-url parameter.
 	*/
 	// 'callback-url' => 'http://example.com/payments/callback',
-	'callback-url' => url('/payments/callback'),
+	'callback-url' => '/payments/callback',
 
 	/*
 	|--------------------------------------------------------------------------
