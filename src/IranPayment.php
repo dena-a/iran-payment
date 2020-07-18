@@ -132,9 +132,9 @@ class IranPayment
 			self::PAYPING,
 		];
 
-		if (env('APP_DEBUG') === true) {
-			$gateways[] = self::TEST;
-		}
+		if (config('app.env', 'production') !== 'production') {
+            $gateways[] = self::TEST;
+        }
 
 		return $gateways;
 	}
