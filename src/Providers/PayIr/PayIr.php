@@ -60,7 +60,7 @@ class PayIr extends BaseProvider implements GatewayInterface
 	 */
 	private function setDefaults()
 	{
-		$this->setGatewayCurrency(Currency::IRR);
+		$this->setGatewayCurrency(self::CURRENCY);
 		$this->setApi(config('iranpayment.payir.merchant-id'));
 		$this->setCallbackUrl(config('iranpayment.payir.callback-url', config('iranpayment.callback-url')));
 	}
@@ -110,7 +110,7 @@ class PayIr extends BaseProvider implements GatewayInterface
 		$this->setFactorNumber($this->transaction->code);
 	}
 
-	public function gatewayPay()
+	public function gatewayPay(): void
 	{
 		$fields = http_build_query([
 			'api' => $this->api,
@@ -148,7 +148,7 @@ class PayIr extends BaseProvider implements GatewayInterface
 		if(!isset($result->token)) {
 			if (isset($result->errorCode, $result->errorMessage)) {
 				$this->transactionFailed($result->errorMessage);
-				throw PayIrException::pay($result->errorCode);
+				throw PayIrException::error($result->errorCode);
 			}
 
 			$this->transactionFailed(json_encode($result));
@@ -206,7 +206,7 @@ class PayIr extends BaseProvider implements GatewayInterface
 		]);
 
 		try {
-			$ch		= curl_init();
+			$ch = curl_init();
 			curl_setopt($ch, CURLOPT_URL, self::VERIFY_URL);
 			curl_setopt($ch, CURLOPT_POSTFIELDS, $fields);
 			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
@@ -223,6 +223,7 @@ class PayIr extends BaseProvider implements GatewayInterface
 			}
 
 			$result = json_decode($result);
+
 		} catch(Exception $ex) {
 			$this->transactionFailed($ex->getMessage());
 			throw $ex;
@@ -231,7 +232,7 @@ class PayIr extends BaseProvider implements GatewayInterface
 		if(!isset($result->amount, $result->transId, $result->cardNumber)) {
 			if (isset($result->errorCode, $result->errorMessage)) {
 				$this->transactionFailed($result->errorMessage);
-				throw PayIrException::verify($result->errorCode);
+				throw PayIrException::error($result->errorCode);
 			}
 
 			$this->transactionFailed(json_encode($result));
@@ -255,7 +256,7 @@ class PayIr extends BaseProvider implements GatewayInterface
 	 *
 	 * @throws PayBackNotPossibleException
 	 */
-	public function gatewayPayBack()
+	public function gatewayPayBack(): void
 	{
 		throw new PayBackNotPossibleException;
 	}
