@@ -2,61 +2,55 @@
 
 namespace Dena\IranPayment\Traits;
 
-use Dena\IranPayment\Models\IranPaymentTransaction;
-
-use Dena\IranPayment\IranPayment;
-
 trait Payable
 {
     /**
      * IranPayment Amount variable
      *
-     * @var integer
+     * @var int|null
      */
-    private $iranpayment_amount;
+    private ?int $iranpayment_amount;
 
     /**
      * IranPayment Amount Model Field Name variable
-     * 
+     *
      * There is no need to call setIranPaymentAmount function
      * if this variable has been set in model.
      *
-     * @var string
+     * @var string|null
      */
-    // protected $iranpayment_amount_field;
+     // protected ?string $iranpayment_amount_field;
 
     /**
      * Get all of the payment's transactions.
      */
     public function transactions()
     {
-        return $this->morphMany(IranPaymentTransaction::class, 'payable');
+        return $this->morphMany(\Dena\IranPayment\Models\IranPaymentTransaction::class, 'payable');
     }
 
     /**
-     * Set Amount function
+     * Set IranPayment Amount function
      *
-     * @param integer $amount
-     * @return void
+     * @param int $amount
+     * @return $this
      */
-    protected function setIranPaymentAmount(int $amount)
+    protected function setIranPaymentAmount(int $amount): self
     {
         $this->iranpayment_amount = $amount;
+
         return $this;
     }
 
-    /**
-     * Pay function
-     *
-     * @return void
-     */
     public function pay($gateway = null)
     {
         if (!isset($this->iranpayment_amount) && isset($this->iranpayment_amount_field)) {
-            $iranpayment_amount_field = $this->iranpayment_amount_field;
-            $this->iranpayment_amount = $this->$iranpayment_amount_field;
+            $this->iranpayment_amount = intval($this->{$this->iranpayment_amount_field});
         }
 
-        return (new IranPayment($gateway))->build()->setAmount($this->iranpayment_amount)->setPayable($this)->ready();
+        return \Dena\IranPayment\IranPayment::create($gateway)
+            ->setAmount($this->iranpayment_amount)
+            ->setPayable($this)
+            ->ready();
     }
 }

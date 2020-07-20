@@ -2,50 +2,56 @@
 
 namespace Dena\IranPayment\Providers\PayIr;
 
-use Exception;
-use Dena\IranPayment\Exceptions\GatewayException;
-use Dena\IranPayment\Exceptions\InvalidRequestException;
-use Dena\IranPayment\Exceptions\InvalidDataException;
-use Dena\IranPayment\Exceptions\PayBackNotPossibleException;
 use Dena\IranPayment\Providers\BaseProvider;
 use Dena\IranPayment\Providers\GatewayInterface;
+
+use Exception;
+use Dena\IranPayment\Exceptions\GatewayException;
+use Dena\IranPayment\Exceptions\InvalidDataException;
+use Dena\IranPayment\Exceptions\InvalidRequestException;
+use Dena\IranPayment\Exceptions\PayBackNotPossibleException;
 
 use Dena\IranPayment\Helpers\Currency;
 
 class PayIr extends BaseProvider implements GatewayInterface
 {
-	/**
-	 * API variable
-	 *
-	 * @var string
-	 */
-	protected $api;
+    private const SEND_URL   = "https://pay.ir/pg/send";
+    private const VERIFY_URL = "https://pay.ir/pg/verify";
+    private const TOKEN_URL  = "https://pay.ir/pg/{token}";
+    public const CURRENCY    = Currency::IRR;
 
-	/**
-	 * Factor Number variable
-	 *
-	 * @var [type]
-	 */
-	protected $factor_number = null;
+    /**
+     * API variable
+     *
+     * @var string
+     */
+    protected string $api;
 
-	/**
-	 * Constructor function
-	 */
-	public function __construct()
+    /**
+     * Factor Number variable
+     *
+     * @var string|null
+     */
+    protected ?string $factor_number = null;
+
+    /**
+     * Constructor function
+     */
+    public function __construct()
 	{
 		parent::__construct();
 		$this->setDefaults();
 	}
 
-	/**
-	 * Gateway Name function
-	 *
-	 * @return string
-	 */
-	public function gatewayName()
-	{
-		return 'pay.ir';
-	}
+    /**
+     * Gateway Name function
+     *
+     * @return string
+     */
+    public function gatewayName(): string
+    {
+        return 'pay.ir';
+    }
 
 	/**
 	 * Set Defaults function
@@ -59,43 +65,43 @@ class PayIr extends BaseProvider implements GatewayInterface
 		$this->setCallbackUrl(config('iranpayment.payir.callback-url', config('iranpayment.callback-url')));
 	}
 
-	/**
-	 * Set API function
-	 *
-	 * @param string $api
-	 * @return self
-	 */
-	public function setApi(string $api)
+    /**
+     * Set API function
+     *
+     * @param string $api
+     * @return $this
+     */
+	public function setApi(string $api): self
 	{
 		$this->api = $api;
 
 		return $this;
 	}
 
-	/**
-	 * Set Factor Number function
-	 *
-	 * @param $factor_number
-	 * @return self
-	 */
-	public function setFactorNumber($factor_number)
+    /**
+     * Set Factor Number function
+     *
+     * @param $factor_number
+     * @return $this
+     */
+	public function setFactorNumber($factor_number): self
 	{
-		$this->factor_number = $factor_number;
+		$this->factor_number = (string) $factor_number;
 
 		return $this;
 	}
 
-	/**
-	 * Get Factor Number function
-	 *
-	 * @return int
-	 */
-	public function getFactorNumber()
+    /**
+     * Get Factor Number function
+     *
+     * @return string
+     */
+	public function getFactorNumber(): ?string
 	{
 		return $this->factor_number;
 	}
 
-	public function gatewayPayPrepare()
+	public function gatewayPayPrepare(): void
 	{
 		if ($this->getPreparedAmount() < 1000) {
 			throw InvalidDataException::invalidAmount();
@@ -107,17 +113,18 @@ class PayIr extends BaseProvider implements GatewayInterface
 	public function gatewayPay()
 	{
 		$fields = http_build_query([
-			'api'			=> $this->api,
-			'amount'		=> $this->getPreparedAmount(),
-			'redirect'		=> urlencode($this->getCallbackUrl()),
-			'factorNumber'	=> $this->getFactorNumber(),
-			'mobile'		=> $this->getMobile(),
-			'description'	=> $this->getDescription(),
+			'api' => $this->api,
+			'amount' => $this->getPreparedAmount(),
+			'redirect' => urlencode($this->getCallbackUrl()),
+			'factorNumber' => $this->getFactorNumber(),
+			'mobile' => $this->getMobile(),
+			'description' => $this->getDescription(),
+            'validCardNumber' => $this->getValidCardNumber(),
 		]);
 
 		try {
 			$ch = curl_init();
-			curl_setopt($ch, CURLOPT_URL, 'https://pay.ir/pg/send');
+			curl_setopt($ch, CURLOPT_URL, self::SEND_URL);
 			curl_setopt($ch, CURLOPT_POSTFIELDS, $fields);
 			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -158,10 +165,9 @@ class PayIr extends BaseProvider implements GatewayInterface
 	 *
 	 * @return string
 	 */
-	public function gatewayPayUri()
+	public function gatewayPayUri(): string
 	{
-		$reference_number = $this->getReferenceNumber();
-		return "https://pay.ir/pg/$reference_number";
+		return str_replace('{token}', $this->getReferenceNumber(), self::TOKEN_URL);
 	}
 
 	public function gatewayPayView()
@@ -177,12 +183,12 @@ class PayIr extends BaseProvider implements GatewayInterface
 		return redirect($this->gatewayPayUri());
 	}
 
-	public function gatewayVerifyPrepare()
+	public function gatewayVerifyPrepare(): void
 	{
 		//
 	}
 
-	public function gatewayVerify()
+	public function gatewayVerify(): void
 	{
 		if (!isset($this->request->token, $this->request->status)) {
 			$ex = InvalidRequestException::notFound();
@@ -201,12 +207,12 @@ class PayIr extends BaseProvider implements GatewayInterface
 
 		try {
 			$ch		= curl_init();
-			curl_setopt($ch, CURLOPT_URL, 'https://pay.ir/pg/verify');
+			curl_setopt($ch, CURLOPT_URL, self::VERIFY_URL);
 			curl_setopt($ch, CURLOPT_POSTFIELDS, $fields);
 			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 			curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeout);
-			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->connection_timeout); 
+			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->connection_timeout);
 			$result	= curl_exec($ch);
 			$ch_error = curl_error($ch);
 			curl_close($ch);

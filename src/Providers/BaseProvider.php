@@ -94,7 +94,7 @@ abstract class BaseProvider
 		} else {
 			$this->callback_url = $callback_url;
 		}
-		
+
 		return $this;
 	}
 
@@ -113,9 +113,9 @@ abstract class BaseProvider
 	/**
 	 * Pay function
 	 *
-	 * @return self
+	 * @return $this
 	 */
-	public function ready()
+	public function ready(): self
 	{
 		if ($this->amount <= 0) {
 			throw InvalidDataException::invalidAmount();
@@ -218,7 +218,7 @@ abstract class BaseProvider
 		if (method_exists($this, 'gatewayTitle')) {
 			$title = $this->gatewayTitle();
 		}
-		
+
 		if (method_exists($this, 'gatewayImage')) {
 			$image = $this->gatewayImage();
 		}

@@ -2,17 +2,20 @@
 
 namespace Dena\IranPayment;
 
-use Dena\IranPayment\Exceptions\GatewayNotFoundException;
-use Dena\IranPayment\Exceptions\OnlyWorkOnDebugModeException;
+use Dena\IranPayment\Providers\GatewayInterface;
 
-use Dena\IranPayment\Providers\BaseProvider;
 use Dena\IranPayment\Providers\PayIr\PayIr;
 use Dena\IranPayment\Providers\Saman\Saman;
 use Dena\IranPayment\Providers\PayPing\PayPing;
-use Dena\IranPayment\Providers\Zarinpal\Zarinpal;
 use Dena\IranPayment\Providers\Test\TestGateway;
+use Dena\IranPayment\Providers\Zarinpal\Zarinpal;
 
-use Dena\IranPayment\Providers\GatewayInterface;
+use Dena\IranPayment\Exceptions\GatewayNotFoundException;
+use Dena\IranPayment\Exceptions\TransactionNotFoundException;
+
+use Dena\IranPayment\Models\IranPaymentTransaction;
+
+use Illuminate\Http\Request;
 
 class IranPayment
 {
@@ -31,74 +34,70 @@ class IranPayment
 	 *
 	 * @var GatewayInterface
 	 */
-	protected $gateway;
+	protected GatewayInterface $gateway;
 
 	/**
 	 * Constructor function
 	 *
-	 * @param mixed $gateway
+	 * @param GatewayInterface|string $gateway
 	 */
-	public function __construct($gateway = null)
+	public function __construct($gateway)
 	{
-		$this->setDefaults();
-
-		if (!is_null($gateway)) {
-			$this->setGateway($gateway);
-		} elseif ($gateway = BaseProvider::detectGateway()) {
-			$this->setGateway($gateway);
-		}
-	}
-
-	/**
-	 * Set Defaults function
-	 *
-	 * @return void
-	 */
-	private function setDefaults()
-	{
-		$this->setGateway(config('iranpayment.default', Saman::class));
+        $this->setGateway($gateway);
 	}
 
 	/**
 	 * set Gateway function
 	 *
-	 * @param $gateway
-	 * @return void
+	 * @param GatewayInterface|string $gateway
+	 * @return $this
 	 */
-	public function setGateway($gateway)
+	public function setGateway($gateway): self
 	{
-		if (is_string($gateway)) {
-			switch (strtolower($gateway)) {
-				case self::ZARINPAL:
-					$this->gateway = new Zarinpal;
-					break;
-				case self::SAMAN:
-					$this->gateway = new Saman;
-					break;
-				case self::PAYIR:
-				case self::PAYDOTIR:
-					$this->gateway = new PayIr;
-					break;
-				case self::PAYPING:
-					$this->gateway = new PayPing;
-					break;
-				case self::TEST:
-					if(env('APP_DEBUG') !== true)
-						throw new OnlyWorkOnDebugModeException;
-					$this->gateway = new TestGateway;
-					break;
-			}
-		} else {
-			$this->gateway  = $gateway;
-		}
+	    if ($gateway instanceof GatewayInterface) {
+            $this->gateway = $gateway;
+
+            return $this;
+        }
+
+        switch ($gateway) {
+            case self::ZARINPAL:
+            case Zarinpal::class:
+                $this->gateway = new Zarinpal;
+                break;
+            case self::SAMAN:
+            case Saman::class:
+                $this->gateway = new Saman;
+                break;
+            case self::PAYIR:
+            case self::PAYDOTIR:
+            case PayIr::class:
+                $this->gateway = new PayIr;
+                break;
+            case self::PAYPING:
+            case PayPing::class:
+                $this->gateway = new PayPing;
+                break;
+            case self::TEST:
+            case TestGateway::class:
+                if (config('app.env', 'production') !== 'production')
+                    throw GatewayNotFoundException::productionUnavailableGateway();
+
+                $this->gateway = new TestGateway;
+                break;
+            default:
+                throw new GatewayNotFoundException;
+        }
+
+        return $this;
 	}
 
 	/**
-	 * get Gateway function
+	 * Get Gateway function
 	 *
-	 * @return void
+	 * @return GatewayInterface
 	 */
-	public function getGateway()
+	public function getGateway(): GatewayInterface
 	{
 		return $this->gateway;
 	}
@@ -108,17 +107,13 @@ class IranPayment
 	 *
 	 * @return GatewayInterface
 	 */
-	public function build()
+	public function build(): GatewayInterface
 	{
-		if (!$this->gateway instanceof GatewayInterface) {
-			throw new GatewayNotFoundException;
-		}
-
 		return $this->gateway;
 	}
 
 	/**
-	 * get Supported Gateways function
+	 * Get Supported Gateways function
 	 *
 	 * @return array
 	 */
@@ -139,17 +134,68 @@ class IranPayment
 		return $gateways;
 	}
 
+    /**
+     * Create new Instance of IranPayment
+     *
+     * @param GatewayInterface|string|null $gateway
+     * @return GatewayInterface
+     * @throws GatewayNotFoundException
+     */
+	public static function create($gateway = null): GatewayInterface
+    {
+        if (is_null($gateway)) {
+            $gateway = config('iranpayment.default', Saman::class);
+        }
+
+        return (new self($gateway))->build();
+    }
+
+    /**
+     * Detect Gateway and Create new Instance of IranPayment
+     *
+     * @param IranPaymentTransaction|Request|null $data
+     * @return GatewayInterface
+     * @throws GatewayNotFoundException
+     */
+    public static function detect($data = null): GatewayInterface
+    {
+        $transaction_query_param = config('iranpayment.transaction_query_param', 'tc');
+
+        if (is_null($data)) {
+            $request = app('request');
+            $transaction_code = $request->get($transaction_query_param);
+        } elseif ($data instanceof Request) {
+            $transaction_code = $data->get($transaction_query_param);
+        } elseif ($data instanceof IranPaymentTransaction) {
+            $transaction = $data;
+            $gateway = $transaction->gateway;
+        }
+
+        if (isset($transaction_code)) {
+            $transaction = IranPaymentTransaction::where('code', $transaction_code)->first();
+            if (isset($transaction))
+                $gateway = $transaction->gateway;
+        }
+
+        if (!isset($gateway)) {
+            throw new GatewayNotFoundException;
+        }
+
+        return !isset($transaction)
+            ? (new self($gateway))->build()
+            : (new self($gateway))->build()->setTransaction($transaction);
+    }
+
     public function __call($name, $arguments)
     {
         if (
             !method_exists(__CLASS__, $name)
             && method_exists($this->gateway, $name)
         ) {
-            if (!$this->gateway instanceof GatewayInterface) {
-                $this->build();
-            }
+            $this->build();
 
             $res = call_user_func_array([$this->gateway, $name], $arguments);
+
             return $res ?? $this->gateway;
         }
     }
