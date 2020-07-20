@@ -42,6 +42,13 @@ trait Payable
         return $this;
     }
 
+    /**
+     * Call IranPayment Purchase Method
+     *
+     * @param null $gateway
+     * @return mixed
+     * @throws \Dena\IranPayment\Exceptions\GatewayNotFoundException
+     */
     public function pay($gateway = null)
     {
         if (!isset($this->iranpayment_amount) && isset($this->iranpayment_amount_field)) {

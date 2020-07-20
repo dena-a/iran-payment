@@ -9,21 +9,21 @@ trait UserData
      *
      * @var string|null
      */
-    protected ?string $mobile;
+    protected ?string $mobile = null;
 
     /**
      * Transaction Description variable
      *
      * @var string|null
      */
-    protected ?string $description;
+    protected ?string $description = null;
 
     /**
      * Valid Card Number variable for tansaction
      *
      * @var string|null
      */
-    protected ?string $valid_card_number;
+    protected ?string $valid_card_number = null;
 
     /**
      * Set User Mobile function
