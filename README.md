@@ -46,7 +46,7 @@ php artisan migrate
 $payment = new IranPayment();
 // OR one of ['zarinpal', 'saman', 'payir']
 $payment = new IranPayment('zarinpal');
-// OR test gateway (Only works on debug mode)
+// OR test gateway (Would not work on production environment)
 $payment = new IranPayment('test');
 
 $payment->build()
