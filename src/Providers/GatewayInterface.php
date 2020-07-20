@@ -4,21 +4,21 @@ namespace Dena\IranPayment\Providers;
 
 interface GatewayInterface
 {
-    public function gatewayName();
+    public function gatewayName(): string;
 
-	public function gatewayPayPrepare();
+	public function gatewayPayPrepare(): void;
 
-	public function gatewayPay();
+	public function gatewayPay(): void;
 
-	public function gatewayVerifyPrepare();
+	public function gatewayVerifyPrepare(): void;
 
-	public function gatewayVerify();
+	public function gatewayVerify(): void;
 
 	public function gatewayPayView();
 
 	public function gatewayPayRedirect();
 
-	public function gatewayPayBack();
+	public function gatewayPayBack(): void;
 
-	public function gatewayPayUri();
+	public function gatewayPayUri(): string;
 }

@@ -34,6 +34,7 @@ return [
 	|--------------------------------------------------------------------------
 	*/
 	'code_length' => 16,
+    'transaction_query_param' => 'tc',
 
 	/*
 	|--------------------------------------------------------------------------
@@ -83,7 +84,4 @@ return [
 		'add_fees'		=> false,
 		// 'callback-url'	=> 'http://example.com/payments/payping/callback',
 	],
-
-	'transaction_query_param' => 'tc'
-
 ];

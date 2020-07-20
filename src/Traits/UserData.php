@@ -7,17 +7,31 @@ trait UserData
     /**
      * User Mobile variable
      *
-     * @var string
+     * @var string|null
      */
-    protected $mobile = null;
+    protected ?string $mobile;
 
     /**
-     * Set Mobile function
+     * Transaction Description variable
+     *
+     * @var string|null
+     */
+    protected ?string $description;
+
+    /**
+     * Valid Card Number variable for tansaction
+     *
+     * @var string|null
+     */
+    protected ?string $valid_card_number;
+
+    /**
+     * Set User Mobile function
      *
      * @param string $mobile
-     * @return self
+     * @return $this
      */
-    public function setMobile(string $mobile)
+    public function setMobile(string $mobile): self
     {
         $this->mobile = $mobile;
 
@@ -25,29 +39,22 @@ trait UserData
     }
 
     /**
-     * Get Mobile function
+     * Get User Mobile function
      *
-     * @return string
+     * @return string|null
      */
-    public function getMobile()
+    public function getMobile(): ?string
     {
         return $this->mobile;
     }
 
     /**
-     * Description variable
-     *
-     * @var string
-     */
-    protected $description = null;
-    
-    /**
-     * Set User Description function
+     * Set Transaction Description function
      *
      * @param string $description
-     * @return self
+     * @return $this
      */
-    public function setDescription(string $description)
+    public function setDescription(string $description): self
     {
         $this->description = $description;
 
@@ -55,12 +62,35 @@ trait UserData
     }
 
     /**
-     * Get Description function
+     * Get Transaction Description function
      *
-     * @return string
+     * @return string|null
      */
-    public function getDescription()
+    public function getDescription(): ?string
     {
         return $this->description;
+    }
+
+    /**
+     * Set Valid Card Number function
+     *
+     * @param string $valid_card_number
+     * @return $this
+     */
+    public function setValidCardNumber(string $valid_card_number): self
+    {
+        $this->valid_card_number = $valid_card_number;
+
+        return $this;
+    }
+
+    /**
+     * Get Valid Card Number function
+     *
+     * @return string|null
+     */
+    public function getValidCardNumber(): ?string
+    {
+        return $this->valid_card_number;
     }
 }
