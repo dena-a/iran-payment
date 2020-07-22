@@ -1,6 +1,6 @@
 <?php
 
-namespace Dena\IranPayment\Providers;
+namespace Dena\IranPayment\Gateways;
 
 use Exception;
 use Dena\IranPayment\Exceptions\GatewayException;
@@ -23,7 +23,7 @@ use Dena\IranPayment\Helpers\Currency;
 use Illuminate\Support\Facades\View;
 
 /**
- * 'BaseProvider'
+ * 'AbstractGateway'
  *
  * @method gatewayPayPrepare()
  * @method gatewayName()
@@ -32,12 +32,11 @@ use Illuminate\Support\Facades\View;
  * @method gatewayPayRedirect()
  * @method gatewayPayUri()
  * @method gatewayPayView()
- * @method detectGateway()
  * @method gatewayVerifyPrepare()
  * @method gatewayVerify()
  * @method gatewayPayBack()
  */
-abstract class BaseProvider
+abstract class AbstractGateway
 {
 	use UserData, PaymentData, TransactionData;
 

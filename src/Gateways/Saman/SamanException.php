@@ -1,6 +1,6 @@
 <?php
 
-namespace Dena\IranPayment\Providers\Saman;
+namespace Dena\IranPayment\Gateways\Saman;
 
 use Dena\IranPayment\Exceptions\GatewayException;
 

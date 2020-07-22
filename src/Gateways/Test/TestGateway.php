@@ -1,13 +1,13 @@
 <?php
 
-namespace Dena\IranPayment\Providers\Test;
+namespace Dena\IranPayment\Gateways\Test;
 
 use Dena\IranPayment\Models\IranPaymentTransaction;
-use Dena\IranPayment\Providers\BaseProvider;
-use Dena\IranPayment\Providers\GatewayInterface;
+use Dena\IranPayment\Gateways\AbstractGateway;
+use Dena\IranPayment\Gateways\GatewayInterface;
 
-class TestGateway extends BaseProvider implements GatewayInterface {
-    
+class TestGateway extends AbstractGateway implements GatewayInterface {
+
     public function gatewayName() {
         return 'test-gateway';
     }

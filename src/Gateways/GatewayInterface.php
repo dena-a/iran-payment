@@ -1,6 +1,6 @@
 <?php
 
-namespace Dena\IranPayment\Providers;
+namespace Dena\IranPayment\Gateways;
 
 interface GatewayInterface
 {

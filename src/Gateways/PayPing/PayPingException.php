@@ -1,6 +1,6 @@
 <?php
 
-namespace Dena\IranPayment\Providers\PayPing;
+namespace Dena\IranPayment\Gateways\PayPing;
 
 use Dena\IranPayment\Exceptions\GatewayException;
 

@@ -1,9 +1,9 @@
 <?php
 
-namespace Dena\IranPayment\Providers\PayIr;
+namespace Dena\IranPayment\Gateways\PayIr;
 
-use Dena\IranPayment\Providers\BaseProvider;
-use Dena\IranPayment\Providers\GatewayInterface;
+use Dena\IranPayment\Gateways\AbstractGateway;
+use Dena\IranPayment\Gateways\GatewayInterface;
 
 use Exception;
 use Dena\IranPayment\Exceptions\GatewayException;
@@ -13,7 +13,7 @@ use Dena\IranPayment\Exceptions\PayBackNotPossibleException;
 
 use Dena\IranPayment\Helpers\Currency;
 
-class PayIr extends BaseProvider implements GatewayInterface
+class PayIr extends AbstractGateway implements GatewayInterface
 {
     private const SEND_URL   = "https://pay.ir/pg/send";
     private const VERIFY_URL = "https://pay.ir/pg/verify";

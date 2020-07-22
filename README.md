@@ -67,10 +67,10 @@ $statusText = $payment->getTransactionStatusText();
 ```
 ### Extends
 ```php
-use Dena\IranPayment\Providers\BaseProvider;
-use Dena\IranPayment\Providers\GatewayInterface;
+use Dena\IranPayment\Gateways\AbstractGateway;
+use Dena\IranPayment\Gateways\GatewayInterface;
 
-class NewGateway extends BaseProvider implements GatewayInterface {
+class NewGateway extends AbstractGateway implements GatewayInterface {
     
     public function getName() {
         return 'new-gateway';

@@ -1,25 +1,25 @@
 <?php
 
-namespace Dena\IranPayment\Providers\PayPing;
+namespace Dena\IranPayment\Gateways\PayPing;
 
 use Exception;
 use Dena\IranPayment\Exceptions\GatewayException;
 use Dena\IranPayment\Exceptions\InvalidRequestException;
 use Dena\IranPayment\Exceptions\InvalidDataException;
 use Dena\IranPayment\Exceptions\PayBackNotPossibleException;
-use Dena\IranPayment\Providers\BaseProvider;
-use Dena\IranPayment\Providers\GatewayInterface;
+use Dena\IranPayment\Gateways\AbstractGateway;
+use Dena\IranPayment\Gateways\GatewayInterface;
 
 use Dena\IranPayment\Helpers\Currency;
 
-class PayPing extends BaseProvider implements GatewayInterface
+class PayPing extends AbstractGateway implements GatewayInterface
 {
 	/**
 	 * Token variable
 	 *
 	 * @var string
 	 */
-	protected $token;
+	protected string $token;
 
 	/**
 	 * Client Ref ID variable
@@ -33,7 +33,7 @@ class PayPing extends BaseProvider implements GatewayInterface
 	 *
 	 * @var bool
 	 */
-	private $add_fees;
+	private bool $add_fees;
 
 	/**
 	 * Constructor function
@@ -49,7 +49,7 @@ class PayPing extends BaseProvider implements GatewayInterface
 	 *
 	 * @return string
 	 */
-	public function gatewayName()
+	public function gatewayName(): string
 	{
 		return 'payping';
 	}
@@ -59,7 +59,7 @@ class PayPing extends BaseProvider implements GatewayInterface
 	 *
 	 * @return string
 	 */
-	public function gatewayTitle()
+	public function gatewayTitle(): string
 	{
 		return 'پی‌پینگ';
 	}
@@ -69,7 +69,7 @@ class PayPing extends BaseProvider implements GatewayInterface
 	 *
 	 * @return string
 	 */
-	public function gatewayImage()
+	public function gatewayImage(): string
 	{
 		return 'https://raw.githubusercontent.com/dena-a/iran-payment/master/resources/assets/img/payping.png';
 	}
@@ -79,7 +79,7 @@ class PayPing extends BaseProvider implements GatewayInterface
 	 *
 	 * @return void
 	 */
-	private function setDefaults()
+	private function setDefaults(): void
 	{
 		$this->setGatewayCurrency(Currency::IRT);
 		$this->setToken(config('iranpayment.payping.merchant-id'));
@@ -92,9 +92,9 @@ class PayPing extends BaseProvider implements GatewayInterface
 	 * Set Token function
 	 *
 	 * @param string $token
-	 * @return self
+	 * @return $this
 	 */
-	public function setToken(string $token)
+	public function setToken(string $token): self
 	{
 		$this->token = $token;
 
@@ -105,9 +105,9 @@ class PayPing extends BaseProvider implements GatewayInterface
 	 * Set Client Ref ID function
 	 *
 	 * @param $client_ref_id
-	 * @return self
+	 * @return $this
 	 */
-	public function setClientRefId($client_ref_id)
+	public function setClientRefId($client_ref_id): self
 	{
 		$this->client_ref_id = $client_ref_id;
 
@@ -124,7 +124,7 @@ class PayPing extends BaseProvider implements GatewayInterface
 		return $this->client_ref_id;
 	}
 
-	public function gatewayPayPrepare()
+	public function gatewayPayPrepare(): void
 	{
 		if ($this->getPreparedAmount() < 100) {
 			throw InvalidDataException::invalidAmount();
@@ -133,14 +133,21 @@ class PayPing extends BaseProvider implements GatewayInterface
 		$this->setClientRefId($this->transaction->code);
 	}
 
-	public function gatewayPay()
+	private function feeCalculator(int $amount): int
+    {
+        if ($this->add_fees) {
+            $fees = $amount * 1 / 100;
+            $amount += $fees > 5000 ? 5000 : $fees;
+            $amount = intval($amount);
+        }
+
+        return $amount;
+    }
+
+	public function gatewayPay(): void
 	{
 		$amount = $this->getPreparedAmount();
-		if ($this->add_fees) {
-			$fees = $amount * 1 / 100;
-			$amount += $fees > 5000 ? 5000 : $fees;
-			$amount = intval($amount);
-		}
+		$amount = $this->feeCalculator($amount);
 
 		$fields = json_encode([
 			'amount'		=> $amount,
@@ -172,7 +179,7 @@ class PayPing extends BaseProvider implements GatewayInterface
 				$this->transactionFailed($ch_error);
 				throw GatewayException::connectionProblem();
 			}
-			
+
 			$result = json_decode($result);
 		} catch(Exception $ex) {
 			$this->transactionFailed($ex->getMessage());
@@ -199,7 +206,7 @@ class PayPing extends BaseProvider implements GatewayInterface
 	 *
 	 * @return string
 	 */
-	public function gatewayPayUri()
+	public function gatewayPayUri(): string
 	{
 		$reference_number = $this->getReferenceNumber();
 		return "https://api.payping.ir/v1/pay/gotoipg/$reference_number";
@@ -220,12 +227,12 @@ class PayPing extends BaseProvider implements GatewayInterface
 		return redirect($this->gatewayPayUri());
 	}
 
-	public function gatewayVerifyPrepare()
+	public function gatewayVerifyPrepare(): void
 	{
 		//
 	}
 
-	public function gatewayVerify()
+	public function gatewayVerify(): void
 	{
 		if (!isset($this->request->refid)) {
 			$ex = InvalidRequestException::notFound();
@@ -239,11 +246,7 @@ class PayPing extends BaseProvider implements GatewayInterface
 		]);
 
 		$amount = $this->getPreparedAmount();
-		if ($this->add_fees) {
-			$fees = $amount * 1 / 100;
-			$amount += $fees > 5000 ? 5000 : $fees;
-			$amount = intval($amount);
-		}
+        $amount = $this->feeCalculator($amount);
 
 		$fields = json_encode([
 			'refId'	=> $this->request->refid,
@@ -262,7 +265,7 @@ class PayPing extends BaseProvider implements GatewayInterface
 			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 			curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeout);
-			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->connection_timeout); 
+			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->connection_timeout);
 			$result	= curl_exec($ch);
 			$httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 			$ch_error = curl_error($ch);
@@ -272,7 +275,7 @@ class PayPing extends BaseProvider implements GatewayInterface
 				$this->transactionFailed($ch_error);
 				throw GatewayException::connectionProblem();
 			}
-			
+
 			$raw_result = $result;
 			$result = json_decode($result, true);
 		} catch(Exception $ex) {
@@ -303,7 +306,7 @@ class PayPing extends BaseProvider implements GatewayInterface
 	 *
 	 * @throws PayBackNotPossibleException
 	 */
-	public function gatewayPayBack()
+	public function gatewayPayBack(): void
 	{
 		throw new PayBackNotPossibleException;
 	}

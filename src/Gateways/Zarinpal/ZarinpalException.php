@@ -1,6 +1,6 @@
 <?php
 
-namespace Dena\IranPayment\Providers\Zarinpal;
+namespace Dena\IranPayment\Gateways\Zarinpal;
 
 use Dena\IranPayment\Exceptions\GatewayException;
 

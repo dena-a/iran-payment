@@ -2,13 +2,13 @@
 
 namespace Dena\IranPayment;
 
-use Dena\IranPayment\Providers\GatewayInterface;
+use Dena\IranPayment\Gateways\GatewayInterface;
 
-use Dena\IranPayment\Providers\PayIr\PayIr;
-use Dena\IranPayment\Providers\Saman\Saman;
-use Dena\IranPayment\Providers\PayPing\PayPing;
-use Dena\IranPayment\Providers\Test\TestGateway;
-use Dena\IranPayment\Providers\Zarinpal\Zarinpal;
+use Dena\IranPayment\Gateways\PayIr\PayIr;
+use Dena\IranPayment\Gateways\Saman\Saman;
+use Dena\IranPayment\Gateways\PayPing\PayPing;
+use Dena\IranPayment\Gateways\Test\TestGateway;
+use Dena\IranPayment\Gateways\Zarinpal\Zarinpal;
 
 use Dena\IranPayment\Exceptions\GatewayNotFoundException;
 use Dena\IranPayment\Exceptions\TransactionNotFoundException;

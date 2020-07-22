@@ -1,35 +1,26 @@
 <?php
 
-namespace Dena\IranPayment\Providers\Zarinpal;
+namespace Dena\IranPayment\Gateways\Zarinpal;
 
-use Dena\IranPayment\Exceptions\InvalidDataException;
 use Dena\IranPayment\Exceptions\PayBackNotPossibleException;
 
-use Dena\IranPayment\Providers\BaseProvider;
-use Dena\IranPayment\Providers\GatewayInterface;
+use Dena\IranPayment\Gateways\AbstractGateway;
+use Dena\IranPayment\Gateways\GatewayInterface;
 
 use Dena\IranPayment\Helpers\Currency;
 
-use Log;
 use Exception;
 use SoapFault;
 use SoapClient;
 
-class Zarinpal extends BaseProvider implements GatewayInterface
+class Zarinpal extends AbstractGateway implements GatewayInterface
 {
 	/**
 	 * Merchant ID variable
 	 *
 	 * @var string
 	 */
-	protected $merchant_id;
-
-	/**
-	 * Add Fees variable
-	 *
-	 * @var bool
-	 */
-	private $add_fees;
+	protected string $merchant_id;
 
 	public function __construct()
 	{
@@ -42,7 +33,7 @@ class Zarinpal extends BaseProvider implements GatewayInterface
 	 *
 	 * @return string
 	 */
-	public function gatewayName()
+	public function gatewayName(): string
 	{
 		return 'zarinpal';
 	}
@@ -62,34 +53,29 @@ class Zarinpal extends BaseProvider implements GatewayInterface
 		$this->setMerchantId(config('iranpayment.zarinpal.merchant-id'));
 		$this->setCallbackUrl(config('iranpayment.zarinpal.callback-url', config('iranpayment.callback-url')));
 		$this->setDescription(config('iranpayment.zarinpal.description', 'پرداخت'));
-
-		$this->add_fees = config('iranpayment.zarinpal.add_fees', false);
 	}
 
 	/**
 	 * Set Merchant ID function
 	 *
 	 * @param string $merchant_id
-	 * @return void
+	 * @return $this
 	 */
-	public function setMerchantId(string $merchant_id)
+	public function setMerchantId(string $merchant_id): self
 	{
 		$this->merchant_id = $merchant_id;
 
 		return $this;
 	}
 
-	public function gatewayPayPrepare()
-	{	
+	public function gatewayPayPrepare(): void
+	{
 		//
 	}
 
-	public function gatewayPay()
+	public function gatewayPay(): void
 	{
 		$amount = $this->getPreparedAmount();
-		if ($this->add_fees) {
-			$amount += $amount * 1 / 100;
-		}
 
 		$fields = [
 			'MerchantID'	=> $this->merchant_id,
@@ -101,7 +87,7 @@ class Zarinpal extends BaseProvider implements GatewayInterface
 
 		try {
 			$soap = new SoapClient($this->getServerUrl(), [
-				'encoding'				=> 'UTF-8', 
+				'encoding'				=> 'UTF-8',
 				'trace'					=> 1,
 				'exceptions'			=> 1,
 				'connection_timeout'	=> $this->connection_timeout,
@@ -134,20 +120,20 @@ class Zarinpal extends BaseProvider implements GatewayInterface
 	 *
 	 * @return string
 	 */
-	public function gatewayPayUri()
+	public function gatewayPayUri(): string
 	{
 		if (config('iranpayment.zarinpal.type') == 'zarin-gate') {
 			return "https://www.zarinpal.com/pg/StartPay/{$this->getReferenceNumber()}/ZarinGate";
 		}
-		
+
 		return "https://www.zarinpal.com/pg/StartPay/{$this->getReferenceNumber()}";
 	}
 
 	/**
 	 * Pay View function
 	 *
-	 * @return void
-	 */
+     * @return mixed
+     */
 	public function gatewayPayView()
 	{
 		$this->transactionPending();
@@ -161,14 +147,14 @@ class Zarinpal extends BaseProvider implements GatewayInterface
 	/**
 	 * Pay Redirect function
 	 *
-	 * @return void
+	 * @return mixed
 	 */
 	public function gatewayPayRedirect()
 	{
 		return redirect($this->gatewayPayUri());
 	}
 
-	public function gatewayVerifyPrepare()
+	public function gatewayVerifyPrepare(): void
 	{
 		if (intval($this->request->Authority) !== intval($this->transaction->reference_number)) {
 			$e = new ZarinpalException(-11);
@@ -185,12 +171,9 @@ class Zarinpal extends BaseProvider implements GatewayInterface
 		$this->transactionVerifyPending();
 	}
 
-	public function gatewayVerify()
+	public function gatewayVerify(): void
 	{
 		$amount = $this->getPreparedAmount();
-		if ($this->add_fees) {
-			$amount += $amount * 1 / 100;
-		}
 
 		$fields				= [
 			'MerchantID'	=> $this->merchant_id,
@@ -200,7 +183,7 @@ class Zarinpal extends BaseProvider implements GatewayInterface
 
 		try {
 			$soap = new SoapClient($this->getServerUrl(), [
-				'encoding'				=> 'UTF-8', 
+				'encoding'				=> 'UTF-8',
 				'trace'					=> 1,
 				'exceptions'			=> 1,
 				'connection_timeout'	=> $this->connection_timeout,
@@ -225,7 +208,10 @@ class Zarinpal extends BaseProvider implements GatewayInterface
 		$this->transactionSucceed(['tracking_code' => $response->RefID]);
 	}
 
-	public function gatewayPayBack()
+    /**
+     * @throws PayBackNotPossibleException
+     */
+	public function gatewayPayBack(): void
 	{
 		throw new PayBackNotPossibleException;
 	}
