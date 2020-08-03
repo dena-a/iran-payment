@@ -6,7 +6,7 @@ use Dena\IranPayment\Exceptions\GatewayException;
 
 class PayIrException extends GatewayException
 {
-    public static $errors = [
+    public static array $errors = [
         '0' => 'درحال حاضر درگاه بانکی قطع شده و مشکل بزودی برطرف می شود',
         '-1' => 'API Key ارسال نمی شود',
         '-2' => 'Token ارسال نمی شود',
@@ -34,12 +34,11 @@ class PayIrException extends GatewayException
         '-24' => 'شماره کارت باید بصورت 16 رقمی، لاتین و چسبیده بهم باشد',
         '-25' => 'امکان استفاده از سرویس در کشور مبدا شما وجود نداره',
         '-26' => 'امکان انجام تراکنش برای این درگاه وجود ندارد',
-        'failed' => 'تراکنش با خطا مواجه شد',
     ];
 
     public static function error($error_code)
     {
-        $error_code = isset(self::$errors[$error_code]) ? $error_code : 'failed';
+        $error_code = isset(self::$errors[$error_code]) ? $error_code : '-5';
         return new self(self::$errors[$error_code], $error_code);
     }
 }
