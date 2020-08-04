@@ -2,6 +2,7 @@
 
 namespace Dena\IranPayment\Traits;
 
+use Dena\IranPayment\Helpers\Helpers;
 use Dena\IranPayment\Helpers\Currency;
 use Dena\IranPayment\Exceptions\InvalidDataException;
 
@@ -27,6 +28,13 @@ trait PaymentData
      * @var string
      */
     protected string $gateway_currency;
+
+    /**
+     * Payment Callback URL variable
+     *
+     * @var string|null
+     */
+    protected ?string $callback_url;
 
     /**
      * Set Amount function
@@ -56,6 +64,7 @@ trait PaymentData
      *
      * @param string $currency
      * @return $this
+     * @throws InvalidDataException
      */
     public function setCurrency(string $currency): self
     {
@@ -83,8 +92,9 @@ trait PaymentData
     /**
      * Set Gateway Currency function
      *
-     * @param string $currency
+     * @param string $gateway_currency
      * @return $this
+     * @throws InvalidDataException
      */
     public function setGatewayCurrency(string $gateway_currency): self
     {
@@ -110,11 +120,34 @@ trait PaymentData
     }
 
     /**
+     * Set Callback Url function
+     *
+     * @param string $callback_url
+     * @return self
+     */
+    public function setCallbackUrl(string $callback_url)
+    {
+        $this->callback_url = $callback_url;
+
+        return $this;
+    }
+
+    /**
+     * Get Callback Url function
+     *
+     * @return string|null
+     */
+    public function getCallbackUrl(): ?string
+    {
+        return $this->callback_url;
+    }
+
+    /**
      * Get Prepared Amount function
      *
      * @return int
      */
-    public function getPreparedAmount(): int
+    public function preparedAmount(): int
     {
         if ($this->currency === $this->gateway_currency) {
             return $this->amount;
@@ -125,5 +158,21 @@ trait PaymentData
         }
 
         return $this->amount;
+    }
+
+    /**
+     * Get Prepared Callback URL function
+     *
+     * @return string|null
+     */
+    public function preparedCallbackUrl(): ?string
+    {
+        $callback_url = filter_var($this->callback_url, FILTER_VALIDATE_URL) === false
+            ? url($this->callback_url)
+            : $this->callback_url;
+
+        return Helpers::urlQueryBuilder($callback_url, [
+            app('config')->get('iranpayment.transaction_query_param', 'tc') => $this->getTransactionCode()
+        ]);
     }
 }
