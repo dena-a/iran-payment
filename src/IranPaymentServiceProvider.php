@@ -3,7 +3,6 @@
 namespace Dena\IranPayment;
 
 use Illuminate\Support\ServiceProvider;
-use Laravel\Lumen\Application as LumenApplication;
 
 class IranPaymentServiceProvider extends ServiceProvider
 {
@@ -17,27 +16,25 @@ class IranPaymentServiceProvider extends ServiceProvider
 		$this->mergeConfigFrom(__DIR__.'/../config/iranpayment.php', 'iranpayment');
 		$this->publishes([
 			__DIR__.'/../config/iranpayment.php' => config_path('iranpayment.php'),
-		]);
+		], 'config');
 
-		if ($this->app instanceof LumenApplication) {
+		if ($this->isLumen()) {
             $this->app->configure('iranpayment');
 		}
-		
+
+        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
 		$this->publishes([
-			__DIR__.'/../database/migrations/2017_03_01_000000_create_iranpayment_transactions_table.php' => $this->app->databasePath().'/migrations/2017_03_01_000000_create_iranpayment_transactions_table.php',
-		]);
+			__DIR__.'/../database/migrations' => $this->app->databasePath().'/migrations',
+		], 'migrations');
 
 		$this->loadViewsFrom(__DIR__.'/../resources/views', 'iranpayment');
 		$this->publishes([
 			__DIR__.'/../resources/views' => resource_path('views/vendor/iranpayment'),
-		]);
+		], 'views');
+
 		$this->publishes([
 			__DIR__.'/../resources/assets' => public_path('vendor/iranpayment'),
-		]);
-
-		if (env('APP_DEBUG') === true) {
-			$this->loadRoutesFrom(__DIR__.'/routes.php');
-		}
+		], 'assets');
 	}
 
 	/**
@@ -49,4 +46,14 @@ class IranPaymentServiceProvider extends ServiceProvider
 	{
 		//
 	}
+
+    /**
+     * Check if app uses Lumen.
+     *
+     * @return bool
+     */
+    private function isLumen(): bool
+    {
+        return str_contains($this->app->version(), 'Lumen');
+    }
 }
