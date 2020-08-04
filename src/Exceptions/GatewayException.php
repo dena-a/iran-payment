@@ -4,6 +4,7 @@ namespace Dena\IranPayment\Exceptions;
 
 use Dena\IranPayment\Exceptions\IranPaymentException;
 
+use Exception;
 use Throwable;
 
 class GatewayException extends IranPaymentException
@@ -13,9 +14,9 @@ class GatewayException extends IranPaymentException
         parent::__construct($message, $code, $previous);
     }
 
-    public static function unknownResponse()
+    public static function unknownResponse($response = null)
     {
-        return new self('پاسخ ناشناخته!');
+        return new self('پاسخ ناشناخته!', 500, new Exception(['Unknown Response' => $response]));
     }
 
     public static function inconsistentResponse()
@@ -23,8 +24,8 @@ class GatewayException extends IranPaymentException
         return new self('اطلاعات دریافتی با پایگاه‌داده همخوانی ندارند!');
     }
 
-    public static function connectionProblem()
+    public static function connectionProblem(Throwable $previous = null)
     {
-        return new self('اشکالی در اتصال به درگاه پرداخت پیش آمده است!', 503);
+        return new self('در اتصال به درگاه پرداخت اشکالی پیش آمده است!', 503, $previous);
     }
 }

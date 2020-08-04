@@ -13,18 +13,23 @@ class InvalidDataException extends IranPaymentException
 		parent::__construct($message, $code, $previous);
 	}
 
-	public static function invalidAmount()
+	public static function invalidAmount(): self
 	{
-		throw new self('امکان پرداخت مبلغ مورد نظر وجود ندارد.');
+        return new self('امکان پرداخت مبلغ مورد نظر وجود ندارد.');
 	}
 
-	public static function invalidCurrency()
+	public static function invalidCurrency(): self
 	{
-		throw new self('امکان پرداخت برای ارز مورد نظر وجود ندارد.');
+        return new self('امکان پرداخت برای ارز مورد نظر وجود ندارد.');
 	}
 
-	public static function invalidCallbackUrl()
+    public static function invalidCardNumber(): self
+    {
+        return new self('شماره کارت وارد شده معتبر نمی‌باشد.');
+    }
+
+	public static function invalidCallbackUrl(): self
 	{
-		throw new self('آدرس بازگشتی وارد شده معتبر نمی‌باشد.');
+        return new self('آدرس بازگشتی وارد شده معتبر نمی‌باشد.');
 	}
 }
