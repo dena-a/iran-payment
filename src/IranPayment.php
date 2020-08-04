@@ -11,7 +11,6 @@ use Dena\IranPayment\Gateways\Test\TestGateway;
 use Dena\IranPayment\Gateways\Zarinpal\Zarinpal;
 
 use Dena\IranPayment\Exceptions\GatewayNotFoundException;
-use Dena\IranPayment\Exceptions\TransactionNotFoundException;
 
 use Dena\IranPayment\Models\IranPaymentTransaction;
 
@@ -22,10 +21,9 @@ class IranPayment
 	/**
 	 * Gateways classes constant names
 	 */
+    const SAMAN		= 'saman';
+    const PAYIR		= 'payir';
 	const ZARINPAL	= 'zarinpal';
-	const SAMAN		= 'saman';
-	const PAYIR		= 'payir';
-	const PAYDOTIR	= 'pay.ir';
 	const PAYPING	= 'payping';
 	const TEST		= 'test';
 
@@ -36,22 +34,24 @@ class IranPayment
 	 */
 	protected GatewayInterface $gateway;
 
-	/**
-	 * Constructor function
-	 *
-	 * @param GatewayInterface|string $gateway
-	 */
+    /**
+     * Constructor function
+     *
+     * @param GatewayInterface|string $gateway
+     * @throws GatewayNotFoundException
+     */
 	public function __construct($gateway)
 	{
         $this->setGateway($gateway);
 	}
 
-	/**
-	 * set Gateway function
-	 *
-	 * @param GatewayInterface|string $gateway
-	 * @return $this
-	 */
+    /**
+     * Set Gateway function
+     *
+     * @param GatewayInterface|string $gateway
+     * @return $this
+     * @throws GatewayNotFoundException
+     */
 	public function setGateway($gateway): self
 	{
 	    if ($gateway instanceof GatewayInterface) {
@@ -61,18 +61,17 @@ class IranPayment
         }
 
         switch ($gateway) {
-            case self::ZARINPAL:
-            case Zarinpal::class:
-                $this->gateway = new Zarinpal;
-                break;
             case self::SAMAN:
             case Saman::class:
                 $this->gateway = new Saman;
                 break;
             case self::PAYIR:
-            case self::PAYDOTIR:
             case PayIr::class:
                 $this->gateway = new PayIr;
+                break;
+            case self::ZARINPAL:
+            case Zarinpal::class:
+                $this->gateway = new Zarinpal;
                 break;
             case self::PAYPING:
             case PayPing::class:

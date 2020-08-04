@@ -2,31 +2,31 @@
 
 namespace Dena\IranPayment\Gateways;
 
-use Exception;
-use Dena\IranPayment\Exceptions\GatewayException;
-use Dena\IranPayment\Exceptions\InvalidDataException;
-use Dena\IranPayment\Exceptions\SucceedRetryException;
-use Dena\IranPayment\Exceptions\InvalidRequestException;
-use Dena\IranPayment\Exceptions\TransactionNotFoundException;
-use Dena\IranPayment\Exceptions\GatewayPaymentNotSupportViewException;
-use Dena\IranPayment\Exceptions\GatewayPaymentNotSupportRedirectException;
-use Dena\IranPayment\Exceptions\PayBackNotPossibleException;
-use Illuminate\Http\Request;
-use Dena\IranPayment\Models\IranPaymentTransaction;
+use Dena\IranPayment\Exceptions\IranPaymentException;
 
 use Dena\IranPayment\Traits\UserData;
 use Dena\IranPayment\Traits\PaymentData;
 use Dena\IranPayment\Traits\TransactionData;
 
-use Dena\IranPayment\Helpers\Helpers;
+use Exception;
+use Dena\IranPayment\Exceptions\GatewayException;
+use Dena\IranPayment\Exceptions\InvalidDataException;
+use Dena\IranPayment\Exceptions\SucceedRetryException;
+use Dena\IranPayment\Exceptions\InvalidRequestException;
+use Dena\IranPayment\Exceptions\PayBackNotPossibleException;
+use Dena\IranPayment\Exceptions\TransactionNotFoundException;
+use Dena\IranPayment\Exceptions\GatewayPaymentNotSupportViewException;
+use Dena\IranPayment\Exceptions\GatewayPaymentNotSupportRedirectException;
+
+use Dena\IranPayment\Models\IranPaymentTransaction;
+
 use Dena\IranPayment\Helpers\Currency;
+
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\View;
 
 /**
- * 'AbstractGateway'
- *
- * @method gatewayPayPrepare()
- * @method gatewayName()
+ * @method getName()
  * @method gatewayPay()
  * @method gatewayPayLink()
  * @method gatewayPayRedirect()
@@ -38,35 +38,42 @@ use Illuminate\Support\Facades\View;
  */
 abstract class AbstractGateway
 {
-	use UserData, PaymentData, TransactionData;
+	use UserData,
+        PaymentData,
+        TransactionData;
 
 	protected $request;
-	protected $callback_url;
-	protected $timeout;
-	protected $connection_timeout;
+    protected array $gateway_request_options = [];
 
-	/**
-	 * Constructor function
-	 */
-	public function __construct()
-	{
-		$this->setDefaults();
-	}
+    abstract public function initialize(array $parameters = []): GatewayInterface;
 
-	/**
-	 * Set Defaults function
-	 *
-	 * @return void
-	 */
-	private function setDefaults()
-	{
-		$this->setRequest(app('request'));
-		$this->setCurrency(config('iranpayment.currency', Currency::IRR));
-		$this->setCallbackUrl(config('iranpayment.callback-url'));
+    /**
+     * Boot Gateway function
+     *
+     * @param array $parameters
+     * @return $this
+     * @throws InvalidDataException
+     */
+    public function boot(array $parameters = []): self
+    {
+        $this->setRequest($parameters['request'] ?? app('request'));
 
-		$this->timeout				= config('iranpayment.timeout', 30);
-		$this->connection_timeout	= config('iranpayment.connection_timeout', 30);
-	}
+        $this->setCurrency($parameters['currency'] ?? app('config')->get('iranpayment.currency', Currency::IRR));
+
+        $this->setCallbackUrl($parameters['callback_url'] ?? app('config')->get('iranpayment.callback-url'));
+
+        $this->setGatewayRequestOptions(array_merge(
+            [
+                'timeout' => app('config')->get('iranpayment.timeout', 30),
+                'connection_timeout' => app('config')->get('iranpayment.connection_timeout', 60),
+            ],
+            $parameters['gateway_request_options'] ?? [],
+        ));
+
+        $this->initialize($parameters);
+
+        return $this;
+    }
 
 	/**
 	 * Set Request function
@@ -80,74 +87,90 @@ abstract class AbstractGateway
 		return $this;
 	}
 
-	/**
-	 * Set Callback Url function
-	 *
-	 * @param string $callback_url
-	 * @return self
-	 */
-	public function setCallbackUrl(string $callback_url)
+    /**
+     * Set Gateway Request Options function
+     *
+     * @param array $options
+     * @return $this
+     */
+    public function setGatewayRequestOptions(array $options): self
+    {
+        $this->gateway_request_options = $options;
+
+        return $this;
+    }
+
+    /**
+     * Get Gateway Request Options function
+     *
+     * @return array
+     */
+    public function getGatewayRequestOptions(): array
+    {
+        return $this->gateway_request_options;
+    }
+
+    /**
+     * @throws InvalidDataException
+     */
+    protected function prePurchase(): void
+    {
+        if ($this->preparedAmount() <= 0) {
+            throw InvalidDataException::invalidAmount();
+        }
+
+        if (!in_array($this->getCurrency(), [Currency::IRR, Currency::IRT])) {
+            throw InvalidDataException::invalidCurrency();
+        }
+
+        if (filter_var($this->preparedCallbackUrl(), FILTER_VALIDATE_URL) === false) {
+            throw InvalidDataException::invalidCallbackUrl();
+        }
+
+        $this->newTransaction();
+    }
+
+    protected function postPurchase(): void
+    {
+
+    }
+
+    /**
+     * Pay function
+     *
+     * @return $this
+     * @throws IranPaymentException
+     */
+    public function ready(): self
 	{
-		if (filter_var($callback_url, FILTER_VALIDATE_URL) === false) {
-			$this->callback_url = url($callback_url);
-		} else {
-			$this->callback_url = $callback_url;
-		}
-
-		return $this;
-	}
-
-	/**
-	 * Get Callback Url function
-	 *
-	 * @return string
-	 */
-	public function getCallbackUrl()
-	{
-		return Helpers::urlQueryBuilder($this->callback_url, [
-			config('iranpayment.transaction_query_param', 'tc') => $this->getTransactionCode()
-		]);
-	}
-
-	/**
-	 * Pay function
-	 *
-	 * @return $this
-	 */
-	public function ready(): self
-	{
-		if ($this->amount <= 0) {
-			throw InvalidDataException::invalidAmount();
-		}
-
-		if (!in_array($this->currency, [Currency::IRR, Currency::IRT])) {
-			throw InvalidDataException::invalidCurrency();
-		}
-
-		if (filter_var($this->callback_url, FILTER_VALIDATE_URL) === false) {
-			throw InvalidDataException::invalidCallbackUrl();
-		}
-
 		try {
-			$this->newTransaction();
+            $this->prePurchase();
 
-			$this->gatewayPayPrepare();
+            $this->purchase();
 
-			$this->gatewayPay();
-		} catch (InvalidDataException $idex) {
-			throw $idex;
-		} catch (GatewayException $gwex) {
-			throw $gwex;
+            $this->postPurchase();
+		} catch (Exception $ex) {
+            if ($this->getTransaction() !== null) {
+                $this->transactionFailed($ex->getMessage());
+            }
+
+		    if (!$ex instanceof IranPaymentException) {
+                throw IranPaymentException::unknown($ex);
+            }
+
+		    throw $ex;
 		}
 
 		return $this;
 	}
 
-	/**
-	 * Pay View function
-	 *
-	 * @return View
-	 */
+    /**
+     * Pay View function
+     *
+     * @return View
+     * @throws TransactionNotFoundException
+     * @throws GatewayPaymentNotSupportViewException
+     */
 	public function view()
 	{
 		if (!isset($this->transaction)) {
@@ -158,18 +181,18 @@ abstract class AbstractGateway
 			$this->transactionPending();
 
 			return $this->gatewayPayView();
-		} catch (GatewayPaymentNotSupportViewException $gpnsvex) {
-			throw $gpnsvex;
-		} catch (Exception $ex) {
+		} catch (GatewayPaymentNotSupportViewException|Exception $ex) {
 			throw $ex;
 		}
 	}
 
-	/**
-	 * Pay Uri function
-	 *
-	 * @return string
-	 */
+    /**
+     * Pay Uri function
+     *
+     * @return string
+     * @throws TransactionNotFoundException
+     * @throws Exception
+     */
 	public function uri()
 	{
 		if (!isset($this->transaction)) {
@@ -185,11 +208,14 @@ abstract class AbstractGateway
 		}
 	}
 
-	/**
-	 * Pay Redirect function
-	 *
-	 * @return View
-	 */
+    /**
+     * Pay Redirect function
+     *
+     * @return View
+     * @throws TransactionNotFoundException
+     * @throws GatewayPaymentNotSupportRedirectException
+     * @throws Exception
+     */
 	public function redirect()
 	{
 		if (!isset($this->transaction)) {
@@ -200,9 +226,7 @@ abstract class AbstractGateway
 			$this->transactionPending();
 
 			return $this->gatewayPayRedirect();
-		} catch (GatewayPaymentNotSupportRedirectException $gpnsrex) {
-			throw $gpnsrex;
-		} catch (Exception $ex) {
+		} catch (GatewayPaymentNotSupportRedirectException|Exception $ex) {
 			throw $ex;
 		}
 	}
@@ -230,35 +254,22 @@ abstract class AbstractGateway
 		]);
 	}
 
-	public static function detectGateway(Request $request = null)
-	{
-		if (!isset($request)) {
-			/**
-			 * @return Request
-			*/
-			$request = app('request');
-		}
-
-		$transaction_code_field = config('iranpayment.transaction_query_param', 'tc');
-		if (isset($request->$transaction_code_field)) {
-			$transaction = IranPaymentTransaction::where('code', $request->$transaction_code_field)->first();
-			if (isset($transaction, $transaction->gateway)) {
-				return $transaction->gateway;
-			}
-		}
-	}
-
-	/**
-	 * Verify function
-	 *
-	 * @return self
-	 */
+    /**
+     * Verify function
+     *
+     * @param IranPaymentTransaction|null $transaction
+     * @return self
+     * @throws InvalidRequestException
+     * @throws SucceedRetryException
+     * @throws TransactionNotFoundException
+     * @throws InvalidDataException
+     */
 	public function verify(IranPaymentTransaction $transaction = null)
 	{
 		if(isset($transaction)) {
 			$this->setTransaction($transaction);
 		} elseif(!isset($this->transaction)) {
-			$transaction_code_field = config('iranpayment.transaction_query_param', 'tc');
+			$transaction_code_field = app('config')->get('iranpayment.transaction_query_param', 'tc');
 			if (isset($this->request->$transaction_code_field)) {
 				$this->searchTransactionCode($this->request->$transaction_code_field);
 			}
@@ -293,17 +304,21 @@ abstract class AbstractGateway
 		return $this;
 	}
 
-	/**
-	 * Pay Back function
-	 *
-	 * @return void
-	 */
+    /**
+     * Pay Back function
+     *
+     * @param IranPaymentTransaction|null $transaction
+     * @return void
+     * @throws GatewayException
+     * @throws PayBackNotPossibleException
+     * @throws TransactionNotFoundException
+     */
 	protected function payBack(IranPaymentTransaction $transaction = null)
 	{
 		if(isset($transaction)) {
 			$this->setTransaction($transaction);
 		} elseif(!isset($this->transaction)) {
-			$transaction_code_field = config('iranpayment.transaction_query_param', 'tc');
+			$transaction_code_field = app('config')->get('iranpayment.transaction_query_param', 'tc');
 			if (isset($this->request->$transaction_code_field)) {
 				$this->searchTransactionCode($this->request->$transaction_code_field);
 			}
@@ -317,11 +332,7 @@ abstract class AbstractGateway
 			$this->gatewayPayBack();
 
 			$this->transactionPaidBack();
-		} catch (PayBackNotPossibleException $pbex) {
-			throw $pbex;
-		} catch (GatewayException $gwex) {
-			throw $gwex;
-		} catch (Exception $ex) {
+		} catch (PayBackNotPossibleException|GatewayException|Exception $ex) {
 			throw $ex;
 		}
 	}

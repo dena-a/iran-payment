@@ -4,11 +4,11 @@ namespace Dena\IranPayment\Gateways;
 
 interface GatewayInterface
 {
-    public function gatewayName(): string;
+    public function getName(): string;
 
-	public function gatewayPayPrepare(): void;
+    public function initialize(array $parameters = []): self;
 
-	public function gatewayPay(): void;
+	public function purchase(): void;
 
 	public function gatewayVerifyPrepare(): void;
 
