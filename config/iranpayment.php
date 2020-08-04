@@ -46,31 +46,27 @@ return [
 		// 'callback-url' => 'http://example.com/payments/saman/callback',
 	],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Saman Pay.ir gateway
+    |--------------------------------------------------------------------------
+    */
+    'payir' => [
+        'merchant-id' => env('PAYIR_MERCHANT_ID', 'xxxxxxxx'), // api. set test for test
+        // 'callback-url' => 'http://example.com/payments/payir/callback',
+    ],
+
 	/*
 	|--------------------------------------------------------------------------
 	| Zarinpal gateway
 	|--------------------------------------------------------------------------
-	| Types: [zarin-gate || normal]
-	| Servers: [germany || iran]
+	| Types: [normal | zaringate | sandbox (for test)]
 	*/
 	'zarinpal' => [
-		'merchant-id'	=> env('ZARINPAL_MERCHANT_ID', 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'),
-		'type'			=> 'normal',
-		'server'		=> 'germany',
-		'description'	=> 'payment description', // Required
-		'email'			=> null, // Optional : user_email@example.com
-		'mobile'		=> null, // Optional : 0912XXXYYZZ
-		// 'callback-url'	=> 'http://example.com/payments/zarinpal/callback',
-	],
-
-	/*
-	|--------------------------------------------------------------------------
-	| Saman Pay.ir gateway
-	|--------------------------------------------------------------------------
-	*/
-	'payir' => [
-		'merchant-id'	=> env('PAYIR_MERCHANT_ID', 'xxxxxxxx'), // api. set test for test
-		// 'callback-url'	=> 'http://example.com/payments/payir/callback',
+		'merchant-id' => env('ZARINPAL_MERCHANT_ID', 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'),
+		'type'        => 'normal',
+		'description' => 'تراكنش خرید',
+		// 'callback-url' => 'http://example.com/payments/zarinpal/callback',
 	],
 
 	/*
