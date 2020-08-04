@@ -1,7 +1,14 @@
 <?php
+/**
+ * Api Version: v1.3
+ * Api Document Date: 1393/09/23
+ * Last Update: 2020/08/03
+ */
 
 namespace Dena\IranPayment\Gateways\Zarinpal;
 
+use Dena\IranPayment\Exceptions\GatewayException;
+use Dena\IranPayment\Exceptions\InvalidDataException;
 use Dena\IranPayment\Exceptions\PayBackNotPossibleException;
 
 use Dena\IranPayment\Gateways\AbstractGateway;
@@ -15,124 +22,215 @@ use SoapClient;
 
 class Zarinpal extends AbstractGateway implements GatewayInterface
 {
+    private const WSDL_URL       = "https://www.zarinpal.com/pg/services/WebGate/wsdl";
+    private const WEB_GATE_URL   = "https://www.zarinpal.com/pg/StartPay/{Authority}";
+    private const ZARIN_GATE_URL = "https://www.zarinpal.com/pg/StartPay/{Authority}/ZarinGate";
+    private const SANDBOX_URL    = "https://sandbox.zarinpal.com/pg/StartPay/{Authority}";
+    public const CURRENCY        = Currency::IRT;
+
 	/**
 	 * Merchant ID variable
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	protected string $merchant_id;
+	protected ?string $merchant_id;
 
-	public function __construct()
-	{
-		parent::__construct();
-		$this->setDefaults();
-	}
+    /**
+     * Authority variable
+     *
+     * @var string|null
+     */
+    protected ?string $authority;
+
+    /**
+     * Sandbox mod variable
+     *
+     * @var string
+     */
+    protected string $type = 'normal';
 
 	/**
 	 * Gateway Name function
 	 *
 	 * @return string
 	 */
-	public function gatewayName(): string
+	public function getName(): string
 	{
 		return 'zarinpal';
 	}
 
-	private function getServerUrl()
+    /**
+     * Set Merchant ID function
+     *
+     * @param string $merchant_id
+     * @return $this
+     */
+    public function setMerchantId(string $merchant_id): self
+    {
+        $this->merchant_id = $merchant_id;
+
+        return $this;
+    }
+
+    /**
+     * Get Merchant ID function
+     *
+     * @return string|null
+     */
+    public function getMerchantId(): ?string
+    {
+        return $this->merchant_id;
+    }
+
+    /**
+     * Set Type function
+     *
+     * @param string $type
+     * @return $this
+     */
+    public function setType(string $type): self
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+
+    /**
+     * Get Type function
+     *
+     * @return string
+     */
+    public function getType(): string
+    {
+        return $this->type;
+    }
+
+    /**
+     * Set Authority function
+     *
+     * @param $authority
+     * @return $this
+     */
+    public function setAuthority($authority): self
+    {
+        $this->authority = $authority;
+
+        return $this;
+    }
+
+    /**
+     * Get Authority function
+     *
+     * @return string|null
+     */
+    public function getAuthority(): ?string
+    {
+        return $this->authority;
+    }
+
+    /**
+     * Initialize function
+     *
+     * @param array $parameters
+     * @return $this
+     * @throws InvalidDataException
+     */
+    public function initialize(array $parameters = []): GatewayInterface
+    {
+        $this->setGatewayCurrency(self::CURRENCY);
+
+        $this->setMerchantId($parameters['merchant_id'] ?? app('config')->get('iranpayment.zarinpal.merchant-id'));
+
+        $this->setType($parameters['type'] ?? app('config')->get('iranpayment.zarinpal.type', 'normal'));
+
+        $this->setDescription($parameters['description'] ?? app('config')->get('iranpayment.zarinpal.description', 'تراكنش خرید'));
+
+        $this->setCallbackUrl($parameters['callback_url']
+            ?? app('config')->get('iranpayment.zarinpal.callback-url')
+            ?? app('config')->get('iranpayment.callback-url')
+        );
+
+        return $this;
+    }
+
+    /**
+     * @throws GatewayException
+     */
+	public function purchase(): void
 	{
-		if (config('iranpayment.zarinpal.server') == 'germany') {
-			return 'https://de.zarinpal.com/pg/services/WebGate/wsdl';
-		}
-
-		return 'https://ir.zarinpal.com/pg/services/WebGate/wsdl';
-	}
-
-	private function setDefaults()
-	{
-		$this->setGatewayCurrency(Currency::IRT);
-		$this->setMerchantId(config('iranpayment.zarinpal.merchant-id'));
-		$this->setCallbackUrl(config('iranpayment.zarinpal.callback-url', config('iranpayment.callback-url')));
-		$this->setDescription(config('iranpayment.zarinpal.description', 'پرداخت'));
-	}
-
-	/**
-	 * Set Merchant ID function
-	 *
-	 * @param string $merchant_id
-	 * @return $this
-	 */
-	public function setMerchantId(string $merchant_id): self
-	{
-		$this->merchant_id = $merchant_id;
-
-		return $this;
-	}
-
-	public function gatewayPayPrepare(): void
-	{
-		//
-	}
-
-	public function gatewayPay(): void
-	{
-		$amount = $this->getPreparedAmount();
-
 		$fields = [
-			'MerchantID'	=> $this->merchant_id,
-			'CallbackURL'	=> $this->getCallbackUrl(),
-			'Mobile'		=> $this->getMobile(),
-			'Description'	=> $this->getDescription(),
-			'Amount'		=> $amount,
+			'MerchantID' => $this->getMerchantId(),
+            'Amount' => $this->preparedAmount(),
+            'Description' => $this->getDescription(),
+            'Email' => $this->getEmail(),
+            'Mobile' => $this->getMobile(),
+            'CallbackURL' => $this->preparedCallbackUrl(),
 		];
 
 		try {
-			$soap = new SoapClient($this->getServerUrl(), [
-				'encoding'				=> 'UTF-8',
-				'trace'					=> 1,
-				'exceptions'			=> 1,
-				'connection_timeout'	=> $this->connection_timeout,
+			$soap = new SoapClient(self::WSDL_URL, [
+				'encoding' => 'UTF-8',
+				'trace' => 1,
+				'exceptions' => 1,
+				'connection_timeout' => $this->getGatewayRequestOptions()['connection_timeout'] ?? 60,
 			]);
-			$response = $soap->PaymentRequest($fields);
-		} catch(SoapFault $e) {
-			$this->setDescription($e->getMessage());
-			$this->transactionFailed();
-			throw $e;
-		} catch(Exception $e){
-			$this->setDescription($e->getMessage());
-			$this->transactionFailed();
-			throw $e;
+            $result = $soap->PaymentRequest($fields);
+		} catch(SoapFault|Exception $ex) {
+		    throw GatewayException::connectionProblem($ex);
 		}
 
-		if ($response->Status != 100) {
-			$e	= new ZarinpalException($response->Status);
-			$this->setDescription($e->getMessage());
-			$this->transactionFailed();
-			throw $e;
-		}
+        if(!isset($result->Status)) {
+            throw GatewayException::unknownResponse($result);
+        }
 
-		$this->transactionUpdate([
-			'reference_number'	=> intval($response->Authority)
-		]);
+        if ($result->Status !== 100) {
+            throw ZarinpalException::error($result->Status);
+        }
+
+        $this->setAuthority($result->Authority);
 	}
 
-	/**
-	 * Pay Link function
-	 *
-	 * @return string
-	 */
+    protected function postPurchase(): void
+    {
+        $this->transactionUpdate([
+            'reference_number' => $this->getAuthority(),
+        ]);
+
+        parent::postPurchase();
+    }
+
+    /**
+     * Pay Link function
+     *
+     * @return string
+     * @throws InvalidDataException
+     */
 	public function gatewayPayUri(): string
 	{
-		if (config('iranpayment.zarinpal.type') == 'zarin-gate') {
-			return "https://www.zarinpal.com/pg/StartPay/{$this->getReferenceNumber()}/ZarinGate";
-		}
+	    switch ($this->getType()) {
+            case 'normal':
+                $url = self::WEB_GATE_URL;
+                break;
+            case 'zaringate':
+            case 'zarin-gate':
+            case 'zarin_gate':
+                $url = self::ZARIN_GATE_URL;
+                break;
+            case 'sandbox':
+                $url = self::SANDBOX_URL;
+                break;
+            default:
+                throw new InvalidDataException('نوع گیت وارد شده نامعتبر است.');
+        }
 
-		return "https://www.zarinpal.com/pg/StartPay/{$this->getReferenceNumber()}";
+        return str_replace('{Authority}', $this->getReferenceNumber(), $url);
 	}
 
-	/**
-	 * Pay View function
-	 *
+    /**
+     * Pay View function
+     *
      * @return mixed
+     * @throws InvalidDataException
      */
 	public function gatewayPayView()
 	{
@@ -173,7 +271,7 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
 
 	public function gatewayVerify(): void
 	{
-		$amount = $this->getPreparedAmount();
+		$amount = $this->preparedAmount();
 
 		$fields				= [
 			'MerchantID'	=> $this->merchant_id,
@@ -182,11 +280,11 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
 		];
 
 		try {
-			$soap = new SoapClient($this->getServerUrl(), [
+			$soap = new SoapClient(self::WSDL_URL, [
 				'encoding'				=> 'UTF-8',
 				'trace'					=> 1,
 				'exceptions'			=> 1,
-				'connection_timeout'	=> $this->connection_timeout,
+				'connection_timeout'	=> $this->gateway_request_options['connection_timeout'] ?? 60,
 			]);
 			$response = $soap->PaymentVerification($fields);
 		} catch(SoapFault $e) {

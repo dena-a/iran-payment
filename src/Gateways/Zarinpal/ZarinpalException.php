@@ -27,7 +27,6 @@ class ZarinpalException extends GatewayException
 
     public static function error($error_code)
     {
-        $error_code = isset(self::$errors[$error_code]) ? $error_code : -22;
-        return new self(self::$errors[$error_code], $error_code);
+        return new self(self::$errors[$error_code] ?? self::$errors[-22], $error_code);
     }
 }
