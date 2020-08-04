@@ -122,7 +122,6 @@ class IranPayment
 			self::ZARINPAL,
 			self::SAMAN,
 			self::PAYIR,
-			self::PAYDOTIR,
 			self::PAYPING,
 		];
 
