@@ -1,5 +1,10 @@
 # IranPayment
-a Laravel package to handle Internet Payment Gateways for Iran Banking System
+**a Laravel package to handle Internet Payment Gateways for Iran Banking System**
+
+[![Latest Stable Version](https://poser.pugx.org/dena-a/iran-payment/v)](https://packagist.org/packages/dena-a/iran-payment)
+[![Total Downloads](https://poser.pugx.org/dena-a/iran-payment/downloads)](https://packagist.org/packages/dena-a/iran-payment)
+[![Latest Unstable Version](https://poser.pugx.org/dena-a/iran-payment/v/unstable)](https://packagist.org/packages/dena-a/iran-payment)
+[![License](https://poser.pugx.org/dena-a/iran-payment/license)](https://packagist.org/packages/dena-a/iran-payment)
 
 <p align="center"><a href="https://github.com/dena-a/iran-payment" target="_blank"><img width="650" src="https://raw.githubusercontent.com/dena-a/iran-payment/master/images/screen.png"></a></p>
 
