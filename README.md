@@ -1,5 +1,10 @@
 # IranPayment
-a Laravel package to handle Internet Payment Gateways for Iran Banking System
+**a Laravel package to handle Internet Payment Gateways for Iran Banking System**
+
+[![Latest Stable Version](https://poser.pugx.org/dena-a/iran-payment/v)](https://packagist.org/packages/dena-a/iran-payment)
+[![Total Downloads](https://poser.pugx.org/dena-a/iran-payment/downloads)](https://packagist.org/packages/dena-a/iran-payment)
+[![Latest Unstable Version](https://poser.pugx.org/dena-a/iran-payment/v/unstable)](https://packagist.org/packages/dena-a/iran-payment)
+[![License](https://poser.pugx.org/dena-a/iran-payment/license)](https://packagist.org/packages/dena-a/iran-payment)
 
 <p align="center"><a href="https://github.com/dena-a/iran-payment" target="_blank"><img width="650" src="https://raw.githubusercontent.com/dena-a/iran-payment/master/images/screen.png"></a></p>
 
@@ -104,6 +109,31 @@ class NewGateway extends AbstractGateway implements GatewayInterface {
 $payment = new IranPayment();
 $payment->extends(NewGateway::class);
 ```
+
+## Payment Gateways
+
+Gateway | Available | Tested | Last Update
+--- | --- | --- | ---
+[Saman (Sep)](https://www.sep.ir/) | ✓ | ✓ | 2020/08/03
+[Pay.ir](https://pay.ir/) | ✓ | ✓ | 2020/08/03
+[Zarinpal](https://zarinpal.com/) | ✓ | ✓ | 2020/08/03
+[Payping](https://github.com/queueup-dev/omnipay-acapture) | ✓ | ✓ | 2020/08/03
+[Melli (Sadad)](https://sadadpsp.ir/) | - | - | -
+[Mellat (Behpardakht)](http://www.behpardakht.com/) | - | - | -
+[Parsian (Pec)](https://www.pec.ir/) | - | - | -
+[Pasargad (Pep)](https://www.pep.co.ir/) | - | - | -
+[Zibal](https://zibal.ir/) | - | - | -
+
+## Upgrade from v1 to v2
+
+## Contribute
+
+Contributions are always welcome!
+
+## Support
+
+If you believe you have found a bug, please report it using the [GitHub issue tracker](https://github.com/dena-a/iran-payment/issues),
+or better yet, fork the library and submit a pull request.
 
 ## License
 
