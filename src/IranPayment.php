@@ -109,7 +109,7 @@ class IranPayment
 	 */
 	public function build(): GatewayInterface
 	{
-		return $this->gateway;
+		return $this->gateway->boot();
 	}
 
 	/**
@@ -159,7 +159,7 @@ class IranPayment
      */
     public static function detect($data = null): GatewayInterface
     {
-        $transaction_query_param = config('iranpayment.transaction_query_param', 'tc');
+        $transaction_query_param = app('config')->get('iranpayment.transaction_query_param', 'tc');
 
         if (is_null($data)) {
             $request = app('request');
@@ -184,19 +184,5 @@ class IranPayment
         return !isset($transaction)
             ? (new self($gateway))->build()
             : (new self($gateway))->build()->setTransaction($transaction);
-    }
-
-    public function __call($name, $arguments)
-    {
-        if (
-            !method_exists(__CLASS__, $name)
-            && method_exists($this->gateway, $name)
-        ) {
-            $this->build();
-
-            $res = call_user_func_array([$this->gateway, $name], $arguments);
-
-            return $res ?? $this->gateway;
-        }
     }
 }
