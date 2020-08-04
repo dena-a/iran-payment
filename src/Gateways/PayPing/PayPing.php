@@ -1,4 +1,9 @@
 <?php
+/**
+ * Api Version: v2
+ * Api Document Date: 2018/12/15
+ * Last Update: 2020/08/04
+ */
 
 namespace Dena\IranPayment\Gateways\PayPing;
 
@@ -14,45 +19,170 @@ use Dena\IranPayment\Helpers\Currency;
 
 class PayPing extends AbstractGateway implements GatewayInterface
 {
+    private const PAY_URL      = "https://api.payping.ir/v2/pay";
+    private const VERIFY_URL   = "https://api.payping.ir/v2/pay/verify";
+    private const REDIRECT_URL = "https://api.payping.ir/v2/pay/gotoipg/{code}";
+    public const CURRENCY      = Currency::IRT;
+
 	/**
 	 * Token variable
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	protected string $token;
+	protected ?string $token;
 
-	/**
-	 * Client Ref ID variable
-	 *
-	 * @var [type]
-	 */
-	protected $client_ref_id = null;
+    /**
+     * Client Ref ID variable
+     *
+     * @var string|null
+     */
+    protected ?string $client_ref_id;
+
+    /**
+     * Code variable
+     *
+     * @var string|null
+     */
+    protected ?string $code;
 
 	/**
 	 * Add Fees variable
 	 *
 	 * @var bool
 	 */
-	private bool $add_fees;
+	private bool $add_fees = false;
 
-	/**
-	 * Constructor function
-	 */
-	public function __construct()
-	{
-		parent::__construct();
-		$this->setDefaults();
-	}
+    /**
+     * Payer Identity variable
+     *
+     * @var string|null
+     */
+    protected ?string $payer_identity;
 
 	/**
 	 * Gateway Name function
 	 *
 	 * @return string
 	 */
-	public function gatewayName(): string
+	public function getName(): string
 	{
 		return 'payping';
 	}
+
+    /**
+     * Set Token function
+     *
+     * @param string $token
+     * @return $this
+     */
+    public function setToken(string $token): self
+    {
+        $this->token = $token;
+
+        return $this;
+    }
+
+    /**
+     * Get Token function
+     *
+     * @return string|null
+     */
+    public function getToken(): ?string
+    {
+        return $this->token;
+    }
+
+    /**
+     * Set Client Ref ID function
+     *
+     * @param string $client_ref_id
+     * @return $this
+     */
+    public function setClientRefId(string $client_ref_id): self
+    {
+        $this->client_ref_id = $client_ref_id;
+
+        return $this;
+    }
+
+    /**
+     * Get Client Ref ID function
+     *
+     * @return string
+     */
+    public function getClientRefId(): string
+    {
+        return $this->client_ref_id;
+    }
+
+    /**
+     * Set Code function
+     *
+     * @param string $code
+     * @return $this
+     */
+    public function setCode(string $code): self
+    {
+        $this->code = $code;
+
+        return $this;
+    }
+
+    /**
+     * Get Code function
+     *
+     * @return string
+     */
+    public function getCode(): string
+    {
+        return $this->code;
+    }
+
+    /**
+     * Set Add Fees function
+     *
+     * @param bool $add_fees
+     * @return $this
+     */
+    public function setAddFees(bool $add_fees): self
+    {
+        $this->add_fees = $add_fees;
+
+        return $this;
+    }
+
+    /**
+     * Get Token function
+     *
+     * @return bool
+     */
+    public function getAddFees(): bool
+    {
+        return $this->add_fees;
+    }
+
+    /**
+     * Set Payer Identity function
+     *
+     * @param string $payer_identity
+     * @return $this
+     */
+    public function setPayerIdentity(string $payer_identity): self
+    {
+        $this->payer_identity = $payer_identity;
+
+        return $this;
+    }
+
+    /**
+     * Get Payer Identity function
+     *
+     * @return string
+     */
+    public function getPayerIdentity(): string
+    {
+        return $this->payer_identity;
+    }
 
 	/**
 	 * Gateway Title function
@@ -74,132 +204,119 @@ class PayPing extends AbstractGateway implements GatewayInterface
 		return 'https://raw.githubusercontent.com/dena-a/iran-payment/master/resources/assets/img/payping.png';
 	}
 
-	/**
-	 * Set Defaults function
-	 *
-	 * @return void
-	 */
-	private function setDefaults(): void
+    /**
+     * Initialize function
+     *
+     * @param array $parameters
+     * @return $this
+     * @throws InvalidDataException
+     */
+    public function initialize(array $parameters = []): self
 	{
-		$this->setGatewayCurrency(Currency::IRT);
-		$this->setToken(config('iranpayment.payping.merchant-id'));
-		$this->setCallbackUrl(config('iranpayment.payping.callback-url', config('iranpayment.callback-url')));
+        $this->setGatewayCurrency(self::CURRENCY);
 
-		$this->add_fees = config('iranpayment.payping.add_fees', false);
+        $this->setToken($parameters['token'] ?? app('config')->get('iranpayment.payping.merchant-id'));
+
+        $this->setAddFees($parameters['add_fees'] ?? app('config')->get('iranpayment.payping.add_fees', false));
+
+        $payer_identity = $parameters['payer_identity'] ?? $this->getMobile() ?? $this->getEmail() ?? null;
+        is_null($payer_identity) ?: $this->setPayerIdentity($payer_identity);
+
+        $this->setCallbackUrl($parameters['callback_url']
+            ?? app('config')->get('iranpayment.payping.callback-url')
+            ?? app('config')->get('iranpayment.callback-url')
+        );
+
+        return $this;
 	}
 
-	/**
-	 * Set Token function
-	 *
-	 * @param string $token
-	 * @return $this
-	 */
-	public function setToken(string $token): self
+	protected function prePurchase(): void
 	{
-		$this->token = $token;
+	    parent::prePurchase();
 
-		return $this;
+        if ($this->preparedAmount() < 100 || $this->preparedAmount() > 50000000) {
+            throw InvalidDataException::invalidAmount();
+        }
+
+        $this->setClientRefId($this->getTransactionCode());
 	}
 
-	/**
-	 * Set Client Ref ID function
-	 *
-	 * @param $client_ref_id
-	 * @return $this
-	 */
-	public function setClientRefId($client_ref_id): self
-	{
-		$this->client_ref_id = $client_ref_id;
-
-		return $this;
-	}
-
-	/**
-	 * Get Client Ref ID function
-	 *
-	 * @return string
-	 */
-	public function getClientRefId()
-	{
-		return $this->client_ref_id;
-	}
-
-	public function gatewayPayPrepare(): void
-	{
-		if ($this->getPreparedAmount() < 100) {
-			throw InvalidDataException::invalidAmount();
-		}
-
-		$this->setClientRefId($this->transaction->code);
-	}
-
-	private function feeCalculator(int $amount): int
+    public function preparedAmount(): int
     {
-        if ($this->add_fees) {
-            $fees = $amount * 1 / 100;
-            $amount += $fees > 5000 ? 5000 : $fees;
-            $amount = intval($amount);
+        $amount = parent::preparedAmount();
+
+        if ($this->getAddFees()) {
+            $amount = $this->feeCalculator($amount);
         }
 
         return $amount;
     }
 
-	public function gatewayPay(): void
+    /**
+     * @throws GatewayException
+     * @throws PayPingException
+     */
+    public function purchase(): void
 	{
-		$amount = $this->getPreparedAmount();
-		$amount = $this->feeCalculator($amount);
-
 		$fields = json_encode([
-			'amount'		=> $amount,
-			'returnUrl'		=> $this->getCallbackUrl(),
+			'amount'		=> $this->preparedAmount(),
+			'returnUrl'		=> $this->preparedCallbackUrl(),
 			'clientRefId'	=> $this->getClientRefId(),
-			'payerIdentity'	=> $this->getMobile(),
+			'payerName'     => $this->getFullname(),
+			'payerIdentity'	=> $this->getMobile() ?? $this->getEmail(),
 			'description'	=> $this->getDescription(),
 		]);
 
 		try {
 			$ch = curl_init();
-			curl_setopt($ch, CURLOPT_URL, 'https://api.payping.ir/v1/pay');
+			curl_setopt($ch, CURLOPT_URL, self::PAY_URL);
 			curl_setopt($ch, CURLOPT_POSTFIELDS, $fields);
 			curl_setopt($ch, CURLOPT_HTTPHEADER, [
 				'Accept: application/json',
-				'Authorization: bearer '.$this->token,
+				"Authorization: bearer {$this->getToken()}",
 				'Content-Type: application/json',
 			]);
 			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-			curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeout);
-			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->connection_timeout);
+            curl_setopt($ch, CURLOPT_TIMEOUT, $this->getGatewayRequestOptions()['timeout'] ?? 30);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->getGatewayRequestOptions()['connection_timeout'] ?? 60);
 			$result	= curl_exec($ch);
-			$httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+			$http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 			$ch_error = curl_error($ch);
 			curl_close($ch);
 
-			if ($ch_error) {
-				$this->transactionFailed($ch_error);
-				throw GatewayException::connectionProblem();
-			}
+            if ($ch_error) {
+                throw GatewayException::connectionProblem(new Exception($ch_error));
+            }
 
 			$result = json_decode($result);
 		} catch(Exception $ex) {
-			$this->transactionFailed($ex->getMessage());
-			throw $ex;
+            throw GatewayException::connectionProblem($ex);
 		}
 
-		if($httpcode != 200 || !isset($result->code)) {
-			if (isset($result->Error)) {
-				$this->transactionFailed($result->Error);
-				throw new PayPingException($result->Error, $httpcode);
-			}
+		if ($http_code !== 200) {
+            if (isset($result->Error)) {
+                throw new PayPingException($result->Error, $http_code);
+            }
 
-			$this->transactionFailed(json_encode($result));
+            throw PayPingException::httpError($http_code);
+        }
+
+		if(!isset($result->code)) {
 			throw GatewayException::unknownResponse();
 		}
 
-		$this->transactionUpdate([
-			'reference_number'	=> $result->code
-		]);
+		$this->setCode($result->code);
 	}
+
+    protected function postPurchase(): void
+    {
+        $this->transactionUpdate([
+            'reference_number' => $this->getCode(),
+        ]);
+
+        parent::postPurchase();
+    }
 
 	/**
 	 * Pay Link function
@@ -208,8 +325,7 @@ class PayPing extends AbstractGateway implements GatewayInterface
 	 */
 	public function gatewayPayUri(): string
 	{
-		$reference_number = $this->getReferenceNumber();
-		return "https://api.payping.ir/v1/pay/gotoipg/$reference_number";
+        return str_replace('{code}', $this->getReferenceNumber(), self::REDIRECT_URL);
 	}
 
 	/**
@@ -245,27 +361,24 @@ class PayPing extends AbstractGateway implements GatewayInterface
 			'tracking_code' => $this->request->refid,
 		]);
 
-		$amount = $this->getPreparedAmount();
-        $amount = $this->feeCalculator($amount);
-
 		$fields = json_encode([
 			'refId'	=> $this->request->refid,
-			'amount'=> $amount,
+			'amount'=> $this->preparedAmount(),
 		]);
 
 		try {
 			$ch = curl_init();
-			curl_setopt($ch, CURLOPT_URL, 'https://api.payping.ir/v1/pay/verify');
+			curl_setopt($ch, CURLOPT_URL, self::VERIFY_URL);
 			curl_setopt($ch, CURLOPT_POSTFIELDS, $fields);
 			curl_setopt($ch, CURLOPT_HTTPHEADER, [
 				'Accept: application/json',
-				'Authorization: bearer '.$this->token,
+                "Authorization: bearer {$this->getToken()}",
 				'Content-Type: application/json',
 			]);
 			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-			curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeout);
-			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->connection_timeout);
+            curl_setopt($ch, CURLOPT_TIMEOUT, $this->gateway_request_options['timeout'] ?? 30);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->gateway_request_options['connection_timeout'] ?? 60);
 			$result	= curl_exec($ch);
 			$httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 			$ch_error = curl_error($ch);
@@ -310,4 +423,11 @@ class PayPing extends AbstractGateway implements GatewayInterface
 	{
 		throw new PayBackNotPossibleException;
 	}
+
+    private function feeCalculator(int $amount): int
+    {
+        $fees = $amount * 1 / 100;
+        $amount += $fees > 5000 ? 5000 : $fees;
+        return intval($amount);
+    }
 }
