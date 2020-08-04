@@ -13,6 +13,8 @@ use Dena\IranPayment\Traits\IranPaymentDatabase as DatabaseTrait;
  * @property integer $amount
  * @property string $gateway
  * @property string $status
+ * @property string $full_name
+ * @property string $email
  * @property string $mobile
  * @property string $currency
  * @property \Illuminate\Support\Carbon $created_at
@@ -44,7 +46,9 @@ class IranPaymentTransaction extends Model
 		'tracking_code',
 		'reference_number',
 		'card_number',
-		'mobile',
+        'full_name',
+        'email',
+        'mobile',
 		'description',
 		'errors',
 		'extra',
