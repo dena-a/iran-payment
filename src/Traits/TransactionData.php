@@ -4,7 +4,6 @@ namespace Dena\IranPayment\Traits;
 
 use Dena\IranPayment\Exceptions\TransactionNotFoundException;
 
-use Dena\IranPayment\Helpers\Currency;
 use Dena\IranPayment\Models\IranPaymentTransaction;
 
 use Carbon\Carbon;
@@ -16,86 +15,80 @@ trait TransactionData
     /**
      * Transaction variable
      *
-     * @var IranPaymentTransaction
+     * @var IranPaymentTransaction|null
      */
-	protected $transaction;
+	protected ?IranPaymentTransaction $transaction = null;
 
 	/**
 	 * Set Transaction  function
 	 *
-	 * @param IranPaymentTransaction $transaction
-	 * @return self
+	 * @param IranPaymentTransaction|Model $transaction
+	 * @return $this
 	 */
-	public function setTransaction(IranPaymentTransaction $transaction)
+	public function setTransaction(IranPaymentTransaction $transaction): self
 	{
 		$this->transaction = $transaction;
 
 		return $this;
 	}
 
-	/**
-	 * Find Transaction function
-	 *
-	 * @param int $transaction_id
-	 * @return self
-	 */
-	public function findTransaction(int $transaction_id)
-	{
-		$transaction = IranPaymentTransaction::find($transaction_id);
-		if (!$transaction) {
-			throw new TransactionNotFoundException;
-		}
+    /**
+     * Get Transaction function
+     *
+     * @return IranPaymentTransaction|null
+     */
+    public function getTransaction(): ?IranPaymentTransaction
+    {
+        return $this->transaction;
+    }
 
-		return $this->setTransaction($transaction);
-	}
+    /**
+     * Find Transaction function
+     *
+     * @param string|int $uid
+     * @return $this
+     * @throws TransactionNotFoundException
+     */
+    public function findTransaction($uid): self
+    {
+        if (is_numeric($uid)) {
+            $transaction = IranPaymentTransaction::find($uid);
+        } elseif (is_string($uid)) {
+            $transaction = IranPaymentTransaction::where('code', $uid)->first();
+        }
+
+        if (!isset($transaction)) {
+            throw new TransactionNotFoundException;
+        }
+
+        $this->setTransaction($transaction);
+
+        return $this;
+    }
 
 	/**
 	 * Find Item Transactions
 	 *
-	 * @param string $payable_id
-	 * @param string $payable_type
-	 * @param string $status
+	 * @param $payable_id
+	 * @param $payable_type
+	 * @param $status
 	 * @return array
 	 */
-	public function payableTransactions($payable_id, $payable_type = null, $status = null)
+	public function payableTransactions($payable_id, $payable_type = null, $status = null): array
 	{
 		$transactions = IranPaymentTransaction::where('payable_id', $payable_id);
-		if (!empty($payable_type)) {
+
+		if (isset($payable_type)) {
 			$transactions->where('payable_type', $payable_type);
 		}
-		if (!empty($status)) {
+
+		if (isset($status)) {
 			$transactions->where('status', $status);
 		}
 
 		return $transactions->get();
 	}
 
-	/**
-	 * Search Transaction Code function
-	 *
-	 * @param string $transaction_code
-	 * @return self
-	 */
-	public function searchTransactionCode(string $transaction_code)
-	{
-		$transaction = IranPaymentTransaction::where('code', $transaction_code)->first();
-		if (!isset($transaction)) {
-			throw new TransactionNotFoundException;
-		}
-
-		return $this->setTransaction($transaction);
-	}
-	
-	/**
-     * Get Transaction function
-     *
-     * @return IranPaymentTransaction
-     */
-	public function getTransaction()
-	{
-		return $this->transaction;
-	}
-	    
 	/**
 	 * Get Transaction Gateway function
 	 *
@@ -105,7 +98,7 @@ trait TransactionData
 	{
 		return isset($this->transaction) ? $this->transaction->gateway : null;
 	}
-	    
+
 	/**
 	 * Get Transaction Card Number function
 	 *
@@ -157,14 +150,15 @@ trait TransactionData
 	}
 
 
-	/**
-	 * Add Extra function
-	 *
-	 * @param [type] $val
-	 * @param [type] $key
-	 * @return self
-	 */
-	public function addExtra($val, $key = null)
+    /**
+     * Add Extra function
+     *
+     * @param [type] $val
+     * @param [type] $key
+     * @return self
+     * @throws \Exception
+     */
+	public function addExtra($val, $key = null): self
 	{
 		if (isset($this->transaction)) {
 			$extra = $this->getExtra();
@@ -187,39 +181,41 @@ trait TransactionData
 				$this->transaction->extra = $extra;
 			}
 		}
+
 		return $this;
 	}
-    
+
     /**
      * Payable variable
      *
-     * @var Model
+     * @var Model|null
      */
-	protected $payable;
-	
+	protected ?Model $payable;
+
 	/**
      * Payable id
      *
-     * @var int
+     * @var int|null
      */
-	protected $payable_id;
+	protected ?int $payable_id;
 
 	/**
      * Payable type
      *
-     * @var string
+     * @var string|null
      */
-	protected $payable_type;
+	protected ?string $payable_type;
 
     /**
      * Set Payable function
      *
      * @param Model $payable
-     * @return self
+     * @return $this
      */
-	public function setPayable(Model $payable)
+	public function setPayable(Model $payable): self
 	{
 		$this->payable = $payable;
+
 		return $this;
 	}
 
@@ -230,10 +226,11 @@ trait TransactionData
      */
 	public function getPayable()
 	{
-		if($this->payable) return $this->payable;
-		elseif($this->payable_id) {
+		if ($this->payable)
+		    return $this->payable;
+		elseif($this->payable_id)
 			return $this->payable_id;
-		}
+
 		return null;
 	}
 
@@ -254,7 +251,7 @@ trait TransactionData
      *
      * @return int
      */
-	public function getPayableId()
+	public function getPayableId(): int
 	{
 		return $this->payable_id;
 	}
@@ -265,9 +262,10 @@ trait TransactionData
      * @param string $payableType
      * @return self
      */
-	public function setPayableType(string $payableType) : self
+	public function setPayableType(string $payableType): self
 	{
 		$this->payable_type = $payableType;
+
 		return $this;
 	}
 
@@ -276,68 +274,71 @@ trait TransactionData
      *
      * @return string
      */
-	public function getPayableType() : string
+	public function getPayableType(): string
 	{
 		return $this->payable_type;
 	}
-	
-	protected function newTransaction()
-	{
-		app('db')->transaction(function() {
-			$this->transaction	= new IranPaymentTransaction([
-				'amount'		=> $this->amount,
-				'currency'		=> $this->currency,
-				'gateway'		=> $this->gatewayName(),
-				'extra'			=> is_array($this->getExtra()) ? json_encode($this->getExtra()) : $this->getExtra(),
-			]);
-			$this->transaction->status	= IranPaymentTransaction::T_INIT;
-			if (!empty($this->payable)) {
-				$this->transaction->payable()->associate($this->payable);
-			} elseif (!empty($this->payable_id)) {
-				$this->transaction->payable_id = $this->payable_id;
-				$this->transaction->payable_type = $this->payable_type;
-			}
-			$this->transaction->code = Str::random(config('iranpayment.code_length' ,16));
-			$this->transaction->save();
-		});
+
+	protected function newTransaction(): void
+    {
+        $transaction = new IranPaymentTransaction([
+            'amount' => $this->getAmount(),
+            'currency' => $this->getCurrency(),
+            'gateway' => $this->getName(),
+            'extra' => is_array($this->getExtra()) ? json_encode($this->getExtra()) : $this->getExtra(),
+        ]);
+
+        $transaction->status = IranPaymentTransaction::T_INIT;
+        $transaction->code = Str::random(config('iranpayment.code_length' ,16));
+
+        if (isset($this->payable)) {
+            $transaction->payable()->associate($this->payable);
+        } elseif (isset($this->payable_id)) {
+            $transaction->payable_id = $this->payable_id;
+            $transaction->payable_type = $this->payable_type;
+        }
+
+        $transaction->save();
+
+        $this->transaction = $transaction;
 	}
 
-	protected function transactionSucceed(array $params = [])
-	{
+	protected function transactionSucceed(array $params = []): void
+    {
 		$this->transaction->fill($params);
 		$this->transaction->paid_at	= Carbon::now();
 		$this->transaction->status	= IranPaymentTransaction::T_SUCCEED;
 		$this->transaction->save();
 	}
 
-	protected function transactionFailed(string $errors = null)
-	{
+	protected function transactionFailed(string $errors = null): void
+    {
 		$this->transaction->status	= IranPaymentTransaction::T_FAILED;
 		$this->transaction->errors	= $errors;
 		$this->transaction->save();
 	}
 
-	protected function transactionPending(array $params = [])
-	{
+	protected function transactionPending(array $params = []): void
+    {
 		$this->transaction->fill($params);
 		$this->transaction->status	= IranPaymentTransaction::T_PENDING;
 		$this->transaction->save();
 	}
 
-	protected function transactionVerifyPending(array $params = [])
-	{
+	protected function transactionVerifyPending(array $params = []): void
+    {
 		$this->transaction->fill($params);
 		$this->transaction->status	= IranPaymentTransaction::T_VERIFY_PENDING;
 		$this->transaction->save();
 	}
 
-	protected function transactionUpdate(array $params = [])
-	{
-		$this->transaction->fill($params);
+	protected function transactionUpdate(array $params = []): void
+    {
+		$this->transaction->forceFill($params);
 		$this->transaction->save();
 	}
 
-	protected function transactionPaidBack(array $params = [])
+	protected function transactionPaidBack(array $params = []): void
 	{
 		$this->transaction->fill($params);
 		$this->transaction->status = IranPaymentTransaction::T_PAID_BACK;

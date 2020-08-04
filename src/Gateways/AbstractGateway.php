@@ -271,7 +271,7 @@ abstract class AbstractGateway
 		} elseif(!isset($this->transaction)) {
 			$transaction_code_field = app('config')->get('iranpayment.transaction_query_param', 'tc');
 			if (isset($this->request->$transaction_code_field)) {
-				$this->searchTransactionCode($this->request->$transaction_code_field);
+				$this->findTransaction($this->request->$transaction_code_field);
 			}
 		}
 
@@ -320,7 +320,7 @@ abstract class AbstractGateway
 		} elseif(!isset($this->transaction)) {
 			$transaction_code_field = app('config')->get('iranpayment.transaction_query_param', 'tc');
 			if (isset($this->request->$transaction_code_field)) {
-				$this->searchTransactionCode($this->request->$transaction_code_field);
+				$this->findTransaction($this->request->$transaction_code_field);
 			}
 		}
 
