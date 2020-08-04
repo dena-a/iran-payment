@@ -2,57 +2,71 @@
 
 namespace Dena\IranPayment\Gateways\Test;
 
-use Dena\IranPayment\Models\IranPaymentTransaction;
 use Dena\IranPayment\Gateways\AbstractGateway;
 use Dena\IranPayment\Gateways\GatewayInterface;
 
-class TestGateway extends AbstractGateway implements GatewayInterface {
+use Exception;
 
-    public function gatewayName() {
+class TestGateway extends AbstractGateway implements GatewayInterface
+{
+    public function getName(): string
+    {
         return 'test-gateway';
     }
 
-	public function gatewayPayPrepare() {
+	protected function prePurchase(): void
+    {
         $this->transactionPending();
     }
 
-    public function gatewayVerifyPrepare() {
-    }
-
-	public function gatewayVerify() {
+	public function gatewayVerify(): void
+    {
         $this->transactionVerifyPending();
         $code = rand(1, 10000);
 		$this->transactionSucceed(['tracking_code' => $code]);
     }
 
-	public function gatewayPayRedirect() {
+    /**
+     * @throws Exception
+     */
+	public function gatewayPayRedirect()
+    {
         $this->transactionUpdate([
             'transaction_code'	=> uniqid(),
         ]);
         $this->addExtra($this->getCallbackUrl(), 'callback_url');
         return view('iranpayment::pages.test')->with([
-            'transaction_code' => $this->getTransaction()->code,
+            'transaction_code' => $this->getTransactionCode(),
             'reference_number' => $this->getReferenceNumber(),
         ]);
     }
 
-	public function gatewayPayBack() {
-    }
-
-	public function gatewayPay() {
+	public function purchase(): void
+    {
         $this->transactionUpdate([
             'reference_number'	=> uniqid(),
 		]);
     }
 
-	public function gatewayPayView() {
+	public function gatewayPayView()
+    {
         return view('iranpayment::pages.test', [
             'reference_number'	=> uniqid(),
 			'transaction_code'	=> $this->getTransactionCode(),
 		]);
     }
 
-    public function gatewayPayUri() {
+    public function gatewayPayUri(): string
+    {
         return route('iranpayment.test.pay', $this->getPayable());
     }
+
+    public function initialize(array $parameters = []): GatewayInterface
+    {
+        return $this;
+    }
+
+    public function gatewayVerifyPrepare(): void {}
+
+    public function gatewayPayBack(): void {}
 }
