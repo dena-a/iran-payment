@@ -6,7 +6,7 @@ use Dena\IranPayment\Exceptions\GatewayException;
 
 class SamanException extends GatewayException
 {
-	public static $errors = [
+	public static array $errors = [
 		-1		=> 'خطا در پردازش اطلاعات ارسالی (مشکل در یکی از ورودی‌ها و ناموفق بودن فراخوانی متد برگشت تراکنش)',
 		-3		=> 'ورودی‌ها حاوی کارکترهای غیرمجاز می‌باشند.',
 		-4		=> 'کلمه عبور یا کد فروشنده اشتباه است.',
@@ -31,10 +31,8 @@ class SamanException extends GatewayException
 		-102	=> 'مبلغ واریزی اشتباه است. این مبلغ به حساب شما برگشت خواهد خورد.',
 	];
 
-	public function __construct($error_id)
-	{
-		$error_id = intval($error_id);
-
-		parent::__construct(@self::$errors[$error_id]);
-	}
+    public static function error($error_code)
+    {
+        return new self(self::$errors[$error_code] ?? self::$errors[-100], $error_code);
+    }
 }

@@ -1,17 +1,22 @@
 <?php
+/**
+ * Api Version: ?
+ * Api Document Date: 1398/04/01
+ * Last Update: 2020/08/03
+ */
 
 namespace Dena\IranPayment\Gateways\Saman;
 
-use Dena\IranPayment\Exceptions\InvalidDataException;
-use Dena\IranPayment\Exceptions\InvalidGatewayMethodException;
-use Dena\IranPayment\Exceptions\PayBackNotPossibleException;
-
 use Dena\IranPayment\Gateways\AbstractGateway;
-
-use Dena\IranPayment\Helpers\Currency;
 use Dena\IranPayment\Gateways\GatewayInterface;
 
-use Log;
+use Dena\IranPayment\Exceptions\GatewayException;
+use Dena\IranPayment\Exceptions\InvalidDataException;
+use Dena\IranPayment\Exceptions\PayBackNotPossibleException;
+use Dena\IranPayment\Exceptions\InvalidGatewayMethodException;
+
+use Dena\IranPayment\Helpers\Currency;
+
 use Exception;
 use SoapFault;
 use SoapClient;
@@ -25,128 +30,215 @@ use SoapClient;
  */
 class Saman extends AbstractGateway implements GatewayInterface
 {
-	private $token;
-	private $token_url;
-	private $verify_url;
-	private $payment_url;
-	private $merchant_id;
-	private $prepared_amount;
-	protected $connection_timeout;
+    private const TOKEN_URL = 'https://sep.shaparak.ir/Payments/InitPayment.asmx?wsdl';
+    private const PAYMENT_URL = 'https://sep.shaparak.ir/Payment.aspx';
+    private const VERIFY_URL = 'https://verify.sep.ir/Payments/ReferencePayment.asmx?wsdl';
+    private const CURRENCY = Currency::IRR;
 
-	public function __construct()
-	{
-		parent::__construct();
-		$this->setDefaults();
+    /**
+     * Merchant ID variable
+     *
+     * @var string|null
+     */
+    protected ?string $merchant_id;
+
+    /**
+     * ResNum variable
+     *
+     * @var string|null
+     */
+    protected ?string $res_num;
+
+    /**
+     * Token variable
+     *
+     * @var string|null
+     */
+    protected ?string $token;
+
+    /**
+     * Gateway Name function
+     *
+     * @return string
+     */
+    public function getName(): string
+    {
+        return 'saman';
+    }
+
+    /**
+     * Set Merchant Id function
+     *
+     * @param string $merchant_id
+     * @return $this
+     */
+    public function setMerchantId(string $merchant_id): self
+    {
+        $this->merchant_id = $merchant_id;
+
+        return $this;
+    }
+
+    /**
+     * Get Merchant Id function
+     *
+     * @return string|null
+     */
+    public function getMerchantId(): ?string
+    {
+        return $this->merchant_id;
+    }
+
+    /**
+     * Set ResNum function
+     *
+     * @param string|null $res_num
+     * @return $this
+     */
+    public function setResNum(string $res_num): self
+    {
+        $this->res_num = $res_num;
+
+        return $this;
+    }
+
+    /**
+     * Get ResNum function
+     *
+     * @return string|null
+     */
+    public function getResNum(): ?string
+    {
+        return $this->res_num;
+    }
+
+    /**
+     * Set Token function
+     *
+     * @param string|null $token
+     * @return $this
+     */
+    public function setToken(string $token): self
+    {
+        $this->token = $token;
+
+        return $this;
+    }
+
+    /**
+     * Get Token function
+     *
+     * @return string|null
+     */
+    public function getToken(): ?string
+    {
+        return $this->token;
+    }
+
+    /**
+     * Initialize function
+     *
+     * @param array $parameters
+     * @return GatewayInterface
+     * @throws InvalidDataException
+     */
+    public function initialize(array $parameters = []): GatewayInterface
+    {
+        $this->setGatewayCurrency(self::CURRENCY);
+
+	    $this->setMerchantId(app('config')->get('iranpayment.saman.merchant-id'));
+
+        $this->setCallbackUrl($parameters['callback_url']
+            ?? app('config')->get('iranpayment.saman.callback-url')
+            ?? app('config')->get('iranpayment.callback-url')
+        );
+
+        return $this;
 	}
 
-	public function gatewayName(): string
+    /**
+     * @throws InvalidDataException
+     */
+    protected function prePurchase(): void
 	{
-		return 'saman';
+	    parent::prePurchase();
+
+        if ($this->preparedAmount() < 100) {
+            throw InvalidDataException::invalidAmount();
+        }
+
+        $this->setResNum($this->getTransactionCode());
 	}
 
-	private function setDefaults()
+    /**
+     * @throws GatewayException
+     * @throws SamanException
+     */
+	public function purchase(): void
 	{
-		$this->merchant_id			= config('iranpayment.saman.merchant-id');
-		$this->connection_timeout	= config('iranpayment.timeout', 30);
-		$this->token_url			= config('iranpayment.saman.token_url', 'https://sep.shaparak.ir/Payments/InitPayment.asmx?wsdl');
-		$this->payment_url			= config('iranpayment.saman.payment_url', 'https://sep.shaparak.ir/Payment.aspx');
-		$this->verify_url			= config('iranpayment.saman.verify_url', 'https://verify.sep.ir/Payments/ReferencePayment.asmx?wsdl');
-
-		$this->setCallbackUrl(config('iranpayment.saman.callback-url', config('iranpayment.callback-url')));
-	}
-
-	private function prepareAmount()
-	{
-		$amount		= $this->getAmount();
-		$amount		= intval($amount);
-		if ($amount <= 0) {
-			throw InvalidDataException::invalidAmount();
-		}
-		$currency	= $this->getCurrency();
-		if (!in_array($currency, [Currency::IRR, Currency::IRT])) {
-			throw InvalidDataException::invalidCurrency();
-		}
-		if ($currency == Currency::IRT) {
-			$amount	= Currency::TomanToRial($amount);
-		}
-		if ($amount < 100) {
-			throw InvalidDataException::invalidAmount();
-		}
-		$this->prepared_amount	= $amount;
-	}
-
-	public function gatewayPayPrepare(): void
-	{
-		$this->prepareAmount();
-	}
-
-	public function gatewayPay(): void
-	{
-		$this->gatewayPayPrepare();
-
 		try{
-			$soap = new SoapClient($this->token_url, [
-				'encoding'				=> 'UTF-8',
-				'trace'					=> 1,
-				'exceptions'			=> 1,
-				'connection_timeout'	=> $this->connection_timeout,
-			]);
-			$token = $soap->RequestToken(
-				$this->merchant_id,
-				$this->getTransactionCode(),
-				$this->prepared_amount
-			);
-		} catch(SoapFault $e) {
-			$this->setDescription($e->getMessage());
-			$this->transactionFailed();
-			throw $e;
-		} catch(Exception $e){
-			$this->setDescription($e->getMessage());
-			$this->transactionFailed();
-			throw $e;
-		}
+            $soap = new SoapClient(self::TOKEN_URL, [
+                'encoding' => 'UTF-8',
+                'trace' => 1,
+                'exceptions' => 1,
+                'connection_timeout' => $this->getGatewayRequestOptions()['connection_timeout'] ?? 60,
+            ]);
 
-		if (is_numeric($token)) {
-			$e	= new SamanException($token);
-			$this->setDescription($e->getMessage());
-			$this->transactionFailed();
-			throw $e;
-		} else {
-			$this->token = $token;
-		}
+            $result = $soap->RequestToken(
+				$this->getMerchantId(),
+				$this->getTransactionCode(),
+				$this->preparedAmount()
+			);
+        } catch(SoapFault|Exception $ex) {
+            throw GatewayException::connectionProblem($ex);
+        }
+
+        if (is_numeric($result)) {
+            throw SamanException::error($result);
+        }
+
+        $this->setToken($result);
 	}
+
+    protected function postPurchase(): void
+    {
+        $this->transactionUpdate([
+            'reference_number' => $this->getToken(),
+        ]);
+
+        parent::postPurchase();
+    }
 
 	public function gatewayVerifyPrepare(): void
 	{
-		$this->prepareAmount();
 		if ($this->request->get('State') !== 'OK' || $this->request->get('StateCode') !== '0' ) {
 			switch ($this->request->get('StateCode')) {
 				case '-1':
-					$e	= new SamanException(-101);
+					$ex	= new SamanException(-101);
 					break;
 				case '51':
-					$e	= new SamanException(51);
+					$ex	= new SamanException(51);
 					break;
 				default:
-					$e	= new SamanException(-100);
+					$ex	= new SamanException(-100);
 					break;
 			}
-			$this->setDescription($e->getMessage());
+			$this->setDescription($ex->getMessage());
 			$this->transactionFailed();
-			throw $e;
+			throw $ex;
 		}
 
-		if ($this->request->get(config('iranpayment.transaction_query_param', 'tc')) !== $this->getTransactionCode()) {
-			$e	= new SamanException(-14);
-			$this->setDescription($e->getMessage());
+		if ($this->request->get(app('config')->get('iranpayment.transaction_query_param', 'tc')) !== $this->getTransactionCode()) {
+			$ex	= new SamanException(-14);
+			$this->setDescription($ex->getMessage());
 			$this->transactionFailed();
-			throw $e;
+			throw $ex;
 		}
 		if ($this->request->get('MID') !== $this->merchant_id) {
-			$e	= new SamanException(-4);
-			$this->setDescription($e->getMessage());
+			$ex	= new SamanException(-4);
+			$this->setDescription($ex->getMessage());
 			$this->transactionFailed();
-			throw $e;
+			throw $ex;
 		}
 
 		$this->transactionUpdate([
@@ -163,38 +255,38 @@ class Saman extends AbstractGateway implements GatewayInterface
 		$this->gatewayVerifyPrepare();
 
 		try{
-			$soap = new SoapClient($this->verify_url, [
+			$soap = new SoapClient(self::VERIFY_URL, [
 				'encoding'				=> 'UTF-8',
 				'trace'					=> 1,
 				'exceptions'			=> 1,
 				'connection_timeout'	=> $this->connection_timeout,
 			]);
-			$amount = $soap->verifyTransaction(
+			$result = $soap->verifyTransaction(
 				$this->getReferenceNumber(),
 				$this->merchant_id
 			);
-		} catch(SoapFault $e) {
-			$this->setDescription($e->getMessage());
+		} catch(SoapFault $ex) {
+			$this->setDescription($ex->getMessage());
 			$this->transactionFailed();
-			throw $e;
-		} catch(Exception $e){
-			$this->setDescription($e->getMessage());
+			throw $ex;
+		} catch(Exception $ex){
+			$this->setDescription($ex->getMessage());
 			$this->transactionFailed();
-			throw $e;
+			throw $ex;
 		}
 
-		if ($amount <= 0) {
-			$e	= new SamanException($amount);
-			$this->setDescription($e->getMessage());
+		if ($result <= 0) {
+			$ex	= new SamanException($result);
+			$this->setDescription($ex->getMessage());
 			$this->transactionFailed();
-			throw $e;
+			throw $ex;
 		}
 
-		if ($amount != $this->prepared_amount) {
-			$e	= new SamanException(-102);
-			$this->setDescription($e->getMessage());
+		if ($result != $this->preparedAmount()) {
+			$ex	= new SamanException(-102);
+			$this->setDescription($ex->getMessage());
 			$this->transactionFailed();
-			throw $e;
+			throw $ex;
 		}
 
 		$this->transactionSucceed();
@@ -207,11 +299,14 @@ class Saman extends AbstractGateway implements GatewayInterface
 		return view('iranpayment::pages.saman', [
 			'transaction_code'	=> $this->getTransactionCode(),
 			'token'				=> $this->token,
-			'bank_url'			=> $this->payment_url,
+			'bank_url'			=> self::PAYMENT_URL,
 			'redirect_url'		=> $this->getCallbackUrl(),
 		]);
 	}
 
+    /**
+     * @throws PayBackNotPossibleException
+     */
 	public function gatewayPayBack(): void
 	{
 		throw new PayBackNotPossibleException;
@@ -222,11 +317,19 @@ class Saman extends AbstractGateway implements GatewayInterface
 		return $this->gatewayRedirectView();
 	}
 
+    /**
+     * @return string
+     * @throws InvalidGatewayMethodException
+     */
 	public function gatewayPayUri(): string
     {
 		throw new InvalidGatewayMethodException;
 	}
 
+    /**
+     * @return string
+     * @throws InvalidGatewayMethodException
+     */
 	public function gatewayPayRedirect(): string
     {
 		throw new InvalidGatewayMethodException;

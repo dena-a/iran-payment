@@ -114,10 +114,10 @@ $payment->extends(NewGateway::class);
 
 Gateway | Available | Tested | Last Update
 --- | --- | --- | ---
-[Saman (Sep)](https://www.sep.ir/) | ✓ | ✓ | 2020/08/03
 [Pay.ir](https://pay.ir/) | ✓ | ✓ | 2020/08/03
 [Zarinpal](https://zarinpal.com/) | ✓ | ✓ | 2020/08/03
-[Payping](https://github.com/queueup-dev/omnipay-acapture) | ✓ | ✓ | 2020/08/03
+[Payping](https://github.com/queueup-dev/omnipay-acapture) | ✓ | ✓ | 2020/08/04
+[Saman (Sep)](https://www.sep.ir/) | ✓ | - | 2020/08/03
 [Melli (Sadad)](https://sadadpsp.ir/) | - | - | -
 [Mellat (Behpardakht)](http://www.behpardakht.com/) | - | - | -
 [Parsian (Pec)](https://www.pec.ir/) | - | - | -
@@ -125,6 +125,8 @@ Gateway | Available | Tested | Last Update
 [Zibal](https://zibal.ir/) | - | - | -
 
 ## Upgrade from v1 to v2
+
+TODO:
 
 ## Contribute
 
