@@ -19,7 +19,7 @@ class TestGateway extends AbstractGateway implements GatewayInterface
         $this->transactionPending();
     }
 
-	public function gatewayVerify(): void
+	public function verify(): void
     {
         $this->transactionVerifyPending();
         $code = rand(1, 10000);
@@ -61,10 +61,8 @@ class TestGateway extends AbstractGateway implements GatewayInterface
         return route('iranpayment.test.pay', $this->getPayable());
     }
 
-    public function initialize(array $parameters = []): GatewayInterface
+    public function initialize(array $parameters = []): self
     {
         return $this;
     }
-
-    public function gatewayVerifyPrepare(): void {}
 }

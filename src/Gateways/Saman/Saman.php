@@ -138,11 +138,13 @@ class Saman extends AbstractGateway implements GatewayInterface
      * Initialize function
      *
      * @param array $parameters
-     * @return GatewayInterface
+     * @return $this
      * @throws InvalidDataException
      */
-    public function initialize(array $parameters = []): GatewayInterface
+    public function initialize(array $parameters = []): self
     {
+        parent::initialize($parameters);
+
         $this->setGatewayCurrency(self::CURRENCY);
 
 	    $this->setMerchantId(app('config')->get('iranpayment.saman.merchant-id'));
@@ -208,8 +210,10 @@ class Saman extends AbstractGateway implements GatewayInterface
         parent::postPurchase();
     }
 
-	public function gatewayVerifyPrepare(): void
+	public function preVerify(): void
 	{
+	    parent::preVerify();
+
 		if ($this->request->get('State') !== 'OK' || $this->request->get('StateCode') !== '0' ) {
 			switch ($this->request->get('StateCode')) {
 				case '-1':
@@ -249,10 +253,8 @@ class Saman extends AbstractGateway implements GatewayInterface
 		$this->transactionVerifyPending();
 	}
 
-	public function gatewayVerify(): void
+	public function verify(): void
 	{
-		$this->gatewayVerifyPrepare();
-
 		try{
 			$soap = new SoapClient(self::VERIFY_URL, [
 				'encoding'				=> 'UTF-8',

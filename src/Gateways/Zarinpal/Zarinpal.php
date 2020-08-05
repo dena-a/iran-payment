@@ -134,8 +134,10 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
      * @return $this
      * @throws InvalidDataException
      */
-    public function initialize(array $parameters = []): GatewayInterface
+    public function initialize(array $parameters = []): self
     {
+        parent::initialize($parameters);
+
         $this->setGatewayCurrency(self::CURRENCY);
 
         $this->setMerchantId($parameters['merchant_id'] ?? app('config')->get('iranpayment.zarinpal.merchant-id'));
@@ -251,8 +253,10 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
 		return redirect($this->gatewayPayUri());
 	}
 
-	public function gatewayVerifyPrepare(): void
-	{
+    public function preVerify(): void
+    {
+        parent::preVerify();
+
 		if (intval($this->request->Authority) !== intval($this->transaction->reference_number)) {
 			$e = new ZarinpalException(-11);
 			$this->setDescription($e->getMessage());
@@ -268,7 +272,7 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
 		$this->transactionVerifyPending();
 	}
 
-	public function gatewayVerify(): void
+	public function verify(): void
 	{
 		$amount = $this->preparedAmount();
 

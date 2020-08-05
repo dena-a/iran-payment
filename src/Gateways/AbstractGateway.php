@@ -9,7 +9,6 @@ use Dena\IranPayment\Traits\PaymentData;
 use Dena\IranPayment\Traits\TransactionData;
 
 use Exception;
-use Dena\IranPayment\Exceptions\GatewayException;
 use Dena\IranPayment\Exceptions\InvalidDataException;
 use Dena\IranPayment\Exceptions\SucceedRetryException;
 use Dena\IranPayment\Exceptions\InvalidRequestException;
@@ -31,8 +30,7 @@ use Illuminate\Support\Facades\View;
  * @method gatewayPayRedirect()
  * @method gatewayPayUri()
  * @method gatewayPayView()
- * @method gatewayVerifyPrepare()
- * @method gatewayVerify()
+ * @method verify()
  */
 abstract class AbstractGateway
 {
@@ -40,10 +38,19 @@ abstract class AbstractGateway
         PaymentData,
         TransactionData;
 
+    /**
+     * Request variable
+     *
+     * @var Request|array
+     */
 	protected $request;
-    protected array $gateway_request_options = [];
 
-    abstract public function initialize(array $parameters = []): GatewayInterface;
+    /**
+     * Gateway Request Options variable
+     *
+     * @var array
+     */
+    protected array $gateway_request_options = [];
 
     /**
      * Boot Gateway function
@@ -52,7 +59,7 @@ abstract class AbstractGateway
      * @return $this
      * @throws InvalidDataException
      */
-    public function boot(array $parameters = []): self
+    public function initialize(array $parameters = []): self
     {
         $this->setRequest($parameters['request'] ?? app('request'));
 
@@ -67,8 +74,6 @@ abstract class AbstractGateway
             ],
             $parameters['gateway_request_options'] ?? [],
         ));
-
-        $this->initialize($parameters);
 
         return $this;
     }
@@ -231,8 +236,6 @@ abstract class AbstractGateway
 
 	/**
 	 * General Redirect View function
-	 *
-	 * @return View
 	 */
 	public function generalRedirectView()
 	{
@@ -253,51 +256,66 @@ abstract class AbstractGateway
 	}
 
     /**
-     * Verify function
+     * @throws InvalidDataException
+     * @throws SucceedRetryException
+     * @throws InvalidRequestException
+     * @throws TransactionNotFoundException
+     */
+    protected function preVerify(): void
+    {
+        if(!isset($this->transaction)) {
+            $transaction_code_field = app('config')->get('iranpayment.transaction_query_param', 'tc');
+            if (isset($this->request->$transaction_code_field)) {
+                $this->findTransaction($this->request->$transaction_code_field);
+            } else {
+                throw new TransactionNotFoundException();
+            }
+        }
+
+        if ($this->transaction->status == IranPaymentTransaction::T_SUCCEED) {
+            throw new SucceedRetryException;
+        } elseif (!in_array($this->transaction->status, [
+            IranPaymentTransaction::T_PENDING,
+            IranPaymentTransaction::T_VERIFY_PENDING,
+        ])) {
+            throw InvalidRequestException::unProcessableVerify();
+        }
+
+        $this->setCurrency($this->transaction->currency);
+        $this->setAmount($this->transaction->amount);
+    }
+
+    protected function postٰVerify(): void
+    {
+        $this->transactionSucceed();
+    }
+
+    /**
+     * Confirm function
      *
      * @param IranPaymentTransaction|null $transaction
      * @return self
-     * @throws InvalidRequestException
-     * @throws SucceedRetryException
-     * @throws TransactionNotFoundException
-     * @throws InvalidDataException
+     * @throws IranPaymentException
      */
-	public function verify(IranPaymentTransaction $transaction = null)
+	public function confirm(IranPaymentTransaction $transaction = null)
 	{
 		if(isset($transaction)) {
 			$this->setTransaction($transaction);
-		} elseif(!isset($this->transaction)) {
-			$transaction_code_field = app('config')->get('iranpayment.transaction_query_param', 'tc');
-			if (isset($this->request->$transaction_code_field)) {
-				$this->findTransaction($this->request->$transaction_code_field);
-			}
 		}
-
-		if (!isset($this->transaction)) {
-			throw new TransactionNotFoundException();
-		}
-
-		if ($this->transaction->status == IranPaymentTransaction::T_SUCCEED) {
-			throw new SucceedRetryException;
-		} elseif (!in_array($this->transaction->status, [
-			IranPaymentTransaction::T_PENDING,
-			IranPaymentTransaction::T_VERIFY_PENDING,
-		])) {
-			throw InvalidRequestException::unProcessableVerify();
-		}
-
-		$this->setCurrency($this->transaction->currency);
-		$this->setAmount($this->transaction->amount);
 
 		try {
-			$this->gatewayVerifyPrepare();
+		    $this->preVerify();
 
-			$this->gatewayVerify();
+			$this->verify();
 
-			$this->transactionSucceed();
-		} catch (Exception $ex) {
-			throw $ex;
-		}
+			$this->postٰVerify();
+        } catch (Exception $ex) {
+            if (!$ex instanceof IranPaymentException) {
+                throw IranPaymentException::unknown($ex);
+            }
+
+            throw $ex;
+        }
 
 		return $this;
 	}

@@ -212,6 +212,8 @@ class PayPing extends AbstractGateway implements GatewayInterface
      */
     public function initialize(array $parameters = []): self
 	{
+	    parent::initialize($parameters);
+
         $this->setGatewayCurrency(self::CURRENCY);
 
         $this->setToken($parameters['token'] ?? app('config')->get('iranpayment.payping.merchant-id'));
@@ -342,12 +344,7 @@ class PayPing extends AbstractGateway implements GatewayInterface
 		return redirect($this->gatewayPayUri());
 	}
 
-	public function gatewayVerifyPrepare(): void
-	{
-		//
-	}
-
-	public function gatewayVerify(): void
+	public function verify(): void
 	{
 		if (!isset($this->request->refid)) {
 			$ex = InvalidRequestException::notFound();

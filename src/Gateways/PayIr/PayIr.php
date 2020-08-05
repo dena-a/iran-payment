@@ -131,8 +131,10 @@ class PayIr extends AbstractGateway implements GatewayInterface
      * @return $this
      * @throws InvalidDataException
      */
-    public function initialize(array $parameters = []): GatewayInterface
+    public function initialize(array $parameters = []): self
     {
+        parent::initialize($parameters);
+
         $this->setGatewayCurrency(self::CURRENCY);
 
         $this->setApi($parameters['api'] ?? app('config')->get('iranpayment.payir.merchant-id'));
@@ -248,12 +250,7 @@ class PayIr extends AbstractGateway implements GatewayInterface
 		return redirect($this->gatewayPayUri());
 	}
 
-	public function gatewayVerifyPrepare(): void
-	{
-		//
-	}
-
-	public function gatewayVerify(): void
+	public function verify(): void
 	{
 		if (!isset($this->request->token, $this->request->status)) {
 			$ex = InvalidRequestException::notFound();

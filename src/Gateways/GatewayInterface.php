@@ -10,9 +10,7 @@ interface GatewayInterface
 
 	public function purchase(): void;
 
-	public function gatewayVerifyPrepare(): void;
-
-	public function gatewayVerify(): void;
+	public function verify(): void;
 
 	public function gatewayPayView();
 

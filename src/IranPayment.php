@@ -2,6 +2,7 @@
 
 namespace Dena\IranPayment;
 
+use Dena\IranPayment\Gateways\AbstractGateway;
 use Dena\IranPayment\Gateways\GatewayInterface;
 
 use Dena\IranPayment\Gateways\PayIr\PayIr;
@@ -101,14 +102,19 @@ class IranPayment
 		return $this->gateway;
 	}
 
-	/**
-	 * Build Gateway function
-	 *
-	 * @return GatewayInterface
-	 */
+    /**
+     * Build Gateway function
+     *
+     * @return GatewayInterface|AbstractGateway
+     * @throws Exceptions\InvalidDataException
+     */
 	public function build(): GatewayInterface
 	{
-		return $this->gateway->boot();
+	    if (!$this->gateway instanceof AbstractGateway) {
+            return $this->gateway;
+        }
+
+		return $this->gateway->initialize();
 	}
 
 	/**
@@ -137,7 +143,7 @@ class IranPayment
      *
      * @param GatewayInterface|string|null $gateway
      * @return GatewayInterface
-     * @throws GatewayNotFoundException
+     * @throws GatewayNotFoundException|Exceptions\InvalidDataException
      */
 	public static function create($gateway = null): GatewayInterface
     {
@@ -154,6 +160,7 @@ class IranPayment
      * @param IranPaymentTransaction|Request|null $data
      * @return GatewayInterface
      * @throws GatewayNotFoundException
+     * @throws Exceptions\InvalidDataException
      */
     public static function detect($data = null): GatewayInterface
     {
@@ -179,8 +186,12 @@ class IranPayment
             throw new GatewayNotFoundException;
         }
 
-        return !isset($transaction)
-            ? (new self($gateway))->build()
-            : (new self($gateway))->build()->setTransaction($transaction);
+        $gateway = (new self($gateway))->build();
+
+        if (isset($transaction) && $gateway instanceof AbstractGateway) {
+            $gateway->setTransaction($transaction);
+        }
+
+        return $gateway;
     }
 }
