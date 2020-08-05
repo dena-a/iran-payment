@@ -12,7 +12,6 @@ use Dena\IranPayment\Gateways\GatewayInterface;
 
 use Dena\IranPayment\Exceptions\GatewayException;
 use Dena\IranPayment\Exceptions\InvalidDataException;
-use Dena\IranPayment\Exceptions\PayBackNotPossibleException;
 use Dena\IranPayment\Exceptions\InvalidGatewayMethodException;
 
 use Dena\IranPayment\Helpers\Currency;
@@ -302,14 +301,6 @@ class Saman extends AbstractGateway implements GatewayInterface
 			'bank_url'			=> self::PAYMENT_URL,
 			'redirect_url'		=> $this->getCallbackUrl(),
 		]);
-	}
-
-    /**
-     * @throws PayBackNotPossibleException
-     */
-	public function gatewayPayBack(): void
-	{
-		throw new PayBackNotPossibleException;
 	}
 
 	public function gatewayPayView()

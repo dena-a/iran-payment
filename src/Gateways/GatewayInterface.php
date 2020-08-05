@@ -18,7 +18,5 @@ interface GatewayInterface
 
 	public function gatewayPayRedirect();
 
-	public function gatewayPayBack(): void;
-
 	public function gatewayPayUri(): string;
 }

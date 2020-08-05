@@ -11,7 +11,6 @@ use Exception;
 use Dena\IranPayment\Exceptions\GatewayException;
 use Dena\IranPayment\Exceptions\InvalidRequestException;
 use Dena\IranPayment\Exceptions\InvalidDataException;
-use Dena\IranPayment\Exceptions\PayBackNotPossibleException;
 use Dena\IranPayment\Gateways\AbstractGateway;
 use Dena\IranPayment\Gateways\GatewayInterface;
 
@@ -412,16 +411,6 @@ class PayPing extends AbstractGateway implements GatewayInterface
 			$this->transactionFailed($raw_result);
 			throw GatewayException::unknownResponse();
 		}
-	}
-
-	/**
-	 * Pay Back function
-	 *
-	 * @throws PayBackNotPossibleException
-	 */
-	public function gatewayPayBack(): void
-	{
-		throw new PayBackNotPossibleException;
 	}
 
     private function feeCalculator(int $amount): int

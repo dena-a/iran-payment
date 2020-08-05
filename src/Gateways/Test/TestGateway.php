@@ -67,6 +67,4 @@ class TestGateway extends AbstractGateway implements GatewayInterface
     }
 
     public function gatewayVerifyPrepare(): void {}
-
-    public function gatewayPayBack(): void {}
 }

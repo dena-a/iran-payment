@@ -13,7 +13,6 @@ use Dena\IranPayment\Exceptions\GatewayException;
 use Dena\IranPayment\Exceptions\InvalidDataException;
 use Dena\IranPayment\Exceptions\SucceedRetryException;
 use Dena\IranPayment\Exceptions\InvalidRequestException;
-use Dena\IranPayment\Exceptions\PayBackNotPossibleException;
 use Dena\IranPayment\Exceptions\TransactionNotFoundException;
 use Dena\IranPayment\Exceptions\GatewayPaymentNotSupportViewException;
 use Dena\IranPayment\Exceptions\GatewayPaymentNotSupportRedirectException;
@@ -34,7 +33,6 @@ use Illuminate\Support\Facades\View;
  * @method gatewayPayView()
  * @method gatewayVerifyPrepare()
  * @method gatewayVerify()
- * @method gatewayPayBack()
  */
 abstract class AbstractGateway
 {
@@ -302,38 +300,5 @@ abstract class AbstractGateway
 		}
 
 		return $this;
-	}
-
-    /**
-     * Pay Back function
-     *
-     * @param IranPaymentTransaction|null $transaction
-     * @return void
-     * @throws GatewayException
-     * @throws PayBackNotPossibleException
-     * @throws TransactionNotFoundException
-     */
-	protected function payBack(IranPaymentTransaction $transaction = null)
-	{
-		if(isset($transaction)) {
-			$this->setTransaction($transaction);
-		} elseif(!isset($this->transaction)) {
-			$transaction_code_field = app('config')->get('iranpayment.transaction_query_param', 'tc');
-			if (isset($this->request->$transaction_code_field)) {
-				$this->findTransaction($this->request->$transaction_code_field);
-			}
-		}
-
-		if (!isset($this->transaction)) {
-			throw new TransactionNotFoundException();
-		}
-
-		try {
-			$this->gatewayPayBack();
-
-			$this->transactionPaidBack();
-		} catch (PayBackNotPossibleException|GatewayException|Exception $ex) {
-			throw $ex;
-		}
 	}
 }

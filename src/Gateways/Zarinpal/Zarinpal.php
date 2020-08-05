@@ -9,7 +9,6 @@ namespace Dena\IranPayment\Gateways\Zarinpal;
 
 use Dena\IranPayment\Exceptions\GatewayException;
 use Dena\IranPayment\Exceptions\InvalidDataException;
-use Dena\IranPayment\Exceptions\PayBackNotPossibleException;
 
 use Dena\IranPayment\Gateways\AbstractGateway;
 use Dena\IranPayment\Gateways\GatewayInterface;
@@ -304,13 +303,5 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
 		}
 
 		$this->transactionSucceed(['tracking_code' => $response->RefID]);
-	}
-
-    /**
-     * @throws PayBackNotPossibleException
-     */
-	public function gatewayPayBack(): void
-	{
-		throw new PayBackNotPossibleException;
 	}
 }

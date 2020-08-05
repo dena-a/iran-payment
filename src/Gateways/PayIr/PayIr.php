@@ -14,7 +14,6 @@ use Exception;
 use Dena\IranPayment\Exceptions\GatewayException;
 use Dena\IranPayment\Exceptions\InvalidDataException;
 use Dena\IranPayment\Exceptions\InvalidRequestException;
-use Dena\IranPayment\Exceptions\PayBackNotPossibleException;
 
 use Dena\IranPayment\Helpers\Currency;
 
@@ -315,15 +314,5 @@ class PayIr extends AbstractGateway implements GatewayInterface
 			'tracking_code' => $result->transId,
 			'card_number' 	=> $result->cardNumber,
 		]);
-	}
-
-	/**
-	 * Pay Back function
-	 *
-	 * @throws PayBackNotPossibleException
-	 */
-	public function gatewayPayBack(): void
-	{
-		throw new PayBackNotPossibleException;
 	}
 }
