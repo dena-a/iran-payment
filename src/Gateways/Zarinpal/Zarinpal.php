@@ -7,11 +7,13 @@
 
 namespace Dena\IranPayment\Gateways\Zarinpal;
 
-use Dena\IranPayment\Exceptions\GatewayException;
-use Dena\IranPayment\Exceptions\InvalidDataException;
-
 use Dena\IranPayment\Gateways\AbstractGateway;
 use Dena\IranPayment\Gateways\GatewayInterface;
+
+use Dena\IranPayment\Exceptions\GatewayException;
+use Dena\IranPayment\Exceptions\InvalidDataException;
+use Dena\IranPayment\Exceptions\IranPaymentException;
+use Dena\IranPayment\Exceptions\TransactionFailedException;
 
 use Dena\IranPayment\Helpers\Currency;
 
@@ -40,6 +42,13 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
      * @var string|null
      */
     protected ?string $authority;
+
+    /**
+     * Ref Id variable
+     *
+     * @var string|null
+     */
+    protected ?string $ref_id;
 
     /**
      * Sandbox mod variable
@@ -107,10 +116,10 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
     /**
      * Set Authority function
      *
-     * @param $authority
+     * @param string $authority
      * @return $this
      */
-    public function setAuthority($authority): self
+    public function setAuthority(string $authority): self
     {
         $this->authority = $authority;
 
@@ -125,6 +134,29 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
     public function getAuthority(): ?string
     {
         return $this->authority;
+    }
+
+    /**
+     * Set Ref ID function
+     *
+     * @param string $ref_id
+     * @return $this
+     */
+    public function setRefId(string $ref_id): self
+    {
+        $this->ref_id = $ref_id;
+
+        return $this;
+    }
+
+    /**
+     * Get Ref Id function
+     *
+     * @return string|null
+     */
+    public function getRefId(): ?string
+    {
+        return $this->ref_id;
     }
 
     /**
@@ -156,6 +188,7 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
 
     /**
      * @throws GatewayException
+     * @throws TransactionFailedException
      */
 	public function purchase(): void
 	{
@@ -188,7 +221,9 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
             throw ZarinpalException::error($result->Status);
         }
 
-        $this->setAuthority($result->Authority);
+        $authority = number_format($result->Authority, 0, '', '');
+
+        $this->setAuthority($authority);
 	}
 
     protected function postPurchase(): void
@@ -243,43 +278,49 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
 		]);
 	}
 
-	/**
-	 * Pay Redirect function
-	 *
-	 * @return mixed
-	 */
+    /**
+     * Pay Redirect function
+     *
+     * @return mixed
+     * @throws InvalidDataException
+     */
 	public function gatewayPayRedirect()
 	{
 		return redirect($this->gatewayPayUri());
 	}
 
+    /**
+     * @throws IranPaymentException
+     */
     public function preVerify(): void
     {
         parent::preVerify();
 
-		if (intval($this->request->Authority) !== intval($this->transaction->reference_number)) {
-			$e = new ZarinpalException(-11);
-			$this->setDescription($e->getMessage());
-			$this->transactionFailed();
-			throw $e;
-		}
-		if ($this->request->Status != 'OK') {
-			$e = new ZarinpalException(-22);
-			$this->setDescription($e->getMessage());
-			$this->transactionFailed();
-			throw $e;
-		}
+        if (isset($this->request['Status']) && $this->request['Status'] != 'OK') {
+            throw ZarinpalException::error(-22);
+        }
+
+        if (isset($this->request['Authority'])
+            && number_format($this->request['Authority'], 0, '', '') !== intval($this->transaction->reference_number)) {
+            throw ZarinpalException::error(-11);
+        }
+
+        $this->setAuthority($this->transaction->reference_number);
+
 		$this->transactionVerifyPending();
 	}
 
+    /**
+     * @throws GatewayException
+     * @throws ZarinpalException
+     * @throws TransactionFailedException
+     */
 	public function verify(): void
 	{
-		$amount = $this->preparedAmount();
-
 		$fields				= [
-			'MerchantID'	=> $this->merchant_id,
-			'Authority'		=> intval($this->transaction->reference_number)	,
-			'Amount'		=> $amount,
+			'MerchantID'	=> $this->getMerchantId(),
+			'Authority'		=> $this->getAuthority(),
+			'Amount'		=> $this->preparedAmount(),
 		];
 
 		try {
@@ -289,23 +330,32 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
 				'exceptions'			=> 1,
 				'connection_timeout'	=> $this->gateway_request_options['connection_timeout'] ?? 60,
 			]);
-			$response = $soap->PaymentVerification($fields);
-		} catch(SoapFault $e) {
-			$this->setDescription($e->getMessage());
-			$this->transactionFailed();
-			throw $e;
-		} catch(Exception $e){
-			$this->setDescription($e->getMessage());
-			$this->transactionFailed();
-			throw $e;
-		}
-		if ($response->Status != 100) {
-			$e = new ZarinpalException($response->Status);
-			$this->setDescription($e->getMessage());
-			$this->transactionFailed();
-			throw $e;
-		}
+            $result = $soap->PaymentVerification($fields);
+        } catch(SoapFault|Exception $ex) {
+            throw GatewayException::connectionProblem($ex);
+        }
 
-		$this->transactionSucceed(['tracking_code' => $response->RefID]);
+        if (!isset($result->Status)) {
+            throw GatewayException::unknownResponse($result);
+        }
+
+        if ($result->Status !== 100) {
+            throw ZarinpalException::error($result->Status);
+        }
+
+        if (!isset($result->RefID)) {
+            throw GatewayException::unknownResponse($result);
+        }
+
+        $this->setRefId($result->RefID);
 	}
+
+	protected function postVerify(): void
+    {
+        $this->transactionUpdate([
+            'tracking_code' => $this->getRefId(),
+        ]);
+
+        parent::postVerify();
+    }
 }

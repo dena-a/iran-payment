@@ -3,6 +3,7 @@
 namespace Dena\IranPayment\Gateways\Zarinpal;
 
 use Dena\IranPayment\Exceptions\GatewayException;
+use Dena\IranPayment\Exceptions\TransactionFailedException;
 
 class ZarinpalException extends GatewayException
 {
@@ -25,8 +26,22 @@ class ZarinpalException extends GatewayException
         101 => 'عملیات پرداخت موفق بوده و قبلا PaymentVerification تراکنش انجام شده است.',
 	];
 
-    public static function error($error_code)
+    /**
+     * @param $error_code
+     * @return ZarinpalException
+     * @throws GatewayException
+     * @throws TransactionFailedException
+     */
+    public static function error($error_code): self
     {
-        return new self(self::$errors[$error_code] ?? self::$errors[-22], $error_code);
+        if (!isset(self::$errors[$error_code])) {
+            throw GatewayException::unknownResponse(compact('error_code'));
+        }
+
+        if (in_array($error_code, [-22, -33])) {
+            throw new TransactionFailedException(self::$errors[$error_code], $error_code);
+        }
+
+        return new self(self::$errors[$error_code], $error_code);
     }
 }
