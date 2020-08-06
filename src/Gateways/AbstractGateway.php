@@ -14,23 +14,19 @@ use Dena\IranPayment\Exceptions\InvalidRequestException;
 use Dena\IranPayment\Exceptions\TransactionFailedException;
 use Dena\IranPayment\Exceptions\TransactionNotFoundException;
 use Dena\IranPayment\Exceptions\GatewayPaymentNotSupportViewException;
-use Dena\IranPayment\Exceptions\GatewayPaymentNotSupportRedirectException;
 
 use Dena\IranPayment\Models\IranPaymentTransaction;
 
 use Dena\IranPayment\Helpers\Currency;
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\View;
 
 /**
  * @method getName()
- * @method gatewayPay()
- * @method gatewayPayLink()
- * @method gatewayPayRedirect()
- * @method gatewayPayUri()
- * @method gatewayPayView()
+ * @method purchase()
+ * @method purchaseUri()
  * @method verify()
+ * @method gatewayPayView()
  */
 abstract class AbstractGateway
 {
@@ -179,6 +175,28 @@ abstract class AbstractGateway
 	}
 
     /**
+     * Pay Redirect function
+     *
+     * @throws IranPaymentException
+     */
+    public function redirect()
+    {
+        if (!isset($this->transaction)) {
+            throw new TransactionNotFoundException();
+        }
+
+        try {
+            $this->transactionPending();
+
+            return redirect($this->purchaseUri());
+        } catch (IranPaymentException $ex) {
+            throw $ex;
+        } catch (Exception $ex) {
+            throw IranPaymentException::unknown($ex);
+        }
+    }
+
+    /**
      * Pay View function
      *
      * @return View
@@ -218,29 +236,6 @@ abstract class AbstractGateway
 
 			return $this->gatewayPayUri();
 		} catch (Exception $ex) {
-			throw $ex;
-		}
-	}
-
-    /**
-     * Pay Redirect function
-     *
-     * @return View
-     * @throws TransactionNotFoundException
-     * @throws GatewayPaymentNotSupportRedirectException
-     * @throws Exception
-     */
-	public function redirect()
-	{
-		if (!isset($this->transaction)) {
-			throw new TransactionNotFoundException();
-		}
-
-		try {
-			$this->transactionPending();
-
-			return $this->gatewayPayRedirect();
-		} catch (GatewayPaymentNotSupportRedirectException|Exception $ex) {
 			throw $ex;
 		}
 	}

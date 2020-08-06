@@ -12,7 +12,6 @@ use Dena\IranPayment\Gateways\GatewayInterface;
 
 use Dena\IranPayment\Exceptions\GatewayException;
 use Dena\IranPayment\Exceptions\InvalidDataException;
-use Dena\IranPayment\Exceptions\InvalidGatewayMethodException;
 
 use Dena\IranPayment\Helpers\Currency;
 
@@ -312,19 +311,10 @@ class Saman extends AbstractGateway implements GatewayInterface
 
     /**
      * @return string
-     * @throws InvalidGatewayMethodException
+     * @throws GatewayException
      */
-	public function gatewayPayUri(): string
+	public function purchaseUri(): string
     {
-		throw new InvalidGatewayMethodException;
-	}
-
-    /**
-     * @return string
-     * @throws InvalidGatewayMethodException
-     */
-	public function gatewayPayRedirect(): string
-    {
-		throw new InvalidGatewayMethodException;
+        throw GatewayException::notSupportedMethod();
 	}
 }

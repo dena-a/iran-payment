@@ -324,7 +324,7 @@ class PayPing extends AbstractGateway implements GatewayInterface
 	 *
 	 * @return string
 	 */
-	public function gatewayPayUri(): string
+	public function purchaseUri(): string
 	{
         return str_replace('{code}', $this->getReferenceNumber(), self::REDIRECT_URL);
 	}
@@ -337,11 +337,6 @@ class PayPing extends AbstractGateway implements GatewayInterface
 	public function gatewayPayView()
 	{
 		return $this->generalRedirectView();
-	}
-
-	public function gatewayPayRedirect()
-	{
-		return redirect($this->gatewayPayUri());
 	}
 
 	public function verify(): void

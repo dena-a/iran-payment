@@ -232,7 +232,7 @@ class PayIr extends AbstractGateway implements GatewayInterface
 	 *
 	 * @return string
 	 */
-	public function gatewayPayUri(): string
+	public function purchaseUri(): string
 	{
         return str_replace('{token}', $this->getReferenceNumber(), self::TOKEN_URL);
 	}
@@ -241,13 +241,8 @@ class PayIr extends AbstractGateway implements GatewayInterface
 	{
 		return view('iranpayment::pages.payir', [
 			'transaction_code'	=> $this->getTransactionCode(),
-			'bank_url'			=> $this->gatewayPayUri(),
+			'bank_url'			=> $this->purchaseUri(),
 		]);
-	}
-
-	public function gatewayPayRedirect()
-	{
-		return redirect($this->gatewayPayUri());
 	}
 
 	public function verify(): void

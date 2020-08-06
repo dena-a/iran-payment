@@ -29,7 +29,7 @@ class TestGateway extends AbstractGateway implements GatewayInterface
     /**
      * @throws Exception
      */
-	public function gatewayPayRedirect()
+	public function redirect()
     {
         $this->transactionUpdate([
             'transaction_code'	=> uniqid(),
@@ -56,7 +56,7 @@ class TestGateway extends AbstractGateway implements GatewayInterface
 		]);
     }
 
-    public function gatewayPayUri(): string
+    public function purchaseUri(): string
     {
         return route('iranpayment.test.pay', $this->getPayable());
     }

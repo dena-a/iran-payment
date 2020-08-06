@@ -10,11 +10,9 @@ interface GatewayInterface
 
 	public function purchase(): void;
 
+    public function purchaseUri(): string;
+
 	public function verify(): void;
 
 	public function gatewayPayView();
-
-	public function gatewayPayRedirect();
-
-	public function gatewayPayUri(): string;
 }

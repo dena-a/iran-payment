@@ -241,7 +241,7 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
      * @return string
      * @throws InvalidDataException
      */
-	public function gatewayPayUri(): string
+	public function purchaseUri(): string
 	{
 	    switch ($this->getType()) {
             case 'normal':
@@ -274,19 +274,8 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
 
 		return view('iranpayment::pages.zarinpal', [
 			'transaction_code'	=> $this->getTransactionCode(),
-			'bank_url'			=> $this->gatewayPayUri(),
+			'bank_url'			=> $this->purchaseUri(),
 		]);
-	}
-
-    /**
-     * Pay Redirect function
-     *
-     * @return mixed
-     * @throws InvalidDataException
-     */
-	public function gatewayPayRedirect()
-	{
-		return redirect($this->gatewayPayUri());
 	}
 
     /**
