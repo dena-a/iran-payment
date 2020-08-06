@@ -252,7 +252,7 @@ class PayIr extends AbstractGateway implements GatewayInterface
 
 	public function verify(): void
 	{
-		if (!isset($this->request->token, $this->request->status)) {
+		if (!isset($this->request['token'], $this->request['status'])) {
 			$ex = InvalidRequestException::notFound();
 			$this->setDescription($ex->getMessage());
 			$this->transactionFailed();

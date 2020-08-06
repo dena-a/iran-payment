@@ -346,7 +346,7 @@ class PayPing extends AbstractGateway implements GatewayInterface
 
 	public function verify(): void
 	{
-		if (!isset($this->request->refid)) {
+		if (!isset($this->request['refid'])) {
 			$ex = InvalidRequestException::notFound();
 			$this->setDescription($ex->getMessage());
 			$this->transactionFailed();
@@ -354,11 +354,11 @@ class PayPing extends AbstractGateway implements GatewayInterface
 		}
 
 		$this->transactionVerifyPending([
-			'tracking_code' => $this->request->refid,
+			'tracking_code' => $this->request['refid'],
 		]);
 
 		$fields = json_encode([
-			'refId'	=> $this->request->refid,
+			'refId'	=> $this->request['refid'],
 			'amount'=> $this->preparedAmount(),
 		]);
 

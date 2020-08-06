@@ -2,16 +2,16 @@
 
 namespace Dena\IranPayment\Gateways;
 
-use Dena\IranPayment\Exceptions\IranPaymentException;
-
 use Dena\IranPayment\Traits\UserData;
 use Dena\IranPayment\Traits\PaymentData;
 use Dena\IranPayment\Traits\TransactionData;
 
 use Exception;
 use Dena\IranPayment\Exceptions\InvalidDataException;
+use Dena\IranPayment\Exceptions\IranPaymentException;
 use Dena\IranPayment\Exceptions\SucceedRetryException;
 use Dena\IranPayment\Exceptions\InvalidRequestException;
+use Dena\IranPayment\Exceptions\TransactionFailedException;
 use Dena\IranPayment\Exceptions\TransactionNotFoundException;
 use Dena\IranPayment\Exceptions\GatewayPaymentNotSupportViewException;
 use Dena\IranPayment\Exceptions\GatewayPaymentNotSupportRedirectException;
@@ -41,9 +41,9 @@ abstract class AbstractGateway
     /**
      * Request variable
      *
-     * @var Request|array
+     * @var array
      */
-	protected $request;
+	protected array $request;
 
     /**
      * Gateway Request Options variable
@@ -61,7 +61,7 @@ abstract class AbstractGateway
      */
     public function initialize(array $parameters = []): self
     {
-        $this->setRequest($parameters['request'] ?? app('request'));
+        $this->setRequest($parameters['request'] ?? app('request')->all());
 
         $this->setCurrency($parameters['currency'] ?? app('config')->get('iranpayment.currency', Currency::IRR));
 
@@ -81,14 +81,25 @@ abstract class AbstractGateway
 	/**
 	 * Set Request function
 	 *
-	 * @param Request $request
-	 * @return self
+	 * @param array $request
+	 * @return $this
 	 */
-	public function setRequest(Request $request)
+	public function setRequest(array $request): self
 	{
 		$this->request = $request;
+
 		return $this;
 	}
+
+    /**
+     * Get Request function
+     *
+     * @return array
+     */
+    public function getRequest(): array
+    {
+        return $this->request;
+    }
 
     /**
      * Set Gateway Request Options function
@@ -158,7 +169,7 @@ abstract class AbstractGateway
             }
 
 		    if (!$ex instanceof IranPaymentException) {
-                throw IranPaymentException::unknown($ex);
+                $ex = IranPaymentException::unknown($ex);
             }
 
 		    throw $ex;
@@ -265,8 +276,8 @@ abstract class AbstractGateway
     {
         if(!isset($this->transaction)) {
             $transaction_code_field = app('config')->get('iranpayment.transaction_query_param', 'tc');
-            if (isset($this->request->$transaction_code_field)) {
-                $this->findTransaction($this->request->$transaction_code_field);
+            if (isset($this->request[$transaction_code_field])) {
+                $this->findTransaction($this->request[$transaction_code_field]);
             } else {
                 throw new TransactionNotFoundException();
             }
@@ -285,7 +296,7 @@ abstract class AbstractGateway
         $this->setAmount($this->transaction->amount);
     }
 
-    protected function postٰVerify(): void
+    protected function postVerify(): void
     {
         $this->transactionSucceed();
     }
@@ -304,17 +315,19 @@ abstract class AbstractGateway
 		}
 
 		try {
-		    $this->preVerify();
+            $this->preVerify();
 
-			$this->verify();
+            $this->verify();
 
-			$this->postٰVerify();
-        } catch (Exception $ex) {
-            if (!$ex instanceof IranPaymentException) {
-                throw IranPaymentException::unknown($ex);
-            }
+            $this->postVerify();
+        } catch (TransactionFailedException $ex) {
+            $this->transactionFailed($ex->getMessage());
 
             throw $ex;
+        } catch (IranPaymentException $ex) {
+            throw $ex;
+        } catch (Exception $ex) {
+            throw IranPaymentException::unknown($ex);
         }
 
 		return $this;

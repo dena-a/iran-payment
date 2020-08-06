@@ -307,28 +307,28 @@ trait TransactionData
     {
 		$this->transaction->fill($params);
 		$this->transaction->paid_at	= Carbon::now();
-		$this->transaction->status	= IranPaymentTransaction::T_SUCCEED;
+		$this->transaction->status = IranPaymentTransaction::T_SUCCEED;
 		$this->transaction->save();
 	}
 
 	protected function transactionFailed(string $errors = null): void
     {
-		$this->transaction->status	= IranPaymentTransaction::T_FAILED;
-		$this->transaction->errors	= $errors;
+		$this->transaction->status = IranPaymentTransaction::T_FAILED;
+		$this->transaction->errors = $errors;
 		$this->transaction->save();
 	}
 
 	protected function transactionPending(array $params = []): void
     {
 		$this->transaction->fill($params);
-		$this->transaction->status	= IranPaymentTransaction::T_PENDING;
+		$this->transaction->status = IranPaymentTransaction::T_PENDING;
 		$this->transaction->save();
 	}
 
 	protected function transactionVerifyPending(array $params = []): void
     {
 		$this->transaction->fill($params);
-		$this->transaction->status	= IranPaymentTransaction::T_VERIFY_PENDING;
+		$this->transaction->status = IranPaymentTransaction::T_VERIFY_PENDING;
 		$this->transaction->save();
 	}
 
