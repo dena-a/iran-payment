@@ -214,7 +214,7 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
 		    throw GatewayException::connectionProblem($ex);
 		}
 
-        if(!isset($result->Status)) {
+        if (!isset($result->Status)) {
             throw GatewayException::unknownResponse($result);
         }
 
@@ -222,9 +222,7 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
             throw ZarinpalException::error($result->Status);
         }
 
-        $authority = number_format($result->Authority, 0, '', '');
-
-        $this->setAuthority($authority);
+        $this->setAuthority($result->Authority);
 	}
 
     protected function postPurchase(): void
@@ -297,8 +295,7 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
             throw ZarinpalException::error(-22);
         }
 
-        if (isset($this->request['Authority'])
-            && number_format($this->request['Authority'], 0, '', '') !== intval($this->transaction->reference_number)) {
+        if (isset($this->request['Authority']) && $this->request['Authority'] !== $this->transaction->reference_number) {
             throw ZarinpalException::error(-11);
         }
 
@@ -312,10 +309,10 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
      */
 	public function verify(): void
 	{
-		$fields				= [
-			'MerchantID'	=> $this->getMerchantId(),
-			'Authority'		=> $this->getAuthority(),
-			'Amount'		=> $this->preparedAmount(),
+		$fields = [
+			'MerchantID' => $this->getMerchantId(),
+			'Authority' => $this->getAuthority(),
+			'Amount' => $this->preparedAmount(),
 		];
 
 		try {
