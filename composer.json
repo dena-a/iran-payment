@@ -42,14 +42,21 @@
         "nesbot/carbon": "*"
     },
     "require-dev": {
+        "phpunit/phpunit": "^9.1",
+        "fzaninotto/faker": "^1.4",
         "phpstan/phpstan": "^0.12.0@dev"
     },
 	"autoload": {
 		"psr-4": {
-			"Dena\\IranPayment\\": "src"
+			"\\IranPayment\\": "src"
 		}
 	},
-	"extra": {
+    "autoload-dev": {
+        "psr-4": {
+            "Dena\\IranPayment\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
 		"laravel": {
 			"providers": [
 				"Dena\\IranPayment\\IranPaymentServiceProvider"
