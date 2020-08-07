@@ -12,7 +12,5 @@ interface GatewayInterface
 
     public function purchaseUri(): string;
 
-    public function purchaseView();
-
 	public function verify(): void;
 }

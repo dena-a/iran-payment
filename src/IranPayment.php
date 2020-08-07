@@ -138,7 +138,7 @@ class IranPayment
      *
      * @param GatewayInterface|string|null $gateway
      * @return GatewayInterface
-     * @throws GatewayNotFoundException|Exceptions\InvalidDataException
+     * @throws GatewayNotFoundException
      */
 	public static function create($gateway = null): GatewayInterface
     {
@@ -160,10 +160,9 @@ class IranPayment
     {
         $transaction_query_param = app('config')->get('iranpayment.transaction_query_param', 'tc');
 
-        if (is_null($data)) {
-            $request = app('request');
-            $transaction_code = $request->get($transaction_query_param);
-        } elseif ($data instanceof Request) {
+        $data ??= app('request');
+
+        if ($data instanceof Request) {
             $transaction_code = $data->get($transaction_query_param);
         } elseif ($data instanceof IranPaymentTransaction) {
             $transaction = $data;
@@ -177,7 +176,7 @@ class IranPayment
 
         if (!isset($gateway)) throw new GatewayNotFoundException;
 
-        $gateway = (new self($gateway))->build();
+        $gateway = self::create($gateway);
 
         if (isset($transaction) && $gateway instanceof AbstractGateway) {
             $gateway->setTransaction($transaction);

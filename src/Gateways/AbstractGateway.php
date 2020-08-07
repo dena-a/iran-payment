@@ -45,13 +45,6 @@ abstract class AbstractGateway
     protected array $gateway_request_options = [];
 
     /**
-     * View Data variable
-     *
-     * @var array
-     */
-    protected array $view_data = [];
-
-    /**
      * Initialize Gateway function
      *
      * @param array $parameters
@@ -121,29 +114,6 @@ abstract class AbstractGateway
     public function getGatewayRequestOptions(): array
     {
         return $this->gateway_request_options;
-    }
-
-    /**
-     * Set View Data function
-     *
-     * @param array $data
-     * @return $this
-     */
-    public function setViewData(array $data): self
-    {
-        $this->view_data = $data;
-
-        return $this;
-    }
-
-    /**
-     * Get View Data function
-     *
-     * @return array
-     */
-    public function getViewData(): array
-    {
-        return $this->view_data;
     }
 
     /**
@@ -234,16 +204,6 @@ abstract class AbstractGateway
     }
 
     /**
-     * Alias for Purchase View function
-     *
-     * @return mixed
-     */
-	public function view()
-	{
-        return $this->purchaseView();
-	}
-
-    /**
      * Purchase View Params function
      *
      * @return array
@@ -253,10 +213,11 @@ abstract class AbstractGateway
         return [];
     }
 
-	/**
+    /**
+     * @param array $data
      * @return mixed
-	 */
-	public function purchaseView()
+     */
+	public function purchaseView(array $data = [])
 	{
         $parameters = array_merge(
             [
@@ -267,7 +228,7 @@ abstract class AbstractGateway
                 'form_data' => [],
             ],
             $this->purchaseViewParams(),
-            $this->getViewData()
+            $data
         );
 
 		return view($parameters['view'], array_merge(
@@ -278,6 +239,17 @@ abstract class AbstractGateway
             $parameters
         ));
 	}
+
+    /**
+     * Alias for Purchase View function
+     *
+     * @param array $data
+     * @return mixed
+     */
+    public function view(array $data = [])
+    {
+        return $this->purchaseView($data);
+    }
 
     /**
      * @throws IranPaymentException

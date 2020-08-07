@@ -311,16 +311,6 @@ class PayPing extends AbstractGateway implements GatewayInterface
         return str_replace('{code}', $this->getReferenceNumber(), self::REDIRECT_URL);
 	}
 
-	/**
-	 * Purchase View function
-	 *
-	 * @return mixed
-	 */
-	public function purchaseView()
-	{
-		return parent::purchaseView();
-	}
-
     /**
      * Purchase View Params function
      *

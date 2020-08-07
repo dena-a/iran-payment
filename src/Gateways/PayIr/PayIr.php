@@ -238,16 +238,6 @@ class PayIr extends AbstractGateway implements GatewayInterface
 	}
 
     /**
-     * Purchase View function
-     *
-     * @return mixed
-     */
-    public function purchaseView()
-    {
-        return parent::purchaseView();
-    }
-
-    /**
      * Purchase View Params function
      *
      * @return array
