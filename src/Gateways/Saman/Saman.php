@@ -230,7 +230,7 @@ class Saman extends AbstractGateway implements GatewayInterface
     protected function purchaseViewParams(): array
     {
         return [
-            'title' => 'سامان',
+            'title' => 'بانک سامان',
             'image' => 'https://raw.githubusercontent.com/dena-a/iran-payment/master/resources/assets/img/sep.png',
             'bank_url' => self::PAYMENT_URL,
             'method' => 'POST',
