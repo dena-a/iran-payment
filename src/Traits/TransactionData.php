@@ -289,7 +289,7 @@ trait TransactionData
         ]);
 
         $transaction->status = IranPaymentTransaction::T_INIT;
-        $transaction->code = Str::random(config('iranpayment.code_length' ,16));
+        $transaction->code = Str::random(app('config')->get('iranpayment.code_length' ,16));
 
         if (isset($this->payable)) {
             $transaction->payable()->associate($this->payable);

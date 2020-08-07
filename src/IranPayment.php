@@ -80,7 +80,7 @@ class IranPayment
                 break;
             case self::TEST:
             case TestGateway::class:
-                if (config('app.env', 'production') !== 'production')
+                if (app('config')->get('app.env', 'production') !== 'production')
                     throw GatewayNotFoundException::productionUnavailableGateway();
 
                 $this->gateway = new TestGateway;
@@ -105,15 +105,10 @@ class IranPayment
     /**
      * Build Gateway function
      *
-     * @return GatewayInterface|AbstractGateway
-     * @throws Exceptions\InvalidDataException
+     * @return GatewayInterface
      */
 	public function build(): GatewayInterface
 	{
-	    if (!$this->gateway instanceof AbstractGateway) {
-            return $this->gateway;
-        }
-
 		return $this->gateway->initialize();
 	}
 
@@ -131,7 +126,7 @@ class IranPayment
 			self::PAYPING,
 		];
 
-		if (config('app.env', 'production') !== 'production') {
+		if (app('config')->get('app.env', 'production') !== 'production') {
             $gateways[] = self::TEST;
         }
 
@@ -148,7 +143,7 @@ class IranPayment
 	public static function create($gateway = null): GatewayInterface
     {
         if (is_null($gateway)) {
-            $gateway = config('iranpayment.default', Saman::class);
+            $gateway = app('config')->get('iranpayment.default', Saman::class);
         }
 
         return (new self($gateway))->build();
@@ -160,7 +155,6 @@ class IranPayment
      * @param IranPaymentTransaction|Request|null $data
      * @return GatewayInterface
      * @throws GatewayNotFoundException
-     * @throws Exceptions\InvalidDataException
      */
     public static function detect($data = null): GatewayInterface
     {
@@ -178,13 +172,10 @@ class IranPayment
 
         if (isset($transaction_code)) {
             $transaction = IranPaymentTransaction::where('code', $transaction_code)->first();
-            if (isset($transaction))
-                $gateway = $transaction->gateway;
+            if (isset($transaction)) $gateway = $transaction->gateway;
         }
 
-        if (!isset($gateway)) {
-            throw new GatewayNotFoundException;
-        }
+        if (!isset($gateway)) throw new GatewayNotFoundException;
 
         $gateway = (new self($gateway))->build();
 

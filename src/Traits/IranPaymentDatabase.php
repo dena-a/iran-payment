@@ -18,6 +18,6 @@ trait IranPaymentDatabase
      */
     public function getTable(): string
     {
-        return $this->table = config('iranpayment.table', $this->iranpayment_table);
+        return $this->table = app('config')->get('iranpayment.table', $this->iranpayment_table);
     }
 }
