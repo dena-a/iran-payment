@@ -15,17 +15,17 @@ class TestGatewayController {
             ->first();
         $payment->setTransaction($transaction);
 
-        return $payment->gatewayPayView();
+        return $payment->view();
     }
 
     public function verify(Request $request, $code) {
         $payment = (new IranPayment('test'))->build();
         $payment->searchTransactionCode($code);
-            
+
         $transaction = $payment->getTransaction();
-            
+
         $payment->verify();
-        
+
         $extra = $payment->getExtra();
 
         $queryParams = http_build_query([

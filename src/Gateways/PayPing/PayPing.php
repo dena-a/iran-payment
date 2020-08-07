@@ -183,26 +183,6 @@ class PayPing extends AbstractGateway implements GatewayInterface
         return $this->payer_identity;
     }
 
-	/**
-	 * Gateway Title function
-	 *
-	 * @return string
-	 */
-	public function gatewayTitle(): string
-	{
-		return 'پی‌پینگ';
-	}
-
-	/**
-	 * Gateway Image function
-	 *
-	 * @return string
-	 */
-	public function gatewayImage(): string
-	{
-		return 'https://raw.githubusercontent.com/dena-a/iran-payment/master/resources/assets/img/payping.png';
-	}
-
     /**
      * Initialize function
      *
@@ -221,7 +201,9 @@ class PayPing extends AbstractGateway implements GatewayInterface
         $this->setAddFees($parameters['add_fees'] ?? app('config')->get('iranpayment.payping.add_fees', false));
 
         $payer_identity = $parameters['payer_identity'] ?? $this->getMobile() ?? $this->getEmail() ?? null;
-        is_null($payer_identity) ?: $this->setPayerIdentity($payer_identity);
+        if (!is_null($payer_identity)) {
+            $this->setPayerIdentity($payer_identity);
+        }
 
         $this->setCallbackUrl($parameters['callback_url']
             ?? app('config')->get('iranpayment.payping.callback-url')
@@ -229,17 +211,6 @@ class PayPing extends AbstractGateway implements GatewayInterface
         );
 
         return $this;
-	}
-
-	protected function prePurchase(): void
-	{
-	    parent::prePurchase();
-
-        if ($this->preparedAmount() < 100 || $this->preparedAmount() > 50000000) {
-            throw InvalidDataException::invalidAmount();
-        }
-
-        $this->setClientRefId($this->getTransactionCode());
 	}
 
     public function preparedAmount(): int
@@ -252,6 +223,17 @@ class PayPing extends AbstractGateway implements GatewayInterface
 
         return $amount;
     }
+
+	protected function prePurchase(): void
+	{
+	    parent::prePurchase();
+
+        if ($this->preparedAmount() < 100 || $this->preparedAmount() > 50000000) {
+            throw InvalidDataException::invalidAmount();
+        }
+
+        $this->setClientRefId($this->getTransactionCode());
+	}
 
     /**
      * @throws GatewayException
@@ -330,14 +312,27 @@ class PayPing extends AbstractGateway implements GatewayInterface
 	}
 
 	/**
-	 * Pay View function
+	 * Purchase View function
 	 *
-	 * @return View
+	 * @return mixed
 	 */
-	public function gatewayPayView()
+	public function purchaseView()
 	{
-		return $this->generalRedirectView();
+		return parent::purchaseView();
 	}
+
+    /**
+     * Purchase View Params function
+     *
+     * @return array
+     */
+    public function purchaseViewParams(): array
+    {
+        return [
+            'title' => 'پی‌پینگ',
+            'image' => 'https://raw.githubusercontent.com/dena-a/iran-payment/master/resources/assets/img/payping.png',
+        ];
+    }
 
 	public function verify(): void
 	{

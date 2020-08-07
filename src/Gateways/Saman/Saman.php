@@ -12,6 +12,7 @@ use Dena\IranPayment\Gateways\GatewayInterface;
 
 use Dena\IranPayment\Exceptions\GatewayException;
 use Dena\IranPayment\Exceptions\InvalidDataException;
+use Dena\IranPayment\Exceptions\IranPaymentException;
 
 use Dena\IranPayment\Helpers\Currency;
 
@@ -19,13 +20,6 @@ use Exception;
 use SoapFault;
 use SoapClient;
 
-/**
- * 'Saman'
- *
- * @method setTrackingCode($code)
- * @method setCardNumber($number)
- * @method setReferenceNumber($number)
- */
 class Saman extends AbstractGateway implements GatewayInterface
 {
     private const TOKEN_URL = 'https://sep.shaparak.ir/Payments/InitPayment.asmx?wsdl';
@@ -209,112 +203,100 @@ class Saman extends AbstractGateway implements GatewayInterface
         parent::postPurchase();
     }
 
-	public function preVerify(): void
-	{
-	    parent::preVerify();
-
-		if ($this->request['State'] ?? null !== 'OK' || $this->request['StateCode'] ?? null !== '0' ) {
-			switch ($this->request->get('StateCode')) {
-				case '-1':
-					$ex	= new SamanException(-101);
-					break;
-				case '51':
-					$ex	= new SamanException(51);
-					break;
-				default:
-					$ex	= new SamanException(-100);
-					break;
-			}
-			$this->setDescription($ex->getMessage());
-			$this->transactionFailed();
-			throw $ex;
-		}
-
-		if ($this->request->get(app('config')->get('iranpayment.transaction_query_param', 'tc')) !== $this->getTransactionCode()) {
-			$ex	= new SamanException(-14);
-			$this->setDescription($ex->getMessage());
-			$this->transactionFailed();
-			throw $ex;
-		}
-		if ($this->request->get('MID') !== $this->merchant_id) {
-			$ex	= new SamanException(-4);
-			$this->setDescription($ex->getMessage());
-			$this->transactionFailed();
-			throw $ex;
-		}
-
-		$this->transactionUpdate([
-			'card_number'		=> $this->request->get('SecurePan'),
-			'tracking_code'		=> $this->request->get('TRACENO'),
-			'reference_number'	=> $this->request->get('RefNum'),
-		]);
-
-		$this->transactionVerifyPending();
-	}
-
-	public function verify(): void
-	{
-		try{
-			$soap = new SoapClient(self::VERIFY_URL, [
-				'encoding'				=> 'UTF-8',
-				'trace'					=> 1,
-				'exceptions'			=> 1,
-				'connection_timeout'	=> $this->connection_timeout,
-			]);
-			$result = $soap->verifyTransaction(
-				$this->getReferenceNumber(),
-				$this->merchant_id
-			);
-		} catch(SoapFault $ex) {
-			$this->setDescription($ex->getMessage());
-			$this->transactionFailed();
-			throw $ex;
-		} catch(Exception $ex){
-			$this->setDescription($ex->getMessage());
-			$this->transactionFailed();
-			throw $ex;
-		}
-
-		if ($result <= 0) {
-			$ex	= new SamanException($result);
-			$this->setDescription($ex->getMessage());
-			$this->transactionFailed();
-			throw $ex;
-		}
-
-		if ($result != $this->preparedAmount()) {
-			$ex	= new SamanException(-102);
-			$this->setDescription($ex->getMessage());
-			$this->transactionFailed();
-			throw $ex;
-		}
-
-		$this->transactionSucceed();
-	}
-
-	public function gatewayRedirectView()
-	{
-		$this->transactionPending();
-
-		return view('iranpayment::pages.saman', [
-			'transaction_code'	=> $this->getTransactionCode(),
-			'token'				=> $this->token,
-			'bank_url'			=> self::PAYMENT_URL,
-			'redirect_url'		=> $this->getCallbackUrl(),
-		]);
-	}
-
-	public function gatewayPayView()
-	{
-		return $this->gatewayRedirectView();
-	}
-
     /**
      * @return string
      * @throws GatewayException
      */
-	public function purchaseUri(): string
+    public function purchaseUri(): string
     {
         throw GatewayException::notSupportedMethod();
+    }
+
+    /**
+     * Purchase View function
+     *
+     * @return mixed
+     */
+    public function purchaseView()
+    {
+        return parent::purchaseView();
+    }
+
+    /**
+     * Purchase View Params function
+     *
+     * @return array
+     */
+    public function purchaseViewParams(): array
+    {
+        return [
+            'title' => 'سامان',
+            'image' => 'https://raw.githubusercontent.com/dena-a/iran-payment/master/resources/assets/img/sep.png',
+            'bank_url' => self::PAYMENT_URL,
+            'method' => 'POST',
+            'form_data' => [
+                'Token' => $this->getToken(),
+                'RedirectURL' => $this->getCallbackUrl(),
+            ],
+        ];
+    }
+
+    /**
+     * @throws IranPaymentException
+     */
+	public function preVerify(): void
+	{
+	    parent::preVerify();
+
+		if ($this->request['State'] ?? null !== 'OK' || $this->request['StateCode'] ?? null !== '0') {
+			switch ($this->request['StateCode']) {
+				case '-1':
+					throw SamanException::error(-101);
+				case '51':
+					throw SamanException::error(51);
+				default:
+					throw SamanException::error(-100);
+			}
+		}
+
+		if (isset($this->request['MID']) && $this->request['MID'] !== $this->getMerchantId()) {
+			throw SamanException::error(-4);
+		}
+
+		$this->transactionUpdate([
+			'card_number' => $this->request['SecurePan'] ?? null,
+			'tracking_code' => $this->request['TRACENO'] ?? null,
+			'reference_number' => $this->request['RefNum'] ?? null,
+		]);
+	}
+
+    /**
+     * @throws GatewayException
+     */
+	public function verify(): void
+	{
+		try{
+			$soap = new SoapClient(self::VERIFY_URL, [
+                'encoding' => 'UTF-8',
+                'trace' => 1,
+                'exceptions' => 1,
+                'connection_timeout' => $this->getGatewayRequestOptions()['connection_timeout'] ?? 60,
+			]);
+
+			$result = $soap->verifyTransaction(
+				$this->getReferenceNumber(),
+				$this->getMerchantId()
+			);
+        } catch(SoapFault|Exception $ex) {
+            throw GatewayException::connectionProblem($ex);
+        }
+
+		if ($result <= 0) {
+			throw SamanException::error($result);
+		}
+
+		if ($result != $this->preparedAmount()) {
+			throw SamanException::error(-102);
+		}
 	}
 }

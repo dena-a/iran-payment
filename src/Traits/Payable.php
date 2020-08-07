@@ -47,7 +47,7 @@ trait Payable
      *
      * @param null $gateway
      * @return mixed
-     * @throws \Dena\IranPayment\Exceptions\GatewayNotFoundException
+     * @throws \Dena\IranPayment\Exceptions\IranPaymentException
      */
     public function pay($gateway = null)
     {

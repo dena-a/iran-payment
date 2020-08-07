@@ -48,7 +48,7 @@ class TestGateway extends AbstractGateway implements GatewayInterface
 		]);
     }
 
-	public function gatewayPayView()
+	public function purchaseView()
     {
         return view('iranpayment::pages.test', [
             'reference_number'	=> uniqid(),

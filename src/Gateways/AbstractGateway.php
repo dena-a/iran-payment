@@ -13,20 +13,16 @@ use Dena\IranPayment\Exceptions\SucceedRetryException;
 use Dena\IranPayment\Exceptions\InvalidRequestException;
 use Dena\IranPayment\Exceptions\TransactionFailedException;
 use Dena\IranPayment\Exceptions\TransactionNotFoundException;
-use Dena\IranPayment\Exceptions\GatewayPaymentNotSupportViewException;
 
 use Dena\IranPayment\Models\IranPaymentTransaction;
 
 use Dena\IranPayment\Helpers\Currency;
-
-use Illuminate\Support\Facades\View;
 
 /**
  * @method getName()
  * @method purchase()
  * @method purchaseUri()
  * @method verify()
- * @method gatewayPayView()
  */
 abstract class AbstractGateway
 {
@@ -49,7 +45,14 @@ abstract class AbstractGateway
     protected array $gateway_request_options = [];
 
     /**
-     * Boot Gateway function
+     * View Data variable
+     *
+     * @var array
+     */
+    protected array $view_data = [];
+
+    /**
+     * Initialize Gateway function
      *
      * @param array $parameters
      * @return $this
@@ -121,6 +124,29 @@ abstract class AbstractGateway
     }
 
     /**
+     * Set View Data function
+     *
+     * @param array $data
+     * @return $this
+     */
+    public function setViewData(array $data): self
+    {
+        $this->view_data = $data;
+
+        return $this;
+    }
+
+    /**
+     * Get View Data function
+     *
+     * @return array
+     */
+    public function getViewData(): array
+    {
+        return $this->view_data;
+    }
+
+    /**
      * @throws InvalidDataException
      */
     protected function prePurchase(): void
@@ -142,7 +168,7 @@ abstract class AbstractGateway
 
     protected function postPurchase(): void
     {
-
+        $this->transactionPending();
     }
 
     /**
@@ -175,19 +201,30 @@ abstract class AbstractGateway
 	}
 
     /**
-     * Pay Redirect function
+     * Alias for Purchase Uri function
+     *
+     * @return string
+     * @throws IranPaymentException
+     */
+    public function uri(): string
+    {
+        try {
+            return $this->purchaseUri();
+        } catch (IranPaymentException $ex) {
+            throw $ex;
+        } catch (Exception $ex) {
+            throw IranPaymentException::unknown($ex);
+        }
+    }
+
+    /**
+     * Redirect to Purchase Uri function
      *
      * @throws IranPaymentException
      */
     public function redirect()
     {
-        if (!isset($this->transaction)) {
-            throw new TransactionNotFoundException();
-        }
-
         try {
-            $this->transactionPending();
-
             return redirect($this->purchaseUri());
         } catch (IranPaymentException $ex) {
             throw $ex;
@@ -197,75 +234,53 @@ abstract class AbstractGateway
     }
 
     /**
-     * Pay View function
+     * Alias for Purchase View function
      *
-     * @return View
-     * @throws TransactionNotFoundException
-     * @throws GatewayPaymentNotSupportViewException
+     * @return mixed
      */
 	public function view()
 	{
-		if (!isset($this->transaction)) {
-			throw new TransactionNotFoundException();
-		}
-
-		try {
-			$this->transactionPending();
-
-			return $this->gatewayPayView();
-		} catch (GatewayPaymentNotSupportViewException|Exception $ex) {
-			throw $ex;
-		}
+        return $this->purchaseView();
 	}
 
     /**
-     * Pay Uri function
+     * Purchase View Params function
      *
-     * @return string
-     * @throws TransactionNotFoundException
-     * @throws Exception
+     * @return array
      */
-	public function uri()
-	{
-		if (!isset($this->transaction)) {
-			throw new TransactionNotFoundException();
-		}
-
-		try {
-			$this->transactionPending();
-
-			return $this->gatewayPayUri();
-		} catch (Exception $ex) {
-			throw $ex;
-		}
-	}
+    public function purchaseViewParams(): array
+    {
+        return [];
+    }
 
 	/**
-	 * General Redirect View function
+     * @return mixed
 	 */
-	public function generalRedirectView()
+	public function purchaseView()
 	{
-		if (method_exists($this, 'gatewayTitle')) {
-			$title = $this->gatewayTitle();
-		}
+        $parameters = array_merge(
+            [
+                'view' => 'iranpayment::pages.redirect',
+                'title' => null,
+                'image' => null,
+                'method' => 'GET',
+                'form_data' => [],
+            ],
+            $this->purchaseViewParams(),
+            $this->getViewData()
+        );
 
-		if (method_exists($this, 'gatewayImage')) {
-			$image = $this->gatewayImage();
-		}
-
-		return view('iranpayment::pages.redirect', [
-			'title'				=> $title ?? 'درحال انتقال به درگاه پرداخت...',
-			'image'				=> $image ?? null,
-			'transaction_code'	=> $this->getTransactionCode(),
-			'bank_url'			=> $this->gatewayPayUri(),
-		]);
+		return view($parameters['view'], array_merge(
+            [
+                'transaction_code' => $parameters['transaction_code'] ?? $this->getTransactionCode(),
+                'bank_url' => $parameters['bank_url'] ?? $this->purchaseUri(),
+		    ],
+            $parameters
+        ));
 	}
 
     /**
-     * @throws InvalidDataException
-     * @throws SucceedRetryException
-     * @throws InvalidRequestException
-     * @throws TransactionNotFoundException
+     * @throws IranPaymentException
      */
     protected function preVerify(): void
     {
@@ -289,6 +304,8 @@ abstract class AbstractGateway
 
         $this->setCurrency($this->transaction->currency);
         $this->setAmount($this->transaction->amount);
+
+        $this->transactionVerifyPending();
     }
 
     protected function postVerify(): void

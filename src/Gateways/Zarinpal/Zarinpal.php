@@ -208,6 +208,7 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
 				'exceptions' => 1,
 				'connection_timeout' => $this->getGatewayRequestOptions()['connection_timeout'] ?? 60,
 			]);
+
             $result = $soap->PaymentRequest($fields);
 		} catch(SoapFault|Exception $ex) {
 		    throw GatewayException::connectionProblem($ex);
@@ -236,7 +237,7 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
     }
 
     /**
-     * Pay Link function
+     * Purchase Uri function
      *
      * @return string
      * @throws InvalidDataException
@@ -263,20 +264,27 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
 	}
 
     /**
-     * Pay View function
+     * Purchase View function
      *
      * @return mixed
-     * @throws InvalidDataException
      */
-	public function gatewayPayView()
-	{
-		$this->transactionPending();
+    public function purchaseView()
+    {
+        return parent::purchaseView();
+    }
 
-		return view('iranpayment::pages.zarinpal', [
-			'transaction_code'	=> $this->getTransactionCode(),
-			'bank_url'			=> $this->purchaseUri(),
-		]);
-	}
+    /**
+     * Purchase View Params function
+     *
+     * @return array
+     */
+    public function purchaseViewParams(): array
+    {
+        return [
+            'title' => 'زرین‌پال',
+            'image' => 'https://raw.githubusercontent.com/dena-a/iran-payment/master/resources/assets/img/zp.png',
+        ];
+    }
 
     /**
      * @throws IranPaymentException
@@ -295,8 +303,6 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
         }
 
         $this->setAuthority($this->transaction->reference_number);
-
-		$this->transactionVerifyPending();
 	}
 
     /**
@@ -319,6 +325,7 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
 				'exceptions'			=> 1,
 				'connection_timeout'	=> $this->gateway_request_options['connection_timeout'] ?? 60,
 			]);
+
             $result = $soap->PaymentVerification($fields);
         } catch(SoapFault|Exception $ex) {
             throw GatewayException::connectionProblem($ex);

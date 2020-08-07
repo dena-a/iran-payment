@@ -12,7 +12,7 @@ interface GatewayInterface
 
     public function purchaseUri(): string;
 
-	public function verify(): void;
+    public function purchaseView();
 
-	public function gatewayPayView();
+	public function verify(): void;
 }

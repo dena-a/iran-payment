@@ -22,7 +22,7 @@
 				<img class="pure-img-responsive" src="{{ $image }}">
 			</div>
 		@endif
-		<form id="bankForm" method="GET" action="{!! $bank_url !!}">
+		<form id="bankForm" method="{{ $method ?? 'GET' }}" action="{{ $bank_url }}">
             @isset($form_data)
                 @foreach($form_data as $name => $value)
                     <input type="hidden" name="{{ $name }}" value="{{ $value }}">

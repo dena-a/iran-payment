@@ -237,13 +237,28 @@ class PayIr extends AbstractGateway implements GatewayInterface
         return str_replace('{token}', $this->getReferenceNumber(), self::TOKEN_URL);
 	}
 
-	public function gatewayPayView()
-	{
-		return view('iranpayment::pages.payir', [
-			'transaction_code'	=> $this->getTransactionCode(),
-			'bank_url'			=> $this->purchaseUri(),
-		]);
-	}
+    /**
+     * Purchase View function
+     *
+     * @return mixed
+     */
+    public function purchaseView()
+    {
+        return parent::purchaseView();
+    }
+
+    /**
+     * Purchase View Params function
+     *
+     * @return array
+     */
+    public function purchaseViewParams(): array
+    {
+        return [
+            'title' => 'پی',
+            'image' => 'https://raw.githubusercontent.com/dena-a/iran-payment/master/resources/assets/img/pay.png',
+        ];
+    }
 
 	public function verify(): void
 	{
