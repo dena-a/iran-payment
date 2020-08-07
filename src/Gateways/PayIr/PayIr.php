@@ -154,7 +154,7 @@ class PayIr extends AbstractGateway implements GatewayInterface
 	{
         parent::prePurchase();
 
-        if ($this->preparedAmount() < 1000) {
+        if ($this->preparedAmount() < 10000 || $this->preparedAmount() > 500000000) {
             throw InvalidDataException::invalidAmount();
         }
 
