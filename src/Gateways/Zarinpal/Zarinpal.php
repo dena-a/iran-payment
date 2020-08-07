@@ -276,7 +276,7 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
      *
      * @return array
      */
-    public function purchaseViewParams(): array
+    protected function purchaseViewParams(): array
     {
         return [
             'title' => 'زرین‌پال',

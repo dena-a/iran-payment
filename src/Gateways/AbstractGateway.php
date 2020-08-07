@@ -248,7 +248,7 @@ abstract class AbstractGateway
      *
      * @return array
      */
-    public function purchaseViewParams(): array
+    protected function purchaseViewParams(): array
     {
         return [];
     }
