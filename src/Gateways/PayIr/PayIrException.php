@@ -39,7 +39,7 @@ class PayIrException extends GatewayException
 
     /**
      * @param $error_code
-     * @return PayIrException
+     * @return $this
      * @throws TransactionFailedException
      */
     public static function error($error_code)

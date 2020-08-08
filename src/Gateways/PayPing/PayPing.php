@@ -7,12 +7,14 @@
 
 namespace Dena\IranPayment\Gateways\PayPing;
 
-use Exception;
-use Dena\IranPayment\Exceptions\GatewayException;
-use Dena\IranPayment\Exceptions\InvalidRequestException;
-use Dena\IranPayment\Exceptions\InvalidDataException;
 use Dena\IranPayment\Gateways\AbstractGateway;
 use Dena\IranPayment\Gateways\GatewayInterface;
+
+use Exception;
+use Dena\IranPayment\Exceptions\GatewayException;
+use Dena\IranPayment\Exceptions\InvalidDataException;
+use Dena\IranPayment\Exceptions\IranPaymentException;
+use Dena\IranPayment\Exceptions\TransactionFailedException;
 
 use Dena\IranPayment\Helpers\Currency;
 
@@ -29,6 +31,13 @@ class PayPing extends AbstractGateway implements GatewayInterface
 	 * @var string|null
 	 */
 	protected ?string $token;
+
+    /**
+     * Ref ID variable
+     *
+     * @var string|null
+     */
+    protected ?string $ref_id = null;
 
     /**
      * Client Ref ID variable
@@ -57,6 +66,13 @@ class PayPing extends AbstractGateway implements GatewayInterface
      * @var string|null
      */
     protected ?string $payer_identity;
+
+    /**
+     * Payer Card Number variable
+     *
+     * @var string|null
+     */
+    protected ?string $payer_card_number;
 
 	/**
 	 * Gateway Name function
@@ -89,6 +105,29 @@ class PayPing extends AbstractGateway implements GatewayInterface
     public function getToken(): ?string
     {
         return $this->token;
+    }
+
+    /**
+     * Set  Ref ID function
+     *
+     * @param string $ref_id
+     * @return $this
+     */
+    public function setRefId(string $ref_id): self
+    {
+        $this->ref_id = $ref_id;
+
+        return $this;
+    }
+
+    /**
+     * Get  Ref ID function
+     *
+     * @return string
+     */
+    public function getRefId(): string
+    {
+        return $this->ref_id;
     }
 
     /**
@@ -181,6 +220,29 @@ class PayPing extends AbstractGateway implements GatewayInterface
     public function getPayerIdentity(): string
     {
         return $this->payer_identity;
+    }
+
+    /**
+     * Set Payer Card Number function
+     *
+     * @param string $payer_card_number
+     * @return $this
+     */
+    public function setPayerCardNumber(string $payer_card_number): self
+    {
+        $this->payer_card_number = $payer_card_number;
+
+        return $this;
+    }
+
+    /**
+     * Get Payer Card Number function
+     *
+     * @return string|null
+     */
+    public function getPayerCardNumber(): ?string
+    {
+        return $this->payer_card_number;
     }
 
     /**
@@ -324,21 +386,45 @@ class PayPing extends AbstractGateway implements GatewayInterface
         ];
     }
 
+    /**
+     * @throws IranPaymentException
+     */
+    public function preVerify(): void
+    {
+        parent::preVerify();
+
+        if (isset($this->request['code']) && $this->request['code'] !== $this->getReferenceNumber()) {
+            throw PayPingException::httpError(404);
+        }
+
+        if (isset($this->request['clientrefid']) && $this->request['clientrefid'] !== $this->getTransactionCode()) {
+            throw PayPingException::httpError(404);
+        }
+
+        if (!isset($this->request['refid']) && $this->getTrackingCode() === null) {
+            throw PayPingException::httpError(404);
+        }
+
+        if (isset($this->request['refid']) && $this->getTrackingCode() !== null && $this->request['refid'] !== $this->getTransactionCode()) {
+            throw PayPingException::httpError(404);
+        }
+
+        if (isset($this->request['refid']) && $this->getTrackingCode() === null) {
+            $this->transactionUpdate([
+                'tracking_code' => $this->request['refid'],
+            ]);
+        }
+
+        $this->setRefId($this->getTrackingCode());
+    }
+
+    /**
+     * @throws GatewayException|PayPingException|TransactionFailedException
+     */
 	public function verify(): void
 	{
-		if (!isset($this->request['refid'])) {
-			$ex = InvalidRequestException::notFound();
-			$this->setDescription($ex->getMessage());
-			$this->transactionFailed();
-			throw $ex;
-		}
-
-		$this->transactionVerifyPending([
-			'tracking_code' => $this->request['refid'],
-		]);
-
 		$fields = json_encode([
-			'refId'	=> $this->request['refid'],
+			'refId'	=> $this->getRefId(),
 			'amount'=> $this->preparedAmount(),
 		]);
 
@@ -360,35 +446,37 @@ class PayPing extends AbstractGateway implements GatewayInterface
 			$ch_error = curl_error($ch);
 			curl_close($ch);
 
-			if ($ch_error) {
-				$this->transactionFailed($ch_error);
-				throw GatewayException::connectionProblem();
-			}
+            if ($ch_error) {
+                throw GatewayException::connectionProblem(new Exception($ch_error));
+            }
 
 			$raw_result = $result;
 			$result = json_decode($result, true);
 		} catch(Exception $ex) {
-			$this->transactionFailed($ex->getMessage());
-			throw $ex;
+            throw GatewayException::connectionProblem($ex);
+        }
+
+		if($httpcode !== 200) {
+			throw PayPingException::httpError($httpcode);
 		}
 
-		if($httpcode != 200) {
-			#TODO: Check PayPing error codes. No documents published
-			if (isset($result->Error)) {
-				$this->transactionFailed($result->Error);
-				throw new PayPingException($result->Error, $httpcode);
-			} elseif (isset($result[12])) {
-				$this->transactionFailed($result[12]);
-				throw new PayPingException($result[12], $httpcode);
-			} elseif (isset($result[120])) {
-				$this->transactionFailed($result[120]);
-				throw new PayPingException($result[120], $httpcode);
-			}
+        if (intval($result->amount) !== $this->preparedAmount()) {
+            throw PayPingException::error(9);
+        }
 
-			$this->transactionFailed($raw_result);
-			throw GatewayException::unknownResponse();
-		}
+		if (isset($result->cardNumber) || isset($result->cardHashPan)) {
+		    $this->setPayerCardNumber($result->cardNumber ?? $result->cardHashPan);
+        }
 	}
+
+    protected function postVerify(): void
+    {
+        $this->transactionUpdate([
+            'card_number' => $this->getPayerCardNumber(),
+        ]);
+
+        parent::postVerify();
+    }
 
     private function feeCalculator(int $amount): int
     {
