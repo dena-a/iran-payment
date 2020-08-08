@@ -279,14 +279,17 @@ trait TransactionData
 		return $this->payable_type;
 	}
 
-	protected function newTransaction(): void
+	protected function newTransaction(array $params = []): void
     {
-        $transaction = new IranPaymentTransaction([
-            'amount' => $this->getAmount(),
-            'currency' => $this->getCurrency(),
-            'gateway' => $this->getName(),
-            'extra' => is_array($this->getExtra()) ? json_encode($this->getExtra()) : $this->getExtra(),
-        ]);
+        $transaction = new IranPaymentTransaction(array_merge(
+            [
+                'amount' => $this->getAmount(),
+                'currency' => $this->getCurrency(),
+                'gateway' => $this->getName(),
+                'extra' => is_array($this->getExtra()) ? json_encode($this->getExtra()) : $this->getExtra(),
+            ],
+            $params
+        ));
 
         $transaction->status = IranPaymentTransaction::T_INIT;
         $transaction->code = Str::random(app('config')->get('iranpayment.code_length' ,16));

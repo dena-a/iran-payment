@@ -133,7 +133,12 @@ abstract class AbstractGateway
             throw InvalidDataException::invalidCallbackUrl();
         }
 
-        $this->newTransaction();
+        $this->newTransaction([
+            'full_name' => $this->getFullname(),
+            'email' => $this->getEmail(),
+            'mobile' => $this->getMobile(),
+            'description' => $this->getDescription(),
+        ]);
     }
 
     protected function postPurchase(): void
