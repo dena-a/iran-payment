@@ -59,7 +59,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Dena\\IranPayment\\IranPaymentServiceProvider",
+                "Dena\\IranPayment\\IranPaymentServiceProvider"
             ]
         }
     },
