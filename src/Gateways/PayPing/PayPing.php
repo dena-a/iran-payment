@@ -353,8 +353,8 @@ class PayPing extends AbstractGateway implements GatewayInterface
 			]);
 			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_TIMEOUT, $this->gateway_request_options['timeout'] ?? 30);
-            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->gateway_request_options['connection_timeout'] ?? 60);
+            curl_setopt($ch, CURLOPT_TIMEOUT, $this->getGatewayRequestOptions()['timeout'] ?? 30);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->getGatewayRequestOptions()['connection_timeout'] ?? 60);
 			$result	= curl_exec($ch);
 			$httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 			$ch_error = curl_error($ch);

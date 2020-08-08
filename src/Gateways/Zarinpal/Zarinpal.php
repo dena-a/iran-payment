@@ -328,11 +328,11 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
             throw ZarinpalException::error(-22);
         }
 
-        if (isset($this->request['Authority']) && $this->request['Authority'] !== $this->transaction->reference_number) {
+        if (isset($this->request['Authority']) && $this->request['Authority'] !== $this->getReferenceNumber()) {
             throw ZarinpalException::error(-11);
         }
 
-        $this->setAuthority($this->transaction->reference_number);
+        $this->setAuthority($this->getReferenceNumber());
 	}
 
     /**
@@ -350,11 +350,11 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
 
 		try {
 			$soap = new SoapClient(self::WSDL_URL, [
-				'encoding'				=> 'UTF-8',
-				'trace'					=> 1,
-				'exceptions'			=> 1,
-				'connection_timeout'	=> $this->gateway_request_options['connection_timeout'] ?? 60,
-			]);
+                'encoding' => 'UTF-8',
+                'trace' => 1,
+                'exceptions' => 1,
+                'connection_timeout' => $this->getGatewayRequestOptions()['connection_timeout'] ?? 60,
+            ]);
 
             $result = $soap->PaymentVerification($fields);
         } catch(SoapFault|Exception $ex) {
