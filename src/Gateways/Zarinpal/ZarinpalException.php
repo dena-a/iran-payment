@@ -28,7 +28,7 @@ class ZarinpalException extends GatewayException
 
     /**
      * @param $error_code
-     * @return ZarinpalException
+     * @return $this
      * @throws TransactionFailedException
      */
     public static function error($error_code): self
