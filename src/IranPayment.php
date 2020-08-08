@@ -24,6 +24,7 @@ class IranPayment
 	 */
     const SAMAN		= 'saman';
     const PAYIR		= 'payir';
+    const PAYDOTIR	= 'pay.ir';
 	const ZARINPAL	= 'zarinpal';
 	const PAYPING	= 'payping';
 	const TEST		= 'test';
@@ -67,6 +68,7 @@ class IranPayment
                 $this->gateway = new Saman;
                 break;
             case self::PAYIR:
+            case self::PAYDOTIR:
             case PayIr::class:
                 $this->gateway = new PayIr;
                 break;

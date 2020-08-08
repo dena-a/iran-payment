@@ -195,7 +195,7 @@ abstract class AbstractGateway
     public function redirect()
     {
         try {
-            return redirect($this->purchaseUri());
+            return response()->redirectTo($this->purchaseUri());
         } catch (IranPaymentException $ex) {
             throw $ex;
         } catch (Exception $ex) {
@@ -231,7 +231,7 @@ abstract class AbstractGateway
             $data
         );
 
-		return view($parameters['view'], array_merge(
+		return response()->view($parameters['view'], array_merge(
             [
                 'transaction_code' => $parameters['transaction_code'] ?? $this->getTransactionCode(),
                 'bank_url' => $parameters['bank_url'] ?? $this->purchaseUri(),
