@@ -12,8 +12,8 @@ class AlterIranPaymentTransactionsTable extends Migration
 	public function up()
 	{
 		Schema::table($this->getTable(), function (Blueprint $table) {
-            $table->string('full_name')->nullable()->before('mobile');
-            $table->string('email')->nullable()->before('mobile');
+            $table->string('full_name')->nullable()->after('card_number');
+            $table->string('email')->nullable()->after('full_name');
 		});
 	}
 
