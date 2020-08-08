@@ -29,13 +29,12 @@ class ZarinpalException extends GatewayException
     /**
      * @param $error_code
      * @return ZarinpalException
-     * @throws GatewayException
      * @throws TransactionFailedException
      */
     public static function error($error_code): self
     {
         if (!isset(self::$errors[$error_code])) {
-            throw GatewayException::unknownResponse(compact('error_code'));
+            return self::unknownResponse(compact('error_code'));
         }
 
         if (in_array($error_code, [-22, -33])) {

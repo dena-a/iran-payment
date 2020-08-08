@@ -157,7 +157,7 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
     }
 
     /**
-     * Get Ref Id function
+     * Get Ref ID function
      *
      * @return string|null
      */
@@ -263,6 +263,10 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
 
         if ($result->Status !== 100) {
             throw ZarinpalException::error($result->Status);
+        }
+
+        if (!isset($result->Authority)) {
+            throw GatewayException::unknownResponse($result);
         }
 
         $this->setAuthority($result->Authority);
