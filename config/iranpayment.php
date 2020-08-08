@@ -2,49 +2,49 @@
 
 return [
 
-	/*
-	|--------------------------------------------------------------------------
-	| Default gateway
-	|--------------------------------------------------------------------------
-	| [saman|zarinpal|payir|payping]
-	*/
-	'default' => env('IRANPAYMENT_DEFAULT', 'saman'),
+    /*
+    |--------------------------------------------------------------------------
+    | Default gateway
+    |--------------------------------------------------------------------------
+    | [saman|zarinpal|payir|payping]
+    */
+    'default' => env('IRANPAYMENT_DEFAULT', 'saman'),
 
-	/*
-	|--------------------------------------------------------------------------
-	| Default currency
-	|--------------------------------------------------------------------------
-	| [IRR|IRT]
-	*/
-	'currency' => env('IRANPAYMENT_CURRENCY', 'IRR'),
+    /*
+    |--------------------------------------------------------------------------
+    | Default currency
+    |--------------------------------------------------------------------------
+    | [IRR|IRT]
+    */
+    'currency' => env('IRANPAYMENT_CURRENCY', 'IRR'),
 
-	/*
-	|--------------------------------------------------------------------------
-	| Default callback url
-	|--------------------------------------------------------------------------
-	| You can use setCallbackUrl method to set a custom callback url for a payment.
-	| You may set a specific callback url for each gateways in their config with callback-url parameter.
-	*/
-	// 'callback-url' => 'http://example.com/payments/callback',
-	'callback-url' => '/payments/callback',
+    /*
+    |--------------------------------------------------------------------------
+    | Default callback url
+    |--------------------------------------------------------------------------
+    | You can use setCallbackUrl method to set a custom callback url for a payment.
+    | You may set a specific callback url for each gateways in their config with callback-url parameter.
+    */
+    // 'callback-url' => 'http://example.com/payments/callback',
+    'callback-url' => '/payments/callback',
 
-	/*
-	|--------------------------------------------------------------------------
-	| Settings
-	|--------------------------------------------------------------------------
-	*/
-	'code_length' => 16,
+    /*
+    |--------------------------------------------------------------------------
+    | Settings
+    |--------------------------------------------------------------------------
+    */
+    'code_length' => 16,
     'transaction_query_param' => 'tc',
 
-	/*
-	|--------------------------------------------------------------------------
-	| Saman gateway
-	|--------------------------------------------------------------------------
-	*/
-	'saman' => [
-		'merchant-id' => env('SAMAN_MERCHANT_ID', 'xxxxxxxx'),
-		// 'callback-url' => 'http://example.com/payments/saman/callback',
-	],
+    /*
+    |--------------------------------------------------------------------------
+    | Saman gateway
+    |--------------------------------------------------------------------------
+    */
+    'saman' => [
+        'merchant-id' => env('SAMAN_MERCHANT_ID', 'xxxxxxxx'),
+        // 'callback-url' => 'http://example.com/payments/saman/callback',
+    ],
 
     /*
     |--------------------------------------------------------------------------
@@ -56,27 +56,28 @@ return [
         // 'callback-url' => 'http://example.com/payments/payir/callback',
     ],
 
-	/*
-	|--------------------------------------------------------------------------
-	| Zarinpal gateway
-	|--------------------------------------------------------------------------
-	| Types: [normal | zaringate | sandbox (for test)]
-	*/
-	'zarinpal' => [
-		'merchant-id' => env('ZARINPAL_MERCHANT_ID', 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'),
-		'type'        => 'normal',
-		'description' => 'تراكنش خرید',
-		// 'callback-url' => 'http://example.com/payments/zarinpal/callback',
-	],
+    /*
+    |--------------------------------------------------------------------------
+    | Zarinpal gateway
+    |--------------------------------------------------------------------------
+    | Types: [normal | zaringate | sandbox (for test)]
+    */
+    'zarinpal' => [
+        'merchant-id' => env('ZARINPAL_MERCHANT_ID', 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'),
+        'type' => 'normal',
+        'add_fees' => false,
+        'description' => 'تراكنش خرید',
+        // 'callback-url' => 'http://example.com/payments/zarinpal/callback',
+    ],
 
-	/*
-	|--------------------------------------------------------------------------
-	| PayPing gateway
-	|--------------------------------------------------------------------------
-	*/
-	'payping' => [
-		'merchant-id'	=> env('PAYPING_MERCHANT_ID', 'xxxxxxxx'),
-		'add_fees'		=> false,
-		// 'callback-url'	=> 'http://example.com/payments/payping/callback',
-	],
+    /*
+    |--------------------------------------------------------------------------
+    | PayPing gateway
+    |--------------------------------------------------------------------------
+    */
+    'payping' => [
+        'merchant-id' => env('PAYPING_MERCHANT_ID', 'xxxxxxxx'),
+        'add_fees' => false,
+        // 'callback-url' => 'http://example.com/payments/payping/callback',
+    ],
 ];

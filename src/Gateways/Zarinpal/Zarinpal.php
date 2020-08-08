@@ -57,6 +57,13 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
      */
     protected string $type = 'normal';
 
+    /**
+     * Add Fees variable
+     *
+     * @var bool
+     */
+    private bool $add_fees = false;
+
 	/**
 	 * Gateway Name function
 	 *
@@ -160,6 +167,29 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
     }
 
     /**
+     * Set Add Fees function
+     *
+     * @param bool $add_fees
+     * @return $this
+     */
+    public function setAddFees(bool $add_fees): self
+    {
+        $this->add_fees = $add_fees;
+
+        return $this;
+    }
+
+    /**
+     * Get Token function
+     *
+     * @return bool
+     */
+    public function getAddFees(): bool
+    {
+        return $this->add_fees;
+    }
+
+    /**
      * Initialize function
      *
      * @param array $parameters
@@ -176,6 +206,8 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
 
         $this->setType($parameters['type'] ?? app('config')->get('iranpayment.zarinpal.type', 'normal'));
 
+        $this->setAddFees($parameters['add_fees'] ?? app('config')->get('iranpayment.zarinpal.add_fees', false));
+
         $this->setDescription($parameters['description'] ?? app('config')->get('iranpayment.zarinpal.description', 'تراكنش خرید'));
 
         $this->setCallbackUrl($parameters['callback_url']
@@ -184,6 +216,17 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
         );
 
         return $this;
+    }
+
+    public function preparedAmount(): int
+    {
+        $amount = parent::preparedAmount();
+
+        if ($this->getAddFees()) {
+            $amount = $this->feeCalculator($amount);
+        }
+
+        return $amount;
     }
 
     /**
@@ -340,5 +383,12 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
         ]);
 
         parent::postVerify();
+    }
+
+    private function feeCalculator(int $amount): int
+    {
+        $fees = $amount * 1 / 100;
+        $amount += $fees;
+        return intval($amount);
     }
 }
