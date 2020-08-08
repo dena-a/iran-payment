@@ -3,6 +3,7 @@
 namespace Dena\IranPayment\Gateways\PayIr;
 
 use Dena\IranPayment\Exceptions\GatewayException;
+use Dena\IranPayment\Exceptions\TransactionFailedException;
 
 class PayIrException extends GatewayException
 {
@@ -36,8 +37,21 @@ class PayIrException extends GatewayException
         '-26' => 'امکان انجام تراکنش برای این درگاه وجود ندارد',
     ];
 
+    /**
+     * @param $error_code
+     * @return PayIrException
+     * @throws TransactionFailedException
+     */
     public static function error($error_code)
     {
-        return new self(self::$errors[$error_code] ?? self::$errors['-5'], $error_code);
+        if (!isset(self::$errors[$error_code])) {
+            return self::unknownResponse(compact('error_code'));
+        }
+
+        if ($error_code === '-5') {
+            throw new TransactionFailedException(self::$errors[$error_code], $error_code);
+        }
+
+        return new self(self::$errors[$error_code], $error_code);
     }
 }

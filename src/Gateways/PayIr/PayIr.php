@@ -13,7 +13,8 @@ use Dena\IranPayment\Gateways\GatewayInterface;
 use Exception;
 use Dena\IranPayment\Exceptions\GatewayException;
 use Dena\IranPayment\Exceptions\InvalidDataException;
-use Dena\IranPayment\Exceptions\InvalidRequestException;
+use Dena\IranPayment\Exceptions\IranPaymentException;
+use Dena\IranPayment\Exceptions\TransactionFailedException;
 
 use Dena\IranPayment\Helpers\Currency;
 
@@ -44,6 +45,20 @@ class PayIr extends AbstractGateway implements GatewayInterface
      * @var string|null
      */
     protected ?string $token;
+
+    /**
+     * Trans Id variable
+     *
+     * @var string|null
+     */
+    protected ?string $trans_id;
+
+    /**
+     * Payer Card Number variable
+     *
+     * @var string|null
+     */
+    protected ?string $payer_card_number;
 
     /**
      * Gateway Name function
@@ -125,6 +140,52 @@ class PayIr extends AbstractGateway implements GatewayInterface
     }
 
     /**
+     * Set Trans ID function
+     *
+     * @param string $trans_id
+     * @return $this
+     */
+    public function setTransId(string $trans_id): self
+    {
+        $this->trans_id = $trans_id;
+
+        return $this;
+    }
+
+    /**
+     * Get Trans ID function
+     *
+     * @return string|null
+     */
+    public function getTransId(): ?string
+    {
+        return $this->trans_id;
+    }
+
+    /**
+     * Set Payer Card Number function
+     *
+     * @param string $payer_card_number
+     * @return $this
+     */
+    public function setPayerCardNumber(string $payer_card_number): self
+    {
+        $this->payer_card_number = $payer_card_number;
+
+        return $this;
+    }
+
+    /**
+     * Get Payer Card Number function
+     *
+     * @return string|null
+     */
+    public function getPayerCardNumber(): ?string
+    {
+        return $this->payer_card_number;
+    }
+
+    /**
      * Initialize function
      *
      * @param array $parameters
@@ -166,8 +227,7 @@ class PayIr extends AbstractGateway implements GatewayInterface
 	}
 
     /**
-     * @throws GatewayException
-     * @throws PayIrException
+     * @throws GatewayException|PayIrException|TransactionFailedException
      */
 	public function purchase(): void
 	{
@@ -203,7 +263,7 @@ class PayIr extends AbstractGateway implements GatewayInterface
 		}
 
 		if(!isset($result->token)) {
-			if (isset($result->errorCode, $result->errorMessage)) {
+			if (isset($result->errorCode)) {
 				throw PayIrException::error($result->errorCode);
 			}
 
@@ -245,21 +305,32 @@ class PayIr extends AbstractGateway implements GatewayInterface
         ];
     }
 
+    /**
+     * @throws IranPaymentException
+     */
+    public function preVerify(): void
+    {
+        parent::preVerify();
+
+        if (isset($this->request['status']) && $this->request['status'] !== "1") {
+            throw PayIrException::error('-5');
+        }
+
+        if (isset($this->request['token']) && $this->request['token'] !== $this->getReferenceNumber()) {
+            throw PayIrException::error('-8');
+        }
+
+        $this->setToken($this->getReferenceNumber());
+    }
+
+    /**
+     * @throws GatewayException|PayIrException|TransactionFailedException
+     */
 	public function verify(): void
 	{
-		if (!isset($this->request['token'], $this->request['status'])) {
-			$ex = InvalidRequestException::notFound();
-			$this->setDescription($ex->getMessage());
-			$this->transactionFailed();
-			throw $ex;
-		}
-
-		$this->transactionVerifyPending();
-
-		$token = $this->getReferenceNumber();
 		$fields = http_build_query([
-			'api'	=> $this->api,
-			'token'	=> $token,
+			'api'	=> $this->getApi(),
+			'token'	=> $this->getToken(),
 		]);
 
 		try {
@@ -268,43 +339,44 @@ class PayIr extends AbstractGateway implements GatewayInterface
 			curl_setopt($ch, CURLOPT_POSTFIELDS, $fields);
 			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_TIMEOUT, $this->gateway_request_options['timeout'] ?? 30);
-            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->gateway_request_options['connection_timeout'] ?? 60);
+            curl_setopt($ch, CURLOPT_TIMEOUT, $this->getGatewayRequestOptions()['timeout'] ?? 30);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->getGatewayRequestOptions()['connection_timeout'] ?? 60);
 			$result	= curl_exec($ch);
 			$ch_error = curl_error($ch);
 			curl_close($ch);
 
 			if ($ch_error) {
-				$this->transactionFailed($ch_error);
-				throw GatewayException::connectionProblem();
+                throw GatewayException::connectionProblem(new Exception($ch_error));
 			}
 
 			$result = json_decode($result);
+        } catch(Exception $ex) {
+            throw GatewayException::connectionProblem($ex);
+        }
 
-		} catch(Exception $ex) {
-			$this->transactionFailed($ex->getMessage());
-			throw $ex;
+        if(!isset($result->amount, $result->transId, $result->cardNumber)) {
+            if (isset($result->errorCode)) {
+                throw PayIrException::error($result->errorCode);
+            }
+
+            throw GatewayException::unknownResponse($result);
+        }
+
+		if (intval($result->amount) !== $this->preparedAmount()) {
+            throw PayIrException::error('-5');
 		}
 
-		if(!isset($result->amount, $result->transId, $result->cardNumber)) {
-			if (isset($result->errorCode, $result->errorMessage)) {
-				$this->transactionFailed($result->errorMessage);
-				throw PayIrException::error($result->errorCode);
-			}
-
-			$this->transactionFailed(json_encode($result));
-			throw GatewayException::unknownResponse();
-		}
-
-		if (intval($result->amount) != $this->preparedAmount()) {
-			$ex = GatewayException::inconsistentResponse();
-			$this->transactionFailed($ex->getMessage());
-			throw $ex;
-		}
-
-		$this->transactionUpdate([
-			'tracking_code' => $result->transId,
-			'card_number' 	=> $result->cardNumber,
-		]);
+        $this->setTransId($result->transId);
+        $this->setPayerCardNumber($result->cardNumber);
 	}
+
+    protected function postVerify(): void
+    {
+        $this->transactionUpdate([
+            'tracking_code' => $this->getTransId(),
+            'card_number' => $this->getPayerCardNumber(),
+        ]);
+
+        parent::postVerify();
+    }
 }
