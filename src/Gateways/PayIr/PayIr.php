@@ -165,11 +165,6 @@ class PayIr extends AbstractGateway implements GatewayInterface
         $this->setFactorNumber($this->getTransactionCode());
 	}
 
-    public function preparedCallbackUrl(): ?string
-    {
-        return urlencode(parent::preparedCallbackUrl());
-    }
-
     /**
      * @throws GatewayException
      * @throws PayIrException
@@ -179,7 +174,7 @@ class PayIr extends AbstractGateway implements GatewayInterface
 		$fields = http_build_query([
 			'api' => $this->getApi(),
 			'amount' => $this->preparedAmount(),
-			'redirect' => $this->preparedCallbackUrl(),
+			'redirect' => urlencode($this->preparedCallbackUrl()),
 			'factorNumber' => $this->getFactorNumber(),
 			'mobile' => $this->getMobile(),
 			'description' => $this->getDescription(),
