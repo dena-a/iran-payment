@@ -1,11 +1,11 @@
 {
-	"name": "dena-a/iran-payment",
-	"description": "a Laravel package to handle Internet Payment Gateways for Iran Banking System",
-	"type": "library",
-	"homepage": "https://github.com/dena-a/iran-payment",
-	"license": "MIT",
-	"keywords": [
-		"laravel",
+    "name": "dena-a/iran-payment",
+    "description": "a Laravel package to handle Internet Payment Gateways for Iran Banking System",
+    "type": "library",
+    "homepage": "https://github.com/dena-a/iran-payment",
+    "license": "MIT",
+    "keywords": [
+        "laravel",
         "iran",
         "payment",
         "gateway",
@@ -20,23 +20,23 @@
         "pay.ir",
         "zarinpal",
         "payping"
-	],
-	"authors": [
-		{
-			"name": "Dena Ajdari",
-			"homepage": "https://github.com/dena-a"
-		}, {
-			"name": "YekNava",
-			"homepage": "https://github.com/yeknava"
-		}
-	],
-	"require": {
-		"php": "^7.4",
+    ],
+    "authors": [
+        {
+            "name": "Dena Ajdari",
+            "homepage": "https://github.com/dena-a"
+        }, {
+            "name": "YekNava",
+            "homepage": "https://github.com/yeknava"
+        }
+    ],
+    "require": {
+        "php": "^7.4",
         "ext-curl": "*",
         "ext-json": "*",
         "ext-soap": "*",
-		"illuminate/support": "^5.7",
-		"illuminate/database": "^5.7",
+        "illuminate/support": "^5.7",
+        "illuminate/database": "^5.7",
         "illuminate/http": "^5.7",
         "guzzlehttp/guzzle": "^6.3",
         "nesbot/carbon": "*"
@@ -46,23 +46,23 @@
         "fzaninotto/faker": "^1.4",
         "phpstan/phpstan": "^0.12.0@dev"
     },
-	"autoload": {
-		"psr-4": {
-			"Dena\\IranPayment\\": "src"
-		}
-	},
+    "autoload": {
+        "psr-4": {
+            "Dena\\IranPayment\\": "src"
+        }
+    },
     "autoload-dev": {
         "psr-4": {
             "Dena\\IranPayment\\Tests\\": "tests/"
         }
     },
     "extra": {
-		"laravel": {
-			"providers": [
-				"Dena\\IranPayment\\IranPaymentServiceProvider",
-			]
-		}
-	},
+        "laravel": {
+            "providers": [
+                "Dena\\IranPayment\\IranPaymentServiceProvider",
+            ]
+        }
+    },
     "minimum-stability": "dev",
     "prefer-stable": true
 }
