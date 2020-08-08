@@ -48,7 +48,7 @@
     },
 	"autoload": {
 		"psr-4": {
-			"\\IranPayment\\": "src"
+			"Dena\\IranPayment\\": "src"
 		}
 	},
     "autoload-dev": {
@@ -59,7 +59,7 @@
     "extra": {
 		"laravel": {
 			"providers": [
-				"Dena\\IranPayment\\IranPaymentServiceProvider"
+				"Dena\\IranPayment\\IranPaymentServiceProvider",
 			]
 		}
 	},
