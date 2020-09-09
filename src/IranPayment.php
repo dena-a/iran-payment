@@ -12,7 +12,7 @@ use Dena\IranPayment\Gateways\Test\TestGateway;
 use Dena\IranPayment\Gateways\Zarinpal\Zarinpal;
 
 use Dena\IranPayment\Exceptions\GatewayNotFoundException;
-
+use Dena\IranPayment\Gateways\Sadad\Sadad;
 use Dena\IranPayment\Models\IranPaymentTransaction;
 
 use Illuminate\Http\Request;
@@ -23,6 +23,7 @@ class IranPayment
 	 * Gateways classes constant names
 	 */
     const SAMAN		= 'saman';
+    const SADAD     = 'sadad';
     const PAYIR		= 'payir';
     const PAYDOTIR	= 'pay.ir';
 	const ZARINPAL	= 'zarinpal';
@@ -67,6 +68,10 @@ class IranPayment
             case Saman::class:
                 $this->gateway = new Saman;
                 break;
+            case self::SADAD:
+            case Sadad::class:
+                $this->gateway = new Sadad;
+                break;
             case self::PAYIR:
             case self::PAYDOTIR:
             case PayIr::class:
@@ -82,7 +87,7 @@ class IranPayment
                 break;
             case self::TEST:
             case TestGateway::class:
-                if (app('config')->get('app.env', 'production') !== 'production')
+                if (strtolower(app('config')->get('app.env', 'production')) === 'production')
                     throw GatewayNotFoundException::productionUnavailableGateway();
 
                 $this->gateway = new TestGateway;
@@ -123,7 +128,8 @@ class IranPayment
 	{
 		$gateways = [
 			self::ZARINPAL,
-			self::SAMAN,
+            self::SAMAN,
+            self::SADAD,
 			self::PAYIR,
 			self::PAYPING,
 		];
