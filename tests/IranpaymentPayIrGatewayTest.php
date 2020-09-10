@@ -15,8 +15,8 @@ class IranpaymentPayIrGatewayTest extends TestCase
     {
         parent::setUp();
 
-        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations', ['--database' => 'testing']);
-        $this->loadMigrationsFrom(__DIR__ . '/migrations', ['--database' => 'testing']);
+        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+        $this->loadMigrationsFrom(__DIR__ . '/migrations');
     }
     /**
      * Define environment setup.
