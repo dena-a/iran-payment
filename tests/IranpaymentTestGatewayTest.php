@@ -29,7 +29,6 @@ class IranpaymentTestGatewayTest extends TestCase
     {
         $app['config']->set('database.default', 'testing');
         $app['config']->set('app.env', 'testing');
-        // $app['config']->set('iranpayment', require_once(__DIR__ . '/../config/iranpayment.php'));
     }
 
     protected function getPackageProviders($app)
