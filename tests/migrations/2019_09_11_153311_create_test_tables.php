@@ -13,12 +13,6 @@ class CreateTestTables extends Migration
      */
     public function up()
     {
-        Schema::create('iranpayment_test_users', function (Blueprint $table) {
-            $table->bigIncrements('id');
-            $table->softDeletes();
-            $table->timestamps();
-        });
-
         Schema::create('iranpayment_test_products', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('title')->nullable();
@@ -36,6 +30,5 @@ class CreateTestTables extends Migration
     public function down()
     {
         Schema::dropIfExists('iranpayment_test_products');
-        Schema::dropIfExists('iranpayment_test_users');
     }
 }

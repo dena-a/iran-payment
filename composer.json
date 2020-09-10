@@ -55,7 +55,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Dena\\IranPayment\\Tests\\": "tests/"
+            "Tests\\": "tests/"
         }
     },
     "extra": {

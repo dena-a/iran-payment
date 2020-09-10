@@ -18,6 +18,7 @@ use Dena\IranPayment\Exceptions\IranPaymentException;
 use Dena\IranPayment\Exceptions\TransactionFailedException;
 use Dena\IranPayment\Gateways\Sadad\SadadException;
 use Dena\IranPayment\Helpers\Currency;
+use Dena\IranPayment\Http\CurlRequest;
 
 class Sadad extends AbstractGateway implements GatewayInterface
 {
@@ -286,6 +287,14 @@ class Sadad extends AbstractGateway implements GatewayInterface
         return $this;
     }
 
+    protected function httpRequest(string $url, array $data = [], string $method = "POST") : object
+    {
+        $curl = new CurlRequest($url, $method);
+        $result = $curl->execute(json_encode($data));
+        
+        return json_decode($result);
+    }
+
     /**
      * @throws InvalidDataException
      */
@@ -307,7 +316,7 @@ class Sadad extends AbstractGateway implements GatewayInterface
      */
 	public function purchase(): void
 	{   
-        $data = json_encode([
+        $data = [
             'TerminalId' => $this->terminal_id,
             'MerchantId' => $this->merchant_id,
             'Amount' => $this->preparedAmount(),
@@ -317,40 +326,17 @@ class Sadad extends AbstractGateway implements GatewayInterface
             'OrderId' => $this->order_id,
             'UserId' => $this->getMobile(),
             'ApplicationName' => app('config')->get('iranpayment.app_name') ?? null
-        ]);
+        ];
 
-		try {
-            $curl = curl_init(self::SEND_URL);
-            curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "POST");  
-            curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
-            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($curl, CURLOPT_TIMEOUT, $this->getGatewayRequestOptions()['timeout'] ?? 30);
-            curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, $this->getGatewayRequestOptions()['connection_timeout'] ?? 60);
-            curl_setopt(
-                $curl,
-                CURLOPT_HTTPHEADER,
-                ['Content-Type: application/json','Content-Length: ' . strlen($data)]
-            );
-            $result = curl_exec($curl);
-            $ch_error = curl_error($curl);
-            curl_close($curl);
-
-			if ($ch_error) {
-				throw GatewayException::connectionProblem(new Exception($ch_error));
-            }
-
-			$result = json_decode($result);
-		} catch(Exception $ex) {
-            throw GatewayException::connectionProblem($ex);
-		}
+        $result = $this->httpRequest(self::SEND_URL, $data);
 
 		if(!isset($result->Token)) {
-			if (isset($result->ResCode) && $result->ResCode != 0) {
-                throw SadadException::error($result->ResCode, $result->Description ?? null);
-			}
-
 			throw GatewayException::unknownResponse($result);
-		}
+        }
+        
+        if (isset($result->ResCode) && $result->ResCode != 0) {
+            throw SadadException::error($result->ResCode, $result->Description ?? null);
+        }
 
         $this->setToken($result->Token);
         $this->setDescription($result->Description);
@@ -385,9 +371,7 @@ class Sadad extends AbstractGateway implements GatewayInterface
     {
         return [
             'title' => 'بانک ملی - پرداخت الکترونیک سداد',
-            'image' =>
-                'https://raw.githubusercontent.com/
-                dena-a/iran-payment/master/resources/assets/img/sadad.png',
+            'image' => 'https://raw.githubusercontent.com/dena-a/iran-payment/master/resources/assets/img/sadad.png',
             'bank_url' => $this->purchaseUri(),
             'method' => 'GET',
         ];
@@ -419,40 +403,12 @@ class Sadad extends AbstractGateway implements GatewayInterface
 	{
         $token = $this->getToken();
 
-		$data = json_encode([
+		$data = [
             'Token'	=> $token,
             'SignData' => $this->signData($token),
-        ]);
+        ];
 
-		try {
-			$ch = curl_init();
-			curl_setopt($ch, CURLOPT_URL, self::VERIFY_URL);
-			curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt(
-                $ch, 
-                CURLOPT_HTTPHEADER,
-                ['Content-Type: application/json', 'Content-Length: '.strlen($data)]
-            );
-            curl_setopt($ch, CURLOPT_TIMEOUT, $this->getGatewayRequestOptions()['timeout'] ?? 30);
-            curl_setopt(
-                $ch,
-                CURLOPT_CONNECTTIMEOUT,
-                $this->getGatewayRequestOptions()['connection_timeout'] ?? 60
-            );
-			$result	= curl_exec($ch);
-			$ch_error = curl_error($ch);
-			curl_close($ch);
-
-			if ($ch_error) {
-                throw GatewayException::connectionProblem(new Exception($ch_error));
-			}
-
-			$result = json_decode($result);
-        } catch(Exception $ex) {
-            throw GatewayException::connectionProblem($ex);
-        }
+        $result = $this->httpRequest(self::VERIFY_URL, $data);
 
         if (
             !isset(

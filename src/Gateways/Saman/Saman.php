@@ -238,7 +238,10 @@ class Saman extends AbstractGateway implements GatewayInterface
 	{
 	    parent::preVerify();
 
-		if ($this->request['State'] ?? null !== 'OK' || $this->request['StateCode'] ?? null !== '0') {
+		if (
+            (isset($this->request['State']) && $this->request['State'] !== 'OK') ||
+            (isset($this->request['StateCode']) && $this->request['StateCode'] !== '0')
+        ) {
 			switch ($this->request['StateCode']) {
 				case '-1':
 					throw SamanException::error(-101);

@@ -6,7 +6,7 @@ return [
     |--------------------------------------------------------------------------
     | Default gateway
     |--------------------------------------------------------------------------
-    | [saman|zarinpal|payir|payping]
+    | [saman|sadad|zarinpal|payir|payping]
     */
     'default' => env('IRANPAYMENT_DEFAULT', 'saman'),
 

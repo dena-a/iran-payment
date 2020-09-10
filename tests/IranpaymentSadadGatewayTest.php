@@ -5,13 +5,11 @@ use Dena\IranPayment\Gateways\Sadad\SadadException;
 use Dena\IranPayment\Gateways\Test\TestGateway;
 use Dena\IranPayment\IranPayment;
 use Dena\IranPayment\Models\IranPaymentTransaction;
-use Illuminate\Support\Facades\Http;
 use Orchestra\Testbench\TestCase;
 use Tests\Models\ProductModel;
 
 class IranpaymentSadadGatewayTest extends TestCase
 {
-    private bool $isMock = false;
     /**
      * Setup the test environment.
      */
@@ -33,12 +31,9 @@ class IranpaymentSadadGatewayTest extends TestCase
         $app['config']->set('database.default', 'testing');
         $app['config']->set('app.env', 'testing');
 
-        $merchantId = app('config')->get('iranpayment.sadad.merchant_id');
-        if (!$merchantId) $this->isMock = true;
-
         $app['config']->set(
             'iranpayment.sadad.merchant_id',
-            $merchantId ?? 1
+            app('config')->get('iranpayment.sadad.merchant_id', 1)
         );
         $app['config']->set(
             'iranpayment.sadad.terminal_id',
@@ -57,12 +52,26 @@ class IranpaymentSadadGatewayTest extends TestCase
         ];
     }
 
-    public function testSadadGateway()
+    public function testSuccess()
     {
         $sadad = Mockery::mock(Sadad::class)->makePartial();
-        $sadad->shouldReceive('purchase')->andReturn(null);
-        $sadad->shouldReceive('getToken')->andReturn(1);
-        $sadad->shouldReceive('verify')->andReturn(null);
+        // $sadad->shouldReceive('getToken')->andReturn(1);
+        $sadad->shouldAllowMockingProtectedMethods();
+        $purchaseResponse = (object) [
+            'Token' => 1,
+            'ResCode' => 0,
+            'Description' => ''
+        ];
+        $verifyResponse = (object) [
+            'ResCode' => 0,
+            'Amount' => 10000,
+            'SystemTraceNo' => 1,
+            'RetrivalRefNo' => 1,
+            'Description' => ''
+        ];
+        $sadad->shouldReceive('httpRequest')->andReturn($purchaseResponse, $verifyResponse);
+        // $sadad->shouldReceive('purchase')->andReturn(null);
+        // $sadad->shouldReceive('verify')->andReturn(null);
 
         $payment = (new IranPayment($sadad));
 
@@ -88,5 +97,46 @@ class IranpaymentSadadGatewayTest extends TestCase
         $payment->confirm();
         $transaction = $payment->getTransaction();
         $this->assertEquals(IranPaymentTransaction::T_SUCCEED, $transaction->status);
+    }
+
+    public function testError()
+    {
+        $sadad = Mockery::mock(Sadad::class)->makePartial();
+        $sadad->shouldAllowMockingProtectedMethods();
+        $purchaseResponse = (object) [
+            'Token' => 1,
+            'ResCode' => 1006,
+            'Description' => ''
+        ];
+        $verifyResponse = (object) [
+            'ResCode' => -1,
+            'Amount' => 10000,
+            'SystemTraceNo' => 1,
+            'RetrivalRefNo' => 1,
+            'Description' => ''
+        ];
+        $sadad->shouldReceive('httpRequest')->andReturn($purchaseResponse, $verifyResponse);
+
+        $payment = (new IranPayment($sadad));
+
+        $payment = $payment->build()
+            ->setAmount(10000)
+            ->setCallbackUrl(url('/test'))
+            ->setPayableId(1)
+            ->setPayableType(ProductModel::class);
+        $this->assertInstanceOf(Sadad::class, $payment);
+        $this->assertEquals(10000, $payment->getAmount());
+        $this->assertEquals(url('/test'), $payment->getCallbackUrl());
+        $this->assertEquals(1, $payment->getPayableId());
+        $this->assertEquals(ProductModel::class, $payment->getPayableType());
+
+        try {
+            $payment = $payment->ready();
+        } catch (Throwable $e) {
+            $this->assertInstanceOf(SadadException::class, $e);
+            $this->assertEquals(SadadException::error(1006)->getMessage(), $e->getMessage());
+        }
+        
+        $this->assertEquals(IranPaymentTransaction::T_FAILED, $payment->getTransaction()->status);
     }
 }

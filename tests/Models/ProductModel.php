@@ -10,4 +10,6 @@ class ProductModel extends Model
     use SoftDeletes;
 
     protected $table = 'iranpayment_test_products';
+
+    protected $fillable = ['title', 'price'];
 }
