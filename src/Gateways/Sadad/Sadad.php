@@ -1,8 +1,8 @@
 <?php
 /**
  * Api Version: ?
- * Api Document Date: 2020/08/03
- * Last Update: 2020/08/03
+ * Api Document Date: 1397/06/17
+ * Last Update: 2020/09/10
  */
 
 namespace Dena\IranPayment\Gateways\Sadad;

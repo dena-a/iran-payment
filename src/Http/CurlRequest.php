@@ -8,8 +8,8 @@ use Exception;
 class CurlRequest implements HttpRequestInterface
 {
     private $handle = null;
-    private $timeout = 30;
-    private $connectionTimeout = 60;
+    private int $timeout = 30;
+    private int $connectionTimeout = 60;
 
     public function __construct(string $url, string $method = "GET") {
         $this->handle = curl_init($url);
@@ -28,23 +28,29 @@ class CurlRequest implements HttpRequestInterface
         curl_setopt($this->handle, CURLOPT_RETURNTRANSFER, true);
     }
 
-    public function setTimeout(int $timeout)
+    public function setTimeout(int $timeout): self
     {
         $this->timeout = $timeout;
+        
+        return $this;
     }
 
-    public function setConnectionTimeout(int $connection_timeout)
+    public function setConnectionTimeout(int $connection_timeout): self
     {
         $this->connectionTimeout = $connection_timeout;
+        
+        return $this;
     }
 
-    public function addOption(string $name, $value) :self {
+    public function addOption(string $name, $value): self
+    {
         curl_setopt($this->handle, $name, $value);
 
         return $this;
     }
 
-    public function execute($data = null) {
+    public function execute($data = null)
+    {
         try {
             if (!empty($data)) {
                 curl_setopt($this->handle, CURLOPT_POSTFIELDS, $data);
@@ -68,11 +74,13 @@ class CurlRequest implements HttpRequestInterface
         }
     }
 
-    public function getInfo(string $name) {
+    public function getInfo(string $name)
+    {
         return curl_getinfo($this->handle, $name);
     }
 
-    public function close() {
+    public function close()
+    {
         curl_close($this->handle);
     }
 }

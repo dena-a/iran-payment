@@ -40,7 +40,8 @@
         "illuminate/database": "~5.7|~6.0|~7.0",
         "illuminate/http": "~5.7|~6.0|~7.0",
         "guzzlehttp/guzzle": "^6.3",
-        "nesbot/carbon": "*"
+        "nesbot/carbon": "*",
+        "doctrine/dbal": "^2.10"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.1",

@@ -19,10 +19,11 @@ class AlterIranPaymentTransactionsTable extends Migration
 
 	public function down()
 	{
-		if (app('config')->get('app.env') === 'testing') return;
+        Schema::table($this->getTable(), function ($table) {
+            $table->dropColumn('email');
+        });
         Schema::table($this->getTable(), function ($table) {
             $table->dropColumn('full_name');
-            $table->dropColumn('email');
         });
 	}
 }
