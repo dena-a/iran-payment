@@ -1,15 +1,17 @@
 <?php
 
-namespace Dena\IranPayment\Controllers;
+namespace Dena\IranPayment\Gateways\Test;
 
-use Dena\IranPayment\Exceptions\GatewayException;
 use Dena\IranPayment\IranPayment;
+use Dena\IranPayment\Exceptions\GatewayException;
 use Dena\IranPayment\Models\IranPaymentTransaction;
+
 use Illuminate\Http\Request;
 
 class TestGatewayController {
 
-    public function paymentView($code) {
+    public function paymentView($code)
+    {
         $payment = (new IranPayment('test'))->build();
         $transaction = IranPaymentTransaction::where('reference_number', $code)->first();
         $payment->setTransaction($transaction);
@@ -17,7 +19,8 @@ class TestGatewayController {
         return $payment->view();
     }
 
-    public function verify(Request $request, $code) {
+    public function verify(Request $request, $code)
+    {
         $payment = (new IranPayment('test'))->build();
         $payment->findTransaction($code);
 
