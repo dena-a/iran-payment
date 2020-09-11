@@ -6,7 +6,7 @@ return [
     |--------------------------------------------------------------------------
     | Default gateway
     |--------------------------------------------------------------------------
-    | [saman|zarinpal|payir|payping]
+    | [saman|sadad|zarinpal|payir|payping]
     */
     'default' => env('IRANPAYMENT_DEFAULT', 'saman'),
 
@@ -44,6 +44,19 @@ return [
     'saman' => [
         'merchant-id' => env('SAMAN_MERCHANT_ID', 'xxxxxxxx'),
         // 'callback-url' => 'http://example.com/payments/saman/callback',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Sadad gateway
+    |--------------------------------------------------------------------------
+    */
+    'sadad' => [
+        'merchant_id'  => env('SADAD_MERCHANT_ID',  'xxxxxxxx'),
+        'terminal_id'  => env('SADAD_TERMINAL_ID',  'xxxxxxxx'),
+        'terminal_key' => env('SADAD_TERMINAL_KEY', 'xxxxxxxx'),
+        'app_name'     => env('APP_NAME', ''),
+        // 'callback-url' => 'http://example.com/payments/sadad/callback',
     ],
 
     /*

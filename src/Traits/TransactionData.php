@@ -335,8 +335,12 @@ trait TransactionData
 		$this->transaction->save();
 	}
 
-	protected function transactionUpdate(array $params = []): void
+	protected function transactionUpdate(array $params = [], array $gatewayData = []): void
     {
+        $this->transaction->gateway_data = array_merge(
+			$this->transaction->gateway_data ?? [],
+			$gatewayData
+		);
 		$this->transaction->forceFill($params);
 		$this->transaction->save();
 	}

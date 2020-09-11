@@ -140,7 +140,7 @@ class Saman extends AbstractGateway implements GatewayInterface
 
         $this->setGatewayCurrency(self::CURRENCY);
 
-	    $this->setMerchantId(app('config')->get('iranpayment.saman.merchant-id'));
+        $this->setMerchantId(app('config')->get('iranpayment.saman.merchant-id'));
 
         $this->setCallbackUrl($parameters['callback_url']
             ?? app('config')->get('iranpayment.saman.callback-url')
@@ -148,29 +148,29 @@ class Saman extends AbstractGateway implements GatewayInterface
         );
 
         return $this;
-	}
+    }
 
     /**
      * @throws InvalidDataException
      */
     protected function prePurchase(): void
-	{
-	    parent::prePurchase();
+    {
+        parent::prePurchase();
 
         if ($this->preparedAmount() < 100) {
             throw InvalidDataException::invalidAmount();
         }
 
         $this->setResNum($this->getTransactionCode());
-	}
+    }
 
     /**
      * @throws GatewayException
      * @throws SamanException
      */
-	public function purchase(): void
-	{
-		try{
+    public function purchase(): void
+    {
+        try{
             $soap = new SoapClient(self::TOKEN_URL, [
                 'encoding' => 'UTF-8',
                 'trace' => 1,
@@ -179,10 +179,10 @@ class Saman extends AbstractGateway implements GatewayInterface
             ]);
 
             $result = $soap->RequestToken(
-				$this->getMerchantId(),
-				$this->getTransactionCode(),
-				$this->preparedAmount()
-			);
+                $this->getMerchantId(),
+                $this->getTransactionCode(),
+                $this->preparedAmount()
+            );
         } catch(SoapFault|Exception $ex) {
             throw GatewayException::connectionProblem($ex);
         }
@@ -192,7 +192,7 @@ class Saman extends AbstractGateway implements GatewayInterface
         }
 
         $this->setToken($result);
-	}
+    }
 
     protected function postPurchase(): void
     {
@@ -234,59 +234,62 @@ class Saman extends AbstractGateway implements GatewayInterface
     /**
      * @throws IranPaymentException
      */
-	public function preVerify(): void
-	{
-	    parent::preVerify();
+    public function preVerify(): void
+    {
+        parent::preVerify();
 
-		if ($this->request['State'] ?? null !== 'OK' || $this->request['StateCode'] ?? null !== '0') {
-			switch ($this->request['StateCode']) {
-				case '-1':
-					throw SamanException::error(-101);
-				case '51':
-					throw SamanException::error(51);
-				default:
-					throw SamanException::error(-100);
-			}
-		}
+        if (
+            (isset($this->request['State']) && $this->request['State'] !== 'OK') ||
+            (isset($this->request['StateCode']) && $this->request['StateCode'] !== '0')
+        ) {
+            switch ($this->request['StateCode']) {
+                case '-1':
+                    throw SamanException::error(-101);
+                case '51':
+                    throw SamanException::error(51);
+                default:
+                    throw SamanException::error(-100);
+            }
+        }
 
-		if (isset($this->request['MID']) && $this->request['MID'] !== $this->getMerchantId()) {
-			throw SamanException::error(-4);
-		}
+        if (isset($this->request['MID']) && $this->request['MID'] !== $this->getMerchantId()) {
+            throw SamanException::error(-4);
+        }
 
-		$this->transactionUpdate([
-			'card_number' => $this->request['SecurePan'] ?? null,
-			'tracking_code' => $this->request['TRACENO'] ?? null,
-			'reference_number' => $this->request['RefNum'] ?? null,
-		]);
-	}
+        $this->transactionUpdate([
+            'card_number' => $this->request['SecurePan'] ?? null,
+            'tracking_code' => $this->request['TRACENO'] ?? null,
+            'reference_number' => $this->request['RefNum'] ?? null,
+        ]);
+    }
 
     /**
      * @throws GatewayException
      */
-	public function verify(): void
-	{
-		try{
-			$soap = new SoapClient(self::VERIFY_URL, [
+    public function verify(): void
+    {
+        try{
+            $soap = new SoapClient(self::VERIFY_URL, [
                 'encoding' => 'UTF-8',
                 'trace' => 1,
                 'exceptions' => 1,
                 'connection_timeout' => $this->getGatewayRequestOptions()['connection_timeout'] ?? 60,
-			]);
+            ]);
 
-			$result = $soap->verifyTransaction(
-				$this->getReferenceNumber(),
-				$this->getMerchantId()
-			);
+            $result = $soap->verifyTransaction(
+                $this->getReferenceNumber(),
+                $this->getMerchantId()
+            );
         } catch(SoapFault|Exception $ex) {
             throw GatewayException::connectionProblem($ex);
         }
 
-		if ($result <= 0) {
-			throw SamanException::error($result);
-		}
+        if ($result <= 0) {
+            throw SamanException::error($result);
+        }
 
-		if ($result != $this->preparedAmount()) {
-			throw SamanException::error(-102);
-		}
-	}
+        if ($result != $this->preparedAmount()) {
+            throw SamanException::error(-102);
+        }
+    }
 }
