@@ -337,7 +337,6 @@ trait TransactionData
 
 	protected function transactionUpdate(array $params = [], array $gatewayData = []): void
     {
-		$this->transaction->makeVisible('gateway_data');
         $this->transaction->gateway_data = array_merge(
 			$this->transaction->gateway_data ?? [],
 			$gatewayData

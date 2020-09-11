@@ -457,6 +457,8 @@ class Sadad extends AbstractGateway implements GatewayInterface
         $this->transactionUpdate(
             [],
             [
+                'merchant_id' => $this->getMerchantId(),
+                'terminal_id' => $this->getTerminalId(),
                 'token' => $this->getToken(),
                 'app_name' => $this->getAppName(),
                 'local_date_time' => $this->getLocalDateTime(),
@@ -561,6 +563,8 @@ class Sadad extends AbstractGateway implements GatewayInterface
                 'reference_number' => $this->getRetrivalReferenceNumber(),
             ],
             [
+                'system_trace_number' => $this->getSystemTraceNumber(),
+                'retrival_reference_number' => $this->getRetrivalReferenceNumber(),
                 'verify_description' => $this->getResponseDescription(),
             ]
         );
