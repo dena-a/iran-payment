@@ -526,7 +526,7 @@ class Sadad extends AbstractGateway implements GatewayInterface
         $token = $this->getToken();
 
         $data = [
-            'Token'	=> $token,
+            'Token' => $token,
             'SignData' => $this->signData($token),
         ];
 
