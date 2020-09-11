@@ -3,12 +3,12 @@
 namespace Dena\IranPayment\Gateways\Sadad;
 
 use Dena\IranPayment\Exceptions\GatewayException;
+use Dena\IranPayment\Exceptions\TransactionFailedException;
 
 class SadadException extends GatewayException
 {
     public static array $errors = [
         -1      => 'پارامترهای ارسالی صحیح نیست و يا تراکنش در سیستم وجود ندارد',
-        0       => 'تراکنش موفق',
         3 		=> 'پذيرنده کارت فعال نیست لطفا با بخش امورپذيرندگان, تماس حاصل فرمائید.',
         23 		=> 'پذيرنده کارت نامعتبر است لطفا با بخش امورذيرندگان, تماس حاصل فرمائید.',
         58 		=> 'انجام تراکنش مربوطه توسط پايانه ی انجام دهنده مجاز نمی باشد.',
@@ -56,14 +56,29 @@ class SadadException extends GatewayException
         1101 	=> 'مبلغ تراکنش نامعتبر است',
         1103 	=> 'توکن ارسالی نامعتبر است',
         1104 	=> 'اطلاعات تسهیم صحیح نیست',
-        1105    => 'مهلت زمانی به پايان رسیده است'
+        1105    => 'تراکنش بازگشت داده شده است (مهلت زمانی به پايان رسیده است)',
     ];
 
-    public static function error(int $error_code, string $desc = null)
+    /**
+     * @param int $error_code
+     * @param string|null $description
+     * @return SadadException
+     * @throws TransactionFailedException
+     */
+    public static function error(int $error_code, string $description = null)
     {
-        if ($error_code == -1 && !empty($desc)) {
-            return new self($desc, $error_code);
+        if (!isset(self::$errors[$error_code])) {
+            return self::unknownResponse(compact('error_code', 'description'));
         }
-        return new self(self::$errors[$error_code] ?? self::$errors[-100], $error_code);
+
+        if (in_array($error_code, [1002, 1105])) {
+            throw new TransactionFailedException(self::$errors[$error_code], $error_code);
+        }
+
+        if ($error_code == -1 && !empty($description)) {
+            return new self($description, $error_code);
+        }
+
+        return new self(self::$errors[$error_code], $error_code);
     }
 }

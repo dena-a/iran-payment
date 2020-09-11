@@ -15,30 +15,31 @@ class CurlRequest implements HttpRequestInterface
         $this->handle = curl_init($url);
         curl_setopt($this->handle, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($this->handle, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt(
-            $this->handle, CURLOPT_TIMEOUT,
-            app('config')->get('iranpayment.timeout', $this->timeout)
-        );
-        curl_setopt(
-            $this->handle,
-            CURLOPT_CONNECTTIMEOUT,
-            app('config')->get('iranpayment.connection_timeout', $this->connectionTimeout)
-        );
-        curl_setopt($this->handle, CURLOPT_CUSTOMREQUEST, strtoupper($method));  
+        curl_setopt($this->handle, CURLOPT_CUSTOMREQUEST, strtoupper($method));
         curl_setopt($this->handle, CURLOPT_RETURNTRANSFER, true);
+
+        $timeout = app('config')->get('iranpayment.timeout');
+        if ($timeout !== null) {
+            $this->setTimeout($timeout);
+        }
+
+        $connectionTimeout = app('config')->get('iranpayment.connection_timeout');
+        if ($connectionTimeout !== null) {
+            $this->setConnectionTimeout($connectionTimeout);
+        }
     }
 
     public function setTimeout(int $timeout): self
     {
         $this->timeout = $timeout;
-        
+
         return $this;
     }
 
     public function setConnectionTimeout(int $connection_timeout): self
     {
         $this->connectionTimeout = $connection_timeout;
-        
+
         return $this;
     }
 
@@ -55,21 +56,28 @@ class CurlRequest implements HttpRequestInterface
             if (!empty($data)) {
                 curl_setopt($this->handle, CURLOPT_POSTFIELDS, $data);
                 curl_setopt(
-                    $this->handle, 
+                    $this->handle,
                     CURLOPT_HTTPHEADER,
-                    ['Content-Type: application/json', 'Content-Length: '.strlen($data)]
+                    ['Content-Type: application/json', 'Content-Length: ' . strlen($data)]
                 );
             }
+
+            curl_setopt($this->handle, CURLOPT_TIMEOUT, $this->timeout);
+            curl_setopt($this->handle, CURLOPT_CONNECTTIMEOUT, $this->connectionTimeout);
+
             $result = curl_exec($this->handle);
             $ch_error = curl_error($this->handle);
 
-			if ($ch_error) {
+            if ($ch_error) {
                 throw GatewayException::connectionProblem(new Exception($ch_error));
             }
+
             $this->close();
-            
+
             return $result;
-        } catch(Exception $ex) {
+        } catch (GatewayException $ex) {
+            throw $ex;
+        } catch (Exception $ex) {
             throw GatewayException::connectionProblem($ex);
         }
     }

@@ -7,23 +7,23 @@ use Dena\IranPayment\Traits\IranPaymentDatabase;
 
 class AlterIranPaymentTransactionsTable extends Migration
 {
-	use IranPaymentDatabase;
+    use IranPaymentDatabase;
 
-	public function up()
-	{
-		Schema::table($this->getTable(), function (Blueprint $table) {
+    public function up()
+    {
+        Schema::table($this->getTable(), function (Blueprint $table) {
             $table->string('full_name')->nullable()->after('card_number');
             $table->string('email')->nullable()->after('full_name');
-		});
-	}
+        });
+    }
 
-	public function down()
-	{
+    public function down()
+    {
         Schema::table($this->getTable(), function ($table) {
             $table->dropColumn('email');
         });
         Schema::table($this->getTable(), function ($table) {
             $table->dropColumn('full_name');
         });
-	}
+    }
 }

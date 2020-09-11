@@ -28,21 +28,14 @@ class IranpaymentSadadGatewayTest extends TestCase
      */
     protected function getEnvironmentSetUp($app)
     {
-        $app['config']->set('database.default', 'testing');
-        $app['config']->set('app.env', 'testing');
-
-        $app['config']->set(
-            'iranpayment.sadad.merchant_id',
-            app('config')->get('iranpayment.sadad.merchant_id', 1)
-        );
-        $app['config']->set(
-            'iranpayment.sadad.terminal_id',
-            app('config')->get('iranpayment.sadad.terminal_id', "1")
-        );
-        $app['config']->set(
-            'iranpayment.sadad.terminal_key',
-            app('config')->get('iranpayment.sadad.terminal_key', "1")
-        );
+        $app['config']->set([
+            'database.default' => 'testing',
+            'app.env' => 'testing',
+            'iranpayment.sadad.merchant_id' => app('config')->get('iranpayment.sadad.merchant_id', 1),
+            'iranpayment.sadad.terminal_id' => app('config')->get('iranpayment.sadad.terminal_id', "1"),
+            'iranpayment.sadad.terminal_key' => app('config')->get('iranpayment.sadad.terminal_key', "1"),
+            'iranpayment.sadad.app_name' => app('config')->get('iranpayment.sadad.app_name', "TestApp"),
+        ]);
     }
 
     protected function getPackageProviders($app)
@@ -136,7 +129,7 @@ class IranpaymentSadadGatewayTest extends TestCase
             $this->assertInstanceOf(SadadException::class, $e);
             $this->assertEquals(SadadException::error(1006)->getMessage(), $e->getMessage());
         }
-        
+
         $this->assertEquals(IranPaymentTransaction::T_FAILED, $payment->getTransaction()->status);
     }
 }
