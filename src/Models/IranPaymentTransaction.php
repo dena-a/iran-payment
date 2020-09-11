@@ -60,7 +60,7 @@ class IranPaymentTransaction extends Model
      * @var array
      */
 	protected $hidden	= [
-		//
+		'gateway_data'
 	];
 
 	/**
@@ -78,7 +78,8 @@ class IranPaymentTransaction extends Model
      * @var array
      */
     protected $casts = [
-        'extra' => 'array',
+		'extra' => 'array',
+		'gateway_data' => 'array'
     ];
 
 	/**

@@ -48,7 +48,7 @@ class IranpaymentSadadGatewayTest extends TestCase
     public function testSuccess()
     {
         $sadad = Mockery::mock(Sadad::class)->makePartial();
-        // $sadad->shouldReceive('getToken')->andReturn(1);
+        $sadad->shouldReceive('getToken')->andReturn(1);
         $sadad->shouldAllowMockingProtectedMethods();
         $purchaseResponse = (object) [
             'Token' => 1,

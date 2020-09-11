@@ -421,6 +421,10 @@ class Sadad extends AbstractGateway implements GatewayInterface
         $orderId = $this->getOrderId();
         $preparedAmount = $this->preparedAmount();
         $signData = $this->signData("{$terminalId};{$orderId};{$preparedAmount}");
+        $dateTime = $this->getLocalDateTime();
+        if ($dateTime) {
+            $dateTime = $dateTime->format(Carbon::DEFAULT_TO_STRING_FORMAT);
+        }
 
         $data = [
             'TerminalId' => $terminalId,
@@ -428,7 +432,7 @@ class Sadad extends AbstractGateway implements GatewayInterface
             'Amount' => $preparedAmount,
             'SignData' => $signData,
             'ReturnUrl' => $this->getCallbackUrl(),
-            'LocalDateTime' => $this->getLocalDateTime()->format(Carbon::DEFAULT_TO_STRING_FORMAT),
+            'LocalDateTime' => $dateTime,
             'OrderId' => $orderId,
             'UserId' => $this->getMobile(),
             'ApplicationName' => $this->getAppName(),
@@ -453,12 +457,10 @@ class Sadad extends AbstractGateway implements GatewayInterface
         $this->transactionUpdate(
             [],
             [
-                'gateway_data' => [
-                    'token' => $this->getToken(),
-                    'app_name' => $this->getAppName(),
-                    'local_date_time' => $this->getLocalDateTime(),
-                    'purchase_description' => $this->getResponseDescription(),
-                ],
+                'token' => $this->getToken(),
+                'app_name' => $this->getAppName(),
+                'local_date_time' => $this->getLocalDateTime(),
+                'purchase_description' => $this->getResponseDescription(),
             ]
         );
 
@@ -501,7 +503,7 @@ class Sadad extends AbstractGateway implements GatewayInterface
             throw SadadException::error($this->request['ResCode'], $this->request['Description']);
         }
 
-        $token = $this->getTransaction()->extra['gateway_data']['token'] ?? null;
+        $token = $this->getTransaction()->gateway_data['token'] ?? null;
         if (!isset($token)) {
             throw SadadException::error(-1);
         }
@@ -527,7 +529,6 @@ class Sadad extends AbstractGateway implements GatewayInterface
         ];
 
         $result = $this->httpRequest(self::VERIFY_URL, $data);
-
         if (
             !isset(
                 $result->Amount,
