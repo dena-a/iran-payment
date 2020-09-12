@@ -52,9 +52,9 @@ class IranpaymentSamanGatewayTest extends TestCase
 
         $product = (new ProductModel(['title' => 'product']));
         $product->save();
-        $payment = (new IranPayment($gateway));
+        $payment = IranPayment::create($gateway);
 
-        $payment = $payment->build()
+        $payment = $payment
             ->setAmount(10000)
             ->setCallbackUrl(url('/test'))
             ->setPayable($product);

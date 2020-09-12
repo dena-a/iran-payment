@@ -55,9 +55,9 @@ class IranpaymentPaypingGatewayTest extends TestCase
 
         $product = (new ProductModel(['title' => 'product']));
         $product->save();
-        $payment = (new IranPayment($gateway));
+        $payment = IranPayment::create($gateway);
 
-        $payment = $payment->build()
+        $payment = $payment
             ->setAmount(10000)
             ->setCallbackUrl(url('/test'))
             ->setPayable($product);
@@ -73,7 +73,7 @@ class IranpaymentPaypingGatewayTest extends TestCase
         $this->assertEquals("https://api.payping.ir/v2/pay/gotoipg/1", $payment->purchaseUri());
 
         $tr = $payment->getTransaction();
-        $payment = (new IranPayment($gateway))->build();
+        $payment = IranPayment::create($gateway);
         $payment->findTransaction($tr->code);
         $payment->confirm();
         $transaction = $payment->getTransaction();

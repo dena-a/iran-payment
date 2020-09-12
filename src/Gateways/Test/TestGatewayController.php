@@ -12,7 +12,7 @@ class TestGatewayController {
 
     public function paymentView($code)
     {
-        $payment = (new IranPayment('test'))->build();
+        $payment = IranPayment::create('test');
         $transaction = IranPaymentTransaction::where('reference_number', $code)->first();
         $payment->setTransaction($transaction);
 
@@ -21,7 +21,7 @@ class TestGatewayController {
 
     public function verify(Request $request, $code)
     {
-        $payment = (new IranPayment('test'))->build();
+        $payment = IranPayment::create('test');
         $payment->findTransaction($code);
 
         $transaction = $payment->getTransaction();
