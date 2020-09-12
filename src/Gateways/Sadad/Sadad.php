@@ -431,7 +431,7 @@ class Sadad extends AbstractGateway implements GatewayInterface
             'MerchantId' => $this->getMerchantId(),
             'Amount' => $preparedAmount,
             'SignData' => $signData,
-            'ReturnUrl' => $this->getCallbackUrl(),
+            'ReturnUrl' => $this->preparedCallbackUrl(),
             'LocalDateTime' => $dateTime,
             'OrderId' => $orderId,
             'UserId' => $this->getMobile(),
@@ -514,7 +514,7 @@ class Sadad extends AbstractGateway implements GatewayInterface
         }
 
         $this->setToken($token);
-        $this->setOrderId($this->getTransactionCode());
+        $this->setOrderId($this->getTransaction()->id);
     }
 
     /**
