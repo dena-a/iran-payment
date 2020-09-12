@@ -325,7 +325,7 @@ class PayPing extends AbstractGateway implements GatewayInterface
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_TIMEOUT, $this->getGatewayRequestOptions()['timeout'] ?? 30);
             curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->getGatewayRequestOptions()['connection_timeout'] ?? 60);
-			$result	= curl_exec($ch);
+			$response = curl_exec($ch);
 			$http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 			$ch_error = curl_error($ch);
 			curl_close($ch);
@@ -334,7 +334,7 @@ class PayPing extends AbstractGateway implements GatewayInterface
                 throw GatewayException::connectionProblem(new Exception($ch_error));
             }
 
-			$result = json_decode($result);
+			$result = json_decode($response);
 		} catch(Exception $ex) {
             throw GatewayException::connectionProblem($ex);
 		}
@@ -348,7 +348,7 @@ class PayPing extends AbstractGateway implements GatewayInterface
         }
 
 		if(!isset($result->code)) {
-			throw GatewayException::unknownResponse();
+			throw GatewayException::unknownResponse($response);
 		}
 
 		$this->setCode($result->code);

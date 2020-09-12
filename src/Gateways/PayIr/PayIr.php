@@ -249,15 +249,15 @@ class PayIr extends AbstractGateway implements GatewayInterface
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_TIMEOUT, $this->getGatewayRequestOptions()['timeout'] ?? 30);
             curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->getGatewayRequestOptions()['connection_timeout'] ?? 60);
-			$result	= curl_exec($ch);
+			$response = curl_exec($ch);
 			$ch_error = curl_error($ch);
 			curl_close($ch);
 
 			if ($ch_error) {
 				throw GatewayException::connectionProblem(new Exception($ch_error));
-			}
-
-			$result = json_decode($result);
+            }
+            
+			$result = json_decode($response);
 		} catch(Exception $ex) {
             throw GatewayException::connectionProblem($ex);
 		}
@@ -267,7 +267,7 @@ class PayIr extends AbstractGateway implements GatewayInterface
 				throw PayIrException::error($result->errorCode);
 			}
 
-			throw GatewayException::unknownResponse($result);
+			throw GatewayException::unknownResponse($response);
 		}
 
 		$this->setToken($result->token);
@@ -341,7 +341,7 @@ class PayIr extends AbstractGateway implements GatewayInterface
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_TIMEOUT, $this->getGatewayRequestOptions()['timeout'] ?? 30);
             curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->getGatewayRequestOptions()['connection_timeout'] ?? 60);
-			$result	= curl_exec($ch);
+			$response = curl_exec($ch);
 			$ch_error = curl_error($ch);
 			curl_close($ch);
 
@@ -359,7 +359,7 @@ class PayIr extends AbstractGateway implements GatewayInterface
                 throw PayIrException::error($result->errorCode);
             }
 
-            throw GatewayException::unknownResponse($result);
+            throw GatewayException::unknownResponse($response);
         }
 
 		if (intval($result->amount) !== $this->preparedAmount()) {

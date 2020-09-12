@@ -54,9 +54,6 @@ class TestGateway extends AbstractGateway implements GatewayInterface
      */
 	public function redirect()
     {
-        $this->transactionUpdate([
-            'transaction_code'	=> uniqid(),
-        ]);
         $this->addExtra($this->getCallbackUrl(), 'callback_url');
         return view('iranpayment::pages.test')->with([
             'transaction_code' => $this->getTransactionCode(),

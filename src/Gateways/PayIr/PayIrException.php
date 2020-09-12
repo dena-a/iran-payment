@@ -45,7 +45,7 @@ class PayIrException extends GatewayException
     public static function error($error_code)
     {
         if (!isset(self::$errors[$error_code])) {
-            return self::unknownResponse(compact('error_code'));
+            return self::unknownResponse((string) $error_code);
         }
 
         if ($error_code === '-5') {

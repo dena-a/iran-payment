@@ -14,9 +14,13 @@ class GatewayException extends IranPaymentException
         parent::__construct($message, $code, $previous);
     }
 
-    public static function unknownResponse($response = null): self
+    public static function unknownResponse(string $response = null): self
     {
-        return new self('پاسخ ناشناخته!', 500, new Exception(['Unknown Response' => $response]));
+        return new self(
+            'پاسخ ناشناخته!',
+            500,
+            new Exception($response)
+        );
     }
 
     public static function inconsistentResponse(): self
