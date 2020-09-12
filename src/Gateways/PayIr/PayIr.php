@@ -349,7 +349,7 @@ class PayIr extends AbstractGateway implements GatewayInterface
                 throw GatewayException::connectionProblem(new Exception($ch_error));
 			}
 
-			$result = json_decode($result);
+			$result = json_decode($response);
         } catch(Exception $ex) {
             throw GatewayException::connectionProblem($ex);
         }

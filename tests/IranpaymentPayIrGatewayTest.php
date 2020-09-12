@@ -52,9 +52,9 @@ class IranpaymentPayIrGatewayTest extends TestCase
         $gateway->shouldReceive('getPayerCardNumber')->andReturn(1);
         $product = (new ProductModel(['title' => 'product']));
         $product->save();
-        $payment = (new IranPayment($gateway));
+        $payment = IranPayment::create($gateway);
 
-        $payment = $payment->build()
+        $payment = $payment
             ->setAmount(10000)
             ->setCallbackUrl(url('/test'))
             ->setPayable($product);
@@ -70,7 +70,7 @@ class IranpaymentPayIrGatewayTest extends TestCase
         $this->assertEquals("https://pay.ir/pg/1", $payment->purchaseUri());
 
         $tr = $payment->getTransaction();
-        $payment = (new IranPayment($gateway))->build();
+        $payment = IranPayment::create($gateway);
         $payment->findTransaction($tr->code);
         $payment->confirm();
         $transaction = $payment->getTransaction();

@@ -440,12 +440,12 @@ class Sadad extends AbstractGateway implements GatewayInterface
 
         $result = $this->httpRequest(self::SEND_URL, $data);
 
-        if (!isset($result->Token)) {
-            throw GatewayException::unknownResponse(json_encode($result));
-        }
-
         if (isset($result->ResCode) && $result->ResCode != 0) {
             throw SadadException::error($result->ResCode, $result->Description ?? null);
+        }
+
+        if (!isset($result->Token)) {
+            throw GatewayException::unknownResponse(json_encode($result));
         }
 
         $this->setToken($result->Token);
@@ -454,9 +454,8 @@ class Sadad extends AbstractGateway implements GatewayInterface
 
     protected function postPurchase(): void
     {
-        $this->transactionUpdate(
-            [],
-            [
+        $this->fillTransaction([
+            'gateway_data' => [
                 'merchant_id' => $this->getMerchantId(),
                 'terminal_id' => $this->getTerminalId(),
                 'token' => $this->getToken(),
@@ -464,7 +463,7 @@ class Sadad extends AbstractGateway implements GatewayInterface
                 'local_date_time' => $this->getLocalDateTime(),
                 'purchase_description' => $this->getResponseDescription(),
             ]
-        );
+        ]);
 
         parent::postPurchase();
     }
@@ -557,17 +556,15 @@ class Sadad extends AbstractGateway implements GatewayInterface
 
     protected function postVerify(): void
     {
-        $this->transactionUpdate(
-            [
-                'tracking_code' => $this->getSystemTraceNumber(),
-                'reference_number' => $this->getRetrivalReferenceNumber(),
-            ],
-            [
+        $this->fillTransaction([
+            'tracking_code' => $this->getSystemTraceNumber(),
+            'reference_number' => $this->getRetrivalReferenceNumber(),
+            'gateway_data' => [
                 'system_trace_number' => $this->getSystemTraceNumber(),
                 'retrival_reference_number' => $this->getRetrivalReferenceNumber(),
                 'verify_description' => $this->getResponseDescription(),
             ]
-        );
+        ]);
 
         parent::postVerify();
     }

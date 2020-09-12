@@ -40,10 +40,7 @@ class IranpaymentTestGatewayTest extends TestCase
 
     public function testGateway()
     {
-        $payment = (new IranPayment('test'));
-        $this->assertInstanceOf(IranPayment::class, $payment);
-        $this->assertInstanceOf(TestGateway::class, $payment->getGateway());
-        $payment = $payment->build();
+        $payment = IranPayment::create('test');
         $this->assertInstanceOf(TestGateway::class, $payment);
         $payment = $payment->setAmount(1000)
             ->setCallbackUrl(url('/test'))
@@ -59,7 +56,7 @@ class IranpaymentTestGatewayTest extends TestCase
 
         //verify
         $tr = $payment->getTransaction();
-        $payment = (new IranPayment('test'))->build();
+        $payment = IranPayment::create('test');
         $payment->findTransaction($tr->code);
         $payment->confirm();
         $transaction = $payment->getTransaction();
