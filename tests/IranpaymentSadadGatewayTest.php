@@ -66,9 +66,9 @@ class IranpaymentSadadGatewayTest extends TestCase
         // $sadad->shouldReceive('purchase')->andReturn(null);
         // $sadad->shouldReceive('verify')->andReturn(null);
 
-        $payment = (new IranPayment($sadad));
+        $payment = IranPayment::create($sadad);
 
-        $payment = $payment->build()
+        $payment = $payment
             ->setAmount(10000)
             ->setCallbackUrl(url('/test'))
             ->setPayableId(1)
@@ -110,9 +110,9 @@ class IranpaymentSadadGatewayTest extends TestCase
         ];
         $sadad->shouldReceive('httpRequest')->andReturn($purchaseResponse, $verifyResponse);
 
-        $payment = (new IranPayment($sadad));
+        $payment = IranPayment::create($sadad);
 
-        $payment = $payment->build()
+        $payment = $payment
             ->setAmount(10000)
             ->setCallbackUrl(url('/test'))
             ->setPayableId(1)

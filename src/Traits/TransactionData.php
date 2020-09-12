@@ -21,6 +21,20 @@ trait TransactionData
     protected ?IranPaymentTransaction $transaction = null;
 
     /**
+     * Extra variable
+     *
+     * @var array|null
+     */
+    protected ?array $extra = null;
+
+    /**
+     * Fillable data variable
+     *
+     * @var array
+     */
+    protected array $fillableData = [];
+
+    /**
      * Set Transaction  function
      *
      * @param IranPaymentTransaction|Model $transaction
@@ -41,6 +55,29 @@ trait TransactionData
     public function getTransaction(): ?IranPaymentTransaction
     {
         return $this->transaction;
+    }
+
+    /**
+     * Set FillableData function
+     *
+     * @param FillableData $fillableData
+     * @return $this
+     */
+    public function setFillableData(array $fillableData): self
+    {
+        $this->fillableData = $fillableData;
+
+        return $this;
+    }
+
+    /**
+     * get FillableData function
+     *
+     * @return array $fillableData
+     */
+    public function getFillableData(): array
+    {
+        return $this->fillableData;
     }
 
     /**
@@ -147,7 +184,7 @@ trait TransactionData
      */
     public function getExtra()
     {
-        return isset($this->transaction) ? $this->transaction->extra : null;
+        return isset($this->transaction) ? $this->transaction->extra : $this->extra;
     }
 
 
@@ -161,7 +198,7 @@ trait TransactionData
      */
     public function addExtra($val, $key = null): self
     {
-        if (isset($this->transaction)) {
+        if (!empty($this->transaction) && !empty($this->transaction['id'])) {
             $extra = $this->getExtra();
             if(is_null($extra)) {
                 $extra = [];
@@ -172,14 +209,17 @@ trait TransactionData
                 } else {
                     $extra[] = $val;
                 }
-            } else {
-                throw new \Exception('addExtra method only works when extra field is an array');
             }
 
-            if(!empty($this->transaction['id'])) {
-                $this->transactionUpdate(compact('extra'));
+            $this->transactionUpdate(compact('extra'));
+        } else {
+            if (empty($this->extra)) {
+                $this->extra = [];
+            }
+            if(!is_null($key)) {
+                $this->extra[$key] = $val;
             } else {
-                $this->transaction->extra = $extra;
+                $this->extra[] = $val;
             }
         }
 
@@ -287,7 +327,7 @@ trait TransactionData
                 'amount' => $this->getAmount(),
                 'currency' => $this->getCurrency(),
                 'gateway' => $this->getName(),
-                'extra' => is_array($this->getExtra()) ? json_encode($this->getExtra()) : $this->getExtra(),
+                'extra' => $this->getExtra(),
             ],
             $params
         ));
@@ -305,6 +345,26 @@ trait TransactionData
         $transaction->save();
 
         $this->transaction = $transaction;
+    }
+
+    protected function fillTransaction(array $params = []): void
+    {
+        if (!empty($params['gateway_data']) && is_array($params['gateway_data'])) {
+            $this->transaction->gateway_data = array_merge(
+                $this->transaction->gateway_data ?? [],
+                $params['gateway_data']
+            );
+            unset($params['gateway_data']);
+        }
+        if (!empty($params['extra']) && is_array($params['extra'])) {
+            $this->transaction->extra = array_merge(
+                $this->transaction->extra ?? [],
+                $params['extra']
+            );
+            unset($params['extra']);
+        }
+        
+        $this->transaction->fill($params);
     }
 
     protected function transactionSucceed(array $params = []): void

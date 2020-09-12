@@ -12,7 +12,7 @@ class TestGateway extends AbstractGateway implements GatewayInterface
 {
     public function getName(): string
     {
-        return 'test-gateway';
+        return 'test';
     }
 
     public function initialize(array $parameters = []): self
