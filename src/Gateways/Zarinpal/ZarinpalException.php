@@ -34,7 +34,7 @@ class ZarinpalException extends GatewayException
     public static function error($error_code): self
     {
         if (!isset(self::$errors[$error_code])) {
-            return self::unknownResponse(compact('error_code'));
+            return self::unknownResponse((string) $error_code);
         }
 
         if (in_array($error_code, [-22, -33])) {

@@ -50,7 +50,7 @@ class PayPingException extends GatewayException
     public static function httpError($http_code)
     {
         if (!isset(self::$http_code_errors[$http_code])) {
-            return self::unknownResponse(compact('http_code'));
+            return self::unknownResponse((string) $http_code);
         }
 
         return new self(self::$http_code_errors[$http_code], $http_code);
@@ -64,7 +64,7 @@ class PayPingException extends GatewayException
     public static function error($error_code)
     {
         if (!isset(self::$errors[$error_code])) {
-            return self::unknownResponse(compact('error_code'));
+            return self::unknownResponse((string) $error_code);
         }
 
         if (in_array($error_code, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 26, 27, 39, 44, 46, 47, 48])) {

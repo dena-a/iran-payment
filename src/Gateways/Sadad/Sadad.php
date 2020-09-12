@@ -441,7 +441,7 @@ class Sadad extends AbstractGateway implements GatewayInterface
         $result = $this->httpRequest(self::SEND_URL, $data);
 
         if (!isset($result->Token)) {
-            throw GatewayException::unknownResponse($result);
+            throw GatewayException::unknownResponse(json_encode($result));
         }
 
         if (isset($result->ResCode) && $result->ResCode != 0) {
@@ -539,7 +539,7 @@ class Sadad extends AbstractGateway implements GatewayInterface
                 $result->ResCode
             )
         ) {
-            throw GatewayException::unknownResponse($result);
+            throw GatewayException::unknownResponse(json_encode($result));
         }
 
         if ($result->ResCode != 0) {

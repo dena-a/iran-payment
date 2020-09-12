@@ -68,7 +68,7 @@ class SadadException extends GatewayException
     public static function error(int $error_code, string $description = null)
     {
         if (!isset(self::$errors[$error_code])) {
-            return self::unknownResponse(compact('error_code', 'description'));
+            return self::unknownResponse($error_code.'-'.$description);
         }
 
         if (in_array($error_code, [1002, 1105])) {

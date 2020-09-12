@@ -258,7 +258,7 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
 		}
 
         if (!isset($result->Status)) {
-            throw GatewayException::unknownResponse($result);
+            throw GatewayException::unknownResponse(json_encode($result));
         }
 
         if ($result->Status !== 100) {
@@ -266,7 +266,7 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
         }
 
         if (!isset($result->Authority)) {
-            throw GatewayException::unknownResponse($result);
+            throw GatewayException::unknownResponse(json_encode($result));
         }
 
         $this->setAuthority($result->Authority);
@@ -366,7 +366,7 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
         }
 
         if (!isset($result->Status)) {
-            throw GatewayException::unknownResponse($result);
+            throw GatewayException::unknownResponse(json_encode($result));
         }
 
         if ($result->Status !== 100 || $result->Status !== 101) {
@@ -374,7 +374,7 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
         }
 
         if (!isset($result->RefID)) {
-            throw GatewayException::unknownResponse($result);
+            throw GatewayException::unknownResponse(json_encode($result));
         }
 
         $this->setRefId($result->RefID);
