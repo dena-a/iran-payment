@@ -351,14 +351,14 @@ trait TransactionData
     {
         if (!empty($params['gateway_data']) && is_array($params['gateway_data'])) {
             $this->transaction->gateway_data = array_merge(
-                $this->transaction->gateway_data,
+                $this->transaction->gateway_data ?? [],
                 $params['gateway_data']
             );
             unset($params['gateway_data']);
         }
         if (!empty($params['extra']) && is_array($params['extra'])) {
             $this->transaction->extra = array_merge(
-                $this->transaction->extra,
+                $this->transaction->extra ?? [],
                 $params['extra']
             );
             unset($params['extra']);
