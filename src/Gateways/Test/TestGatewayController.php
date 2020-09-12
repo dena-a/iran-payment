@@ -3,7 +3,6 @@
 namespace Dena\IranPayment\Gateways\Test;
 
 use Dena\IranPayment\IranPayment;
-use Dena\IranPayment\Exceptions\GatewayException;
 use Dena\IranPayment\Models\IranPaymentTransaction;
 
 use Illuminate\Http\Request;
@@ -21,22 +20,13 @@ class TestGatewayController {
 
     public function verify(Request $request, $code)
     {
-        $payment = (new IranPayment('test'))->build();
-        $payment->findTransaction($code);
-
-        $transaction = $payment->getTransaction();
-
-        if (!$transaction) {
-            throw new GatewayException('تراکنش پیدا نشد.');
-        }
-
-        $extra = $payment->getExtra();
+        $transaction = IranPaymentTransaction::where('code', $code)->first();
 
         $queryParams = http_build_query([
             app('config')->get('iranpayment.transaction_query_param') => $code
         ]);
 
-        $callback = $payment->getCallbackUrl();
+        $callback = $transaction->extra['callback_url'];;
 
         $question_mark = strpos($callback, '?');
         if($question_mark) {
