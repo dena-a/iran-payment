@@ -408,7 +408,7 @@ class Sadad extends AbstractGateway implements GatewayInterface
         }
 
         if (empty($this->order_id)) {
-            $this->setOrderId($this->getTransactionCode());
+            $this->setOrderId($this->getTransaction()->id);
         }
     }
 
@@ -514,7 +514,6 @@ class Sadad extends AbstractGateway implements GatewayInterface
         }
 
         $this->setToken($token);
-        $this->setOrderId($this->getTransaction()->id);
     }
 
     /**
