@@ -1,5 +1,8 @@
 # IranPayment
-**a Laravel package to handle Internet Payment Gateways for Iran Banking System**
+
+**a Laravel package to handle Internet Payment Gateways (IPGs) for Iran Banking System**
+
+Accepting [Sadad (Melli)](https://sadadpsp.ir/), [Pay.ir](https://pay.ir/), [Zarinpal](https://zarinpal.com/) and more iranian payment gateways. Just use the IranPayment to receive payments directly on your website.
 
 [![Latest Stable Version](https://poser.pugx.org/dena-a/iran-payment/v)](https://packagist.org/packages/dena-a/iran-payment)
 [![Total Downloads](https://poser.pugx.org/dena-a/iran-payment/downloads)](https://packagist.org/packages/dena-a/iran-payment)
@@ -8,109 +11,7 @@
 
 <p align="center"><a href="https://github.com/dena-a/iran-payment" target="_blank"><img width="650" src="https://raw.githubusercontent.com/dena-a/iran-payment/master/images/screen.png"></a></p>
 
-## Installation
-
-You can install the package via composer:
-``` bash
-$ composer require dena-a/iran-payment
-```
-
-This service provider must be installed.
-```php
-// config/app.php
-'providers' => [
-    ...
-    Dena\IranPayment\IranPaymentServiceProvider::class
-];
-```
-
-Add aliases:
-```php
-// config/app.php
-'aliases' => [
-    ...
-    'IranPayment' => Dena\IranPayment\IranPayment::class,
-];
-```
-
-Publish the config-file and migration with:
-```bash
-php artisan vendor:publish --provider="Dena\IranPayment\IranPaymentServiceProvider"
-```
-After the migration has been published you can create the transactions-tables by
-running the migrations:
-```bash
-php artisan migrate
-```
-
-## Usage
-
-### New Payment:
-```php
-//default gateway
-$payment = new IranPayment();
-// OR one of ['zarinpal', 'saman', 'payir']
-$payment = new IranPayment('zarinpal');
-// OR test gateway (Would not work on production environment)
-$payment = new IranPayment('test');
-
-$payment->build()
-        ->setUserId($user->id)
-        ->setAmount($data['amount'])
-        ->setCallbackUrl(route('bank.callback'))
-        ->ready();
-
-return $payment->redirectView();
-```
-
-### Verify Payment:
-```php
-$payment = new IranPayment();
-$payment->build()->verify($transaction);
-$trackingCode = $payment->getTrackingCode();
-$statusText = $payment->getTransactionStatusText();
-```
-### Extends
-```php
-use Dena\IranPayment\Gateways\AbstractGateway;
-use Dena\IranPayment\Gateways\GatewayInterface;
-
-class NewGateway extends AbstractGateway implements GatewayInterface {
-    
-    public function getName() {
-        return 'new-gateway';
-    }
-    
-    public function payRequest() {
-        $code = rand(1, 10000);
-        $this->setReferenceNumber($code);
-        $this->transactionPending([
-            'reference_number'	=> intval($code)
-        ]);
-    }
-    
-    public function verifyRequest() {
-        $this->transactionVerifyPending();
-        $code = rand(1, 10000);
-        $this->setTrackingCode($code);
-		$this->transactionSucceed(['tracking_code' => $code]);
-    }
-    
-    public function redirectView() {
-        return view('welcome')->with([
-            'transaction' => $this->getTransaction()
-        ]);
-    }
-    
-    public function payBack() {
-    }
-}
-
-$payment = new IranPayment();
-$payment->extends(NewGateway::class);
-```
-
-## Payment Gateways
+## Gateways
 
 Gateway | Available | Tested | Last Update
 --- | --- | --- | ---
@@ -124,7 +25,136 @@ Gateway | Available | Tested | Last Update
 [Pasargad (Pep)](https://www.pep.co.ir/) | - | - | -
 [Zibal](https://zibal.ir/) | - | - | -
 
-## Upgrade from v1 to v2
+## Requirements
+
+* PHP >= 7.4
+* PHP ext-curl
+* PHP ext-json
+* PHP ext-soap
+* [Laravel](https://www.laravel.com) (or [Lumen](https://lumen.laravel.com)) >= 5.7
+
+## Installation
+1. Add the package to your composer file via the `composer require` command:
+   
+   ```bash
+   $ composer require dena-a/iran-payment:^2.0
+   ```
+   
+   Or add it to `composer.json` manually:
+   
+   ```json
+   "require": {
+       "dena-a/iran-payment": "^2.0"
+   }
+   ```
+
+2. IranPayment's service providers will be automatically registered using Laravel's auto-discovery feature.
+
+    > Note: For Lumen you have to add the Mollie facade and service provider manually to: `bootstrap/app.php` :
+
+    ```php
+   $app->register( Dena\IranPayment\IranPaymentServiceProvider::class);
+    ```
+
+3. Publish the config-file and migration with:
+    ```bash
+    php artisan vendor:publish --provider="Dena\IranPayment\IranPaymentServiceProvider"
+    ```
+4. After the migration has been published you can create the transactions-tables by running the migrations:
+    ```bash
+    php artisan migrate
+    ```
+
+## Usage
+
+### New Payment:
+```php
+use Dena\IranPayment\IranPayment;
+
+// Default gateway
+$payment = IranPayment::create();
+// Select one of available gateways
+$payment = IranPayment::create('sadad');
+// Test gateway (Would not work on production environment)
+$payment = IranPayment::create('test');
+// Or use your own gateway
+$payment = IranPayment::create(NewGateway::class);
+
+$payment->setUserId($user->id)
+        ->setAmount($data['amount'])
+        ->setCallbackUrl(route('bank.callback'))
+        ->ready();
+
+return $payment->redirect();
+```
+
+### Verify Payment:
+
+```php
+use Dena\IranPayment\IranPayment;
+use Dena\IranPayment\Exceptions\IranPaymentException;
+
+try {
+    $payment = IranPayment::detect()->confirm();
+    $trackingCode = $payment->getTrackingCode();
+    $statusText = $payment->getTransactionStatusText();
+} catch (Dena\IranPayment\Exceptions\IranPaymentException $ex) {
+    throw $ex;
+}
+```
+### Create your own payment gateway class
+```php
+use Dena\IranPayment\Gateways\AbstractGateway;
+use Dena\IranPayment\Gateways\GatewayInterface;
+
+class NewGateway extends AbstractGateway implements GatewayInterface
+{
+    public function getName(): string
+    {
+        return 'new-gateway';
+    }
+
+    public function initialize(array $parameters = []): self
+    {
+        parent::initialize($parameters);
+    
+        return $this;
+    }
+    
+    public function purchase(): void
+    {
+        // Send Purchase Request
+
+        $reference_number = 'xxxx';
+
+        $this->transactionUpdate([
+            'reference_number' => $reference_number,
+        ]);
+    }
+
+    
+    public function purchaseUri(): string
+    {
+        return 'http://new-gateway.com/token/xxxx';
+    }
+    
+    public function verify(): void
+    {
+        $this->transactionVerifyPending();
+            
+        // Send Payment Verify Request
+
+        $tracking_code = 'yyyy';
+
+        $this->transactionSucceed([
+            'tracking_code' => $tracking_code
+        ]);
+    }
+}
+```
+
+
+## Upgrading from v1.x
 
 TODO:
 
