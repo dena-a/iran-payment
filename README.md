@@ -1,4 +1,9 @@
-# IranPayment
+<p align="center">
+  <img src="https://raw.githubusercontent.com/dena-a/iran-payment/master/images/logo.png" width="128" height="128"/>
+</p>
+<h1 align="center">IranPayment for Laravel</h1>
+
+<p align="center"><a href="https://github.com/dena-a/iran-payment" target="_blank"><img width="650" src="https://raw.githubusercontent.com/dena-a/iran-payment/master/images/screen.png"></a></p>
 
 **a Laravel package to handle Internet Payment Gateways (IPGs) for Iran Banking System**
 
@@ -8,8 +13,6 @@ Accepting [Sadad (Melli)](https://sadadpsp.ir/), [Pay.ir](https://pay.ir/), [Zar
 [![Total Downloads](https://poser.pugx.org/dena-a/iran-payment/downloads)](https://packagist.org/packages/dena-a/iran-payment)
 [![Latest Unstable Version](https://poser.pugx.org/dena-a/iran-payment/v/unstable)](https://packagist.org/packages/dena-a/iran-payment)
 [![License](https://poser.pugx.org/dena-a/iran-payment/license)](https://packagist.org/packages/dena-a/iran-payment)
-
-<p align="center"><a href="https://github.com/dena-a/iran-payment" target="_blank"><img width="650" src="https://raw.githubusercontent.com/dena-a/iran-payment/master/images/screen.png"></a></p>
 
 ## Gateways
 
