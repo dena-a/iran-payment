@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/dena-a/iran-payment/master/images/logo.png" width="128" height="128"/>
+  <img src="https://raw.githubusercontent.com/dena-a/iran-payment/master/images/logo.png" height="128"/>
 </p>
 <h1 align="center">IranPayment for Laravel</h1>
 
