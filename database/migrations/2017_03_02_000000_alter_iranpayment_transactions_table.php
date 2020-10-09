@@ -14,6 +14,7 @@ class AlterIranPaymentTransactionsTable extends Migration
         Schema::table($this->getTable(), function (Blueprint $table) {
             $table->string('full_name')->nullable()->after('card_number');
             $table->string('email')->nullable()->after('full_name');
+            $table->json('gateway_data')->nullable()->after('extra');
         });
     }
 
@@ -24,6 +25,9 @@ class AlterIranPaymentTransactionsTable extends Migration
         });
         Schema::table($this->getTable(), function ($table) {
             $table->dropColumn('full_name');
+        });
+        Schema::table($this->getTable(), function ($table) {
+            $table->dropColumn('gateway_data');
         });
     }
 }
