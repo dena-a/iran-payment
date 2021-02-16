@@ -16,17 +16,18 @@ Accepting [Sadad (Melli)](https://sadadpsp.ir/), [Pay.ir](https://pay.ir/), [Zar
 
 ## Gateways
 
-Gateway | Available | Tested | Last Update
---- | --- | --- | ---
-[Sadad (Melli)](https://sadadpsp.ir/) | ✓ | ✓ | 2020/09/10
-[Pay.ir](https://pay.ir/) | ✓ | ✓ | 2020/08/03
-[Zarinpal](https://zarinpal.com/) | ✓ | ✓ | 2020/08/03
-[Payping](https://www.payping.ir/) | ✓ | - | 2020/08/04
-[Saman (Sep)](https://www.sep.ir/) | - | - | -
-[Mellat (Behpardakht)](http://www.behpardakht.com/) | - | - | -
-[Parsian (Pec)](https://www.pec.ir/) | - | - | -
-[Pasargad (Pep)](https://www.pep.co.ir/) | - | - | -
-[Zibal](https://zibal.ir/) | - | - | -
+Gateway | Description  | Available | Tested | Last Update
+--- | --- | --- | --- | ---
+[Sadad (Melli)](https://sadadpsp.ir/) | بانک ملی (سداد) | ✓ | ✓ | 2020/09/10
+[Pay.ir](https://pay.ir/) | پرداخت پی | ✓ | ✓ | 2020/08/03
+[Zarinpal](https://zarinpal.com/) | زرین پال | ✓ | ✓ | 2020/08/03
+[Payping](https://www.payping.ir/) | پی پینگ | ✓ | - | 2020/08/04
+[Qeroun](https://qeroun.com/) | قرون - خرید امن با ایجاد توافق‌نامه | - | - | -
+[Saman (Sep)](https://www.sep.ir/) | (سپ) بانک سامان | - | - | -
+[Mellat (Behpardakht)](http://www.behpardakht.com/) | (به پرداخت) بانک ملت | - | - | -
+[Parsian (Pec)](https://www.pec.ir/) | (پک) بانک پارسیان | - | - | -
+[Pasargad (Pep)](https://www.pep.co.ir/) | (پپ) بانک پاسارگاد | - | - | -
+[Zibal](https://zibal.ir/) | زیبال | - | - | -
 
 ## Requirements
 
@@ -155,7 +156,6 @@ class NewGateway extends AbstractGateway implements GatewayInterface
     }
 }
 ```
-
 
 ## Upgrading from v1.x
 
