@@ -37,10 +37,9 @@
         "ext-curl": "*",
         "ext-json": "*",
         "ext-soap": "*",
-        "illuminate/support": "~5.7|~6.0|~7.0",
-        "illuminate/database": "~5.7|~6.0|~7.0",
-        "illuminate/http": "~5.7|~6.0|~7.0",
-        "guzzlehttp/guzzle": "^6.3",
+        "illuminate/support": "~5.7|~6.0|~7.0|8.*",
+        "illuminate/database": "~5.7|~6.0|~7.0|8.*",
+        "illuminate/http": "~5.7|~6.0|~7.0|8.*",
         "nesbot/carbon": "*",
         "doctrine/dbal": "^2.10"
     },
