@@ -54,7 +54,7 @@ Gateway | Description  | Available | Tested | Last Update
 
 2. IranPayment's service providers will be automatically registered using Laravel's auto-discovery feature.
 
-    > Note: For Lumen you have to add the Mollie facade and service provider manually to: `bootstrap/app.php` :
+    > Note: For Lumen you have to add the IranPayment service provider manually to: `bootstrap/app.php` :
 
     ```php
    $app->register( Dena\IranPayment\IranPaymentServiceProvider::class);
