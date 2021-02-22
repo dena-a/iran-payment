@@ -1,48 +1,71 @@
 {
-	"name": "dena-a/iran-payment",
-	"description": "a Laravel package to handle Internet Payment Gateways for Iran Banking System",
-	"type": "library",
-	"homepage": "https://github.com/dena-a/iran-payment",
-	"license": "MIT",
-	"keywords": [
-		"laravel",
-		"iran",
-		"payment",
-		"bank",
-		"banking",
-		"payment system",
-		"zarinpal",
-		"saman",
-		"sep"
-	],
-	"authors": [
-		{
-			"name": "Dena Ajdari",
-			"homepage": "https://github.com/dena-a"
-		}, {
-			"name": "YekNava",
-			"homepage": "https://github.com/yeknava"
-		}
-	],
-	"minimum-stability": "dev",
-	"require": {
-		"php": ">=5.5.0",
-		"illuminate/support": ">=5.2.0",
-		"illuminate/database": ">=5.2.0"
-	},
-	"autoload": {
-		"psr-4": {
-			"Dena\\IranPayment\\": "src"
-		}
-	},
-	"extra": {
-		"laravel": {
-			"providers": [
-				"Dena\\IranPayment\\IranPaymentServiceProvider"
-			]
-		}
-	},
-	"require-dev": {
-		"phpstan/phpstan": "^0.12.0@dev"
-	}
+    "name": "dena-a/iran-payment",
+    "description": "a Laravel package to handle Internet Payment Gateways for Iran Banking System",
+    "type": "library",
+    "homepage": "https://github.com/dena-a/iran-payment",
+    "license": "MIT",
+    "keywords": [
+        "laravel",
+        "iran",
+        "payment",
+        "gateway",
+        "merchant",
+        "purchase",
+        "bank",
+        "banking",
+        "payment system",
+        "pay",
+        "saman",
+        "sadad",
+        "meli",
+        "sep",
+        "pay.ir",
+        "zarinpal",
+        "payping"
+    ],
+    "authors": [
+        {
+            "name": "Dena Ajdari",
+            "homepage": "https://github.com/dena-a"
+        }, {
+            "name": "YekNava",
+            "homepage": "https://github.com/yeknava"
+        }
+    ],
+    "require": {
+        "php": "^7.4",
+        "ext-curl": "*",
+        "ext-json": "*",
+        "ext-soap": "*",
+        "illuminate/support": "~5.7|~6.0|~7.0|8.*",
+        "illuminate/database": "~5.7|~6.0|~7.0|8.*",
+        "illuminate/http": "~5.7|~6.0|~7.0|8.*",
+        "nesbot/carbon": "*",
+        "doctrine/dbal": "^2.10"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.1",
+        "fzaninotto/faker": "^1.4",
+        "phpstan/phpstan": "^0.12.0@dev",
+        "orchestra/testbench": "^5.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Dena\\IranPayment\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Dena\\IranPayment\\IranPaymentServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }

@@ -5,19 +5,70 @@ namespace Dena\IranPayment\Traits;
 trait UserData
 {
     /**
-     * User Mobile variable
+     * User Full Name variable
      *
-     * @var string
+     * @var string|null
      */
-    protected $mobile = null;
+    protected ?string $full_name = null;
 
     /**
-     * Set Mobile function
+     * User Mobile variable
+     *
+     * @var string|null
+     */
+    protected ?string $mobile = null;
+
+    /**
+     * User Email variable
+     *
+     * @var string|null
+     */
+    protected ?string $email = null;
+
+    /**
+     * Transaction Description variable
+     *
+     * @var string|null
+     */
+    protected ?string $description = null;
+
+    /**
+     * Valid Card Number variable for transaction
+     *
+     * @var string|null
+     */
+    protected ?string $valid_card_number = null;
+
+    /**
+     * Set User Full Name function
+     *
+     * @param string $full_name
+     * @return $this
+     */
+    public function setFullname(string $full_name): self
+    {
+        $this->full_name = $full_name;
+
+        return $this;
+    }
+
+    /**
+     * Get User Full Name function
+     *
+     * @return string|null
+     */
+    public function getFullname(): ?string
+    {
+        return $this->full_name;
+    }
+
+    /**
+     * Set User Mobile function
      *
      * @param string $mobile
-     * @return self
+     * @return $this
      */
-    public function setMobile(string $mobile)
+    public function setMobile(string $mobile): self
     {
         $this->mobile = $mobile;
 
@@ -25,29 +76,45 @@ trait UserData
     }
 
     /**
-     * Get Mobile function
+     * Get User Mobile function
      *
-     * @return string
+     * @return string|null
      */
-    public function getMobile()
+    public function getMobile(): ?string
     {
         return $this->mobile;
     }
 
     /**
-     * Description variable
+     * Set User Email function
      *
-     * @var string
+     * @param string $email
+     * @return $this
      */
-    protected $description = null;
-    
+    public function setEmail(string $email): self
+    {
+        $this->email = $email;
+
+        return $this;
+    }
+
     /**
-     * Set User Description function
+     * Get User Email function
+     *
+     * @return string|null
+     */
+    public function getEmail(): ?string
+    {
+        return $this->email;
+    }
+
+    /**
+     * Set Transaction Description function
      *
      * @param string $description
-     * @return self
+     * @return $this
      */
-    public function setDescription(string $description)
+    public function setDescription(string $description): self
     {
         $this->description = $description;
 
@@ -55,12 +122,35 @@ trait UserData
     }
 
     /**
-     * Get Description function
+     * Get Transaction Description function
      *
-     * @return string
+     * @return string|null
      */
-    public function getDescription()
+    public function getDescription(): ?string
     {
         return $this->description;
+    }
+
+    /**
+     * Set Valid Card Number function
+     *
+     * @param string $valid_card_number
+     * @return $this
+     */
+    public function setValidCardNumber(string $valid_card_number): self
+    {
+        $this->valid_card_number = $valid_card_number;
+
+        return $this;
+    }
+
+    /**
+     * Get Valid Card Number function
+     *
+     * @return string|null
+     */
+    public function getValidCardNumber(): ?string
+    {
+        return $this->valid_card_number;
     }
 }

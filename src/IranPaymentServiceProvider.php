@@ -3,50 +3,61 @@
 namespace Dena\IranPayment;
 
 use Illuminate\Support\ServiceProvider;
-use Laravel\Lumen\Application as LumenApplication;
 
 class IranPaymentServiceProvider extends ServiceProvider
 {
-	/**
-	 * Bootstrap the application services.
-	 *
-	 * @return void
-	 */
-	public function boot()
-	{
-		$this->mergeConfigFrom(__DIR__.'/../config/iranpayment.php', 'iranpayment');
-		$this->publishes([
-			__DIR__.'/../config/iranpayment.php' => config_path('iranpayment.php'),
-		]);
+    /**
+     * Bootstrap the application services.
+     *
+     * @return void
+     */
+    public function boot()
+    {
+        $this->mergeConfigFrom(__DIR__.'/../config/iranpayment.php', 'iranpayment');
+        $this->publishes([
+            __DIR__.'/../config/iranpayment.php' => config_path('iranpayment.php'),
+        ], 'config');
 
-		if ($this->app instanceof LumenApplication) {
+        if ($this->isLumen()) {
             $this->app->configure('iranpayment');
-		}
-		
-		$this->publishes([
-			__DIR__.'/../database/migrations/2017_03_01_000000_create_iranpayment_transactions_table.php' => $this->app->databasePath().'/migrations/2017_03_01_000000_create_iranpayment_transactions_table.php',
-		]);
+        }
 
-		$this->loadViewsFrom(__DIR__.'/../resources/views', 'iranpayment');
-		$this->publishes([
-			__DIR__.'/../resources/views' => resource_path('views/vendor/iranpayment'),
-		]);
-		$this->publishes([
-			__DIR__.'/../resources/assets' => public_path('vendor/iranpayment'),
-		]);
+        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
+        $this->publishes([
+            __DIR__.'/../database/migrations' => $this->app->databasePath().'/migrations',
+        ], 'migrations');
 
-		if (env('APP_DEBUG') === true) {
-			$this->loadRoutesFrom(__DIR__.'/routes.php');
-		}
-	}
+        $this->loadViewsFrom(__DIR__.'/../resources/views', 'iranpayment');
+        $this->publishes([
+            __DIR__.'/../resources/views' => resource_path('views/vendor/iranpayment'),
+        ], 'views');
 
-	/**
-	 * Register the application services.
-	 *
-	 * @return void
-	 */
-	public function register()
-	{
-		//
-	}
+        $this->publishes([
+            __DIR__.'/../resources/assets' => public_path('vendor/iranpayment'),
+        ], 'assets');
+
+        if (app('config')->get('app.env', 'production') !== 'production') {
+            $this->loadRoutesFrom(__DIR__.'/Gateways/Test/routes.php');
+        }
+    }
+
+    /**
+     * Register the application services.
+     *
+     * @return void
+     */
+    public function register()
+    {
+        //
+    }
+
+    /**
+     * Check if app uses Lumen.
+     *
+     * @return bool
+     */
+    private function isLumen(): bool
+    {
+        return str_contains($this->app->version(), 'Lumen');
+    }
 }

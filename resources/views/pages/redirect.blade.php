@@ -2,7 +2,7 @@
 
 @php
 	if (isset($title)) {
-		$title = "درحال انتقال به درگاه $title...";
+		$title = "درحال انتقال به درگاه {$title}...";
 	} else {
 		$title = "درحال انتقال به درگاه پرداخت...";
 	}
@@ -22,7 +22,12 @@
 				<img class="pure-img-responsive" src="{{ $image }}">
 			</div>
 		@endif
-		<form id="bankForm" method="GET" action="{!! $bank_url !!}">
+		<form id="bankForm" method="{{ $method ?? 'GET' }}" action="{{ $bank_url }}">
+            @isset($form_data)
+                @foreach($form_data as $name => $value)
+                    <input type="hidden" name="{{ $name }}" value="{{ $value }}">
+                @endforeach
+            @endisset
 			<button type="submit" class="pure-button pure-button-default">انتقال به صفحه پرداخت</button>
 		</form>
 	</div>
@@ -37,7 +42,7 @@
 			document.getElementById('loading-bar').style.width = (0.05 + parseFloat(width))+'%';
 		}
 	}, 5);
-	window.onload=function(){ 
+	window.onload=function(){
 		window.setTimeout(function() {
 			document.getElementById('bankForm').submit();
 		}, 9000);
