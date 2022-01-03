@@ -38,7 +38,7 @@
         "ext-json": "*",
         "ext-soap": "*",
         "illuminate/support": "^6.0|^7.0|^8.0",
-        "illuminate/database": "^6.20.26|^7.30.5|^8.40.0",
+        "illuminate/database": "^6.20.26|^7.30.4|^8.40.0",
         "illuminate/http": "^6.0|^7.0|^8.0",
         "nesbot/carbon": "*",
         "doctrine/dbal": "^2.10"
