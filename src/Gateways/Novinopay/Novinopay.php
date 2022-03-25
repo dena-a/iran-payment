@@ -46,6 +46,13 @@ class Novinopay extends AbstractGateway implements GatewayInterface
     protected ?string $authority;
 
     /**
+     * Ref Id variable
+     *
+     * @var string|null
+     */
+    protected ?string $ref_id;
+
+    /**
      * Payment Url variable
      *
      * @var string|null
@@ -146,6 +153,29 @@ class Novinopay extends AbstractGateway implements GatewayInterface
     }
 
     /**
+     * Set Ref ID function
+     *
+     * @param string $ref_id
+     * @return $this
+     */
+    public function setRefId(string $ref_id): self
+    {
+        $this->ref_id = $ref_id;
+
+        return $this;
+    }
+
+    /**
+     * Get Ref ID function
+     *
+     * @return string|null
+     */
+    public function getRefId(): ?string
+    {
+        return $this->ref_id;
+    }
+
+    /**
      * Set Payment Url function
      *
      * @param string $payment_url
@@ -240,8 +270,8 @@ class Novinopay extends AbstractGateway implements GatewayInterface
     /**
      * @throws InvalidDataException
      */
-	protected function prePurchase(): void
-	{
+    protected function prePurchase(): void
+    {
         parent::prePurchase();
 
         if ($this->preparedAmount() < 100 || $this->preparedAmount() > 500000000) {
@@ -249,13 +279,13 @@ class Novinopay extends AbstractGateway implements GatewayInterface
         }
 
         $this->setInvoiceId($this->getTransactionCode());
-	}
+    }
 
     /**
      * @throws GatewayException|NovinopayException|TransactionFailedException
      */
-	public function purchase(): void
-	{
+    public function purchase(): void
+    {
         $fields = [
             'MerchantID' => $this->getMerchantId(),
             'Amount' => $this->preparedAmount(),
@@ -266,39 +296,33 @@ class Novinopay extends AbstractGateway implements GatewayInterface
             'CallbackURL' => $this->preparedCallbackUrl(),
         ];
 
-		try {
-			$ch = curl_init();
-			curl_setopt($ch, CURLOPT_URL, self::REQUEST_URL);
+        try {
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, self::REQUEST_URL);
             curl_setopt($ch, CURLOPT_HTTPHEADER, ["Content-Type" => "application/json"]);
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($fields, JSON_UNESCAPED_UNICODE));
-			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_TIMEOUT, $this->getGatewayRequestOptions()['timeout'] ?? 30);
             curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->getGatewayRequestOptions()['connection_timeout'] ?? 60);
-			$response = curl_exec($ch);
-			$ch_error = curl_error($ch);
-			curl_close($ch);
+            $response = curl_exec($ch);
+            $ch_error = curl_error($ch);
+            curl_close($ch);
 
-			if ($ch_error) {
-				throw GatewayException::connectionProblem(new Exception($ch_error));
+            if ($ch_error) {
+                throw GatewayException::connectionProblem(new Exception($ch_error));
             }
 
-			$result = json_decode($response);
-		} catch(Exception $ex) {
+            $result = json_decode($response);
+        } catch(Exception $ex) {
             throw GatewayException::connectionProblem($ex);
-		}
-
-        if (isset($result->Status) && $result->Status == 100) {
-            header("Location: {$result->PaymentUrl}");
-        } else {
-            echo isset($result->Status) ? "Error Code: {$result->Status} | {$result->Message}" : "Error Connecting to novinopay.com";
         }
 
         if (!isset($result->Status)) {
             throw GatewayException::unknownResponse(json_encode($result));
         }
 
-        if ($result->Status !== 100) {
+        if (intval($result->Status) !== 100) {
             throw NovinopayException::error($result->Status);
         }
 
@@ -313,7 +337,7 @@ class Novinopay extends AbstractGateway implements GatewayInterface
         }
 
         $this->setPaymentUrl($result->PaymentUrl);
-	}
+    }
 
     protected function postPurchase(): void
     {
@@ -325,14 +349,14 @@ class Novinopay extends AbstractGateway implements GatewayInterface
     }
 
     /**
-	 * Pay Link function
-	 *
-	 * @return string
-	 */
-	public function purchaseUri(): string
-	{
+     * Pay Link function
+     *
+     * @return string
+     */
+    public function purchaseUri(): string
+    {
         return $this->getPaymentUrl();
-	}
+    }
 
     /**
      * Purchase View Params function
@@ -355,11 +379,11 @@ class Novinopay extends AbstractGateway implements GatewayInterface
         parent::preVerify();
 
         if (isset($this->request['PaymentStatus']) && $this->request['PaymentStatus'] != 'OK') {
-            throw NovinopayException::error(-22);
+            throw NovinopayException::error(-20);
         }
 
         if (isset($this->request['Authority']) && $this->request['Authority'] !== $this->getReferenceNumber()) {
-            throw NovinopayException::error(-11);
+            throw NovinopayException::error(-19);
         }
 
         $this->setAuthority($this->getReferenceNumber());
@@ -368,32 +392,32 @@ class Novinopay extends AbstractGateway implements GatewayInterface
     /**
      * @throws GatewayException|NovinopayException|TransactionFailedException
      */
-	public function verify(): void
-	{
+    public function verify(): void
+    {
         $fields = [
             'MerchantID' => $this->getMerchantId(),
             'Authority' => $this->getAuthority(),
             'Amount' => $this->preparedAmount(),
         ];
 
-		try {
-			$ch = curl_init();
-			curl_setopt($ch, CURLOPT_URL, self::VERIFY_URL);
+        try {
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, self::VERIFY_URL);
             curl_setopt($ch, CURLOPT_HTTPHEADER, ["Content-Type" => "application/json"]);
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($fields, JSON_UNESCAPED_UNICODE));
-			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_TIMEOUT, $this->getGatewayRequestOptions()['timeout'] ?? 30);
             curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->getGatewayRequestOptions()['connection_timeout'] ?? 60);
-			$response = curl_exec($ch);
-			$ch_error = curl_error($ch);
-			curl_close($ch);
+            $response = curl_exec($ch);
+            $ch_error = curl_error($ch);
+            curl_close($ch);
 
-			if ($ch_error) {
+            if ($ch_error) {
                 throw GatewayException::connectionProblem(new Exception($ch_error));
-			}
+            }
 
-			$result = json_decode($response);
+            $result = json_decode($response);
         } catch(Exception $ex) {
             throw GatewayException::connectionProblem($ex);
         }
@@ -402,7 +426,7 @@ class Novinopay extends AbstractGateway implements GatewayInterface
             throw GatewayException::unknownResponse(json_encode($result));
         }
 
-        if ($result->Status !== 100 || $result->Status !== 101) {
+        if (intval($result->Status) !== 100 && intval($result->Status) !== 101) {
             throw NovinopayException::error($result->Status);
         }
 
@@ -425,7 +449,7 @@ class Novinopay extends AbstractGateway implements GatewayInterface
             'BuyerIP' => $result->BuyerIP ?? null,
             'PaymentTime' => $result->PaymentTime ?? null,
         ]);
-	}
+    }
 
     protected function postVerify(): void
     {
