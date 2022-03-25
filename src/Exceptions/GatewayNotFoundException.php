@@ -18,6 +18,11 @@ class GatewayNotFoundException extends IranPaymentException
         return new self('امکان استفاده از این درگاه در محیط پروداکشن وجود ندارد');
     }
 
+    public static function defaultGatewayDoesNotSet(): self
+    {
+        return new self('درگاه پرداختی به صورت پیش فرض انتخاب نشده است');
+    }
+
     public static function detectionProblem(): self
     {
         return new self('امکان تشخیص درگاه پرداخت وجود ندارد');
