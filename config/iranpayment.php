@@ -93,4 +93,14 @@ return [
         'add_fees' => false,
         // 'callback-url' => 'http://example.com/payments/payping/callback',
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Novinopay gateway
+    |--------------------------------------------------------------------------
+    */
+    'novinopay' => [
+        'merchant-id' => env('NOVINOPAY_MERCHANT_ID', 'xxxxxxxxxxxxxxxx-xxxx-xxxx-xxxx-xxxx'),
+        // 'callback-url' => 'http://example.com/payments/navinopay/callback',
+    ],
 ];

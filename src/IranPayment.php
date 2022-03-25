@@ -11,6 +11,7 @@ use Dena\IranPayment\Gateways\Sadad\Sadad;
 use Dena\IranPayment\Gateways\PayPing\PayPing;
 use Dena\IranPayment\Gateways\Test\TestGateway;
 use Dena\IranPayment\Gateways\Zarinpal\Zarinpal;
+use Dena\IranPayment\Gateways\Novinopay\Novinopay;
 
 use Dena\IranPayment\Exceptions\GatewayNotFoundException;
 
@@ -29,6 +30,7 @@ class IranPayment
     const PAYDOTIR  = 'pay.ir';
     const ZARINPAL  = 'zarinpal';
     const PAYPING   = 'payping';
+    const NOVINOPAY = 'novinopay';
     const TEST      = 'test';
 
     /**
@@ -86,6 +88,10 @@ class IranPayment
             case PayPing::class:
                 $this->gateway = new PayPing;
                 break;
+            case self::NOVINOPAY:
+            case Novinopay::class:
+                $this->gateway = new Novinopay;
+                break;
             case self::TEST:
             case TestGateway::class:
                 if (app('config')->get('app.env', 'production') == 'production')
@@ -133,6 +139,7 @@ class IranPayment
             self::SADAD,
             self::PAYIR,
             self::PAYPING,
+            self::NOVINOPAY,
         ];
 
         if (app('config')->get('app.env', 'production') !== 'production') {
@@ -152,7 +159,11 @@ class IranPayment
     public static function create($gateway = null): GatewayInterface
     {
         if (is_null($gateway)) {
-            $gateway = app('config')->get('iranpayment.default', Saman::class);
+            $gateway = app('config')->get('iranpayment.default');
+
+            if (!isset($gateway)) {
+                throw GatewayNotFoundException::defaultGatewayDoesNotSet();
+            }
         }
 
         return (new self($gateway))->build();

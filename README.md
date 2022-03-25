@@ -22,6 +22,7 @@ Gateway | Description  | Available | Tested | Last Update
 [Pay.ir](https://pay.ir/) | پرداخت پی | ✓ | ✓ | 2020/08/03
 [Zarinpal](https://zarinpal.com/) | زرین پال | ✓ | ✓ | 2020/08/03
 [Payping](https://www.payping.ir/) | پی پینگ | ✓ | ✓ | 2020/08/04
+[Novinopay](https://www.novinopay.com/) | نوینو پرداخت | ✓ | ✓ | 2022/03/23
 [Qeroun](https://qeroun.com/) | قرون - خرید امن با ایجاد توافق‌نامه | - | - | -
 [Saman (Sep)](https://www.sep.ir/) | (سپ) بانک سامان | - | - | -
 [Mellat (Behpardakht)](http://www.behpardakht.com/) | (به پرداخت) بانک ملت | - | - | -
@@ -156,10 +157,6 @@ class NewGateway extends AbstractGateway implements GatewayInterface
     }
 }
 ```
-
-## Upgrading from v1.x
-
-TODO:
 
 ## Contribute
 

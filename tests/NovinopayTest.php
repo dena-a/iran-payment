@@ -3,12 +3,12 @@
 use Orchestra\Testbench\TestCase;
 
 use Dena\IranPayment\IranPayment;
-use Dena\IranPayment\Gateways\Zarinpal\Zarinpal;
+use Dena\IranPayment\Gateways\Novinopay\Novinopay;
 use Dena\IranPayment\Models\IranPaymentTransaction;
 
 use Tests\Models\ProductModel;
 
-class IranpaymentZarinpalGatewayTest extends TestCase
+class NovinopayTest extends TestCase
 {
     /**
      * Setup the test environment.
@@ -32,8 +32,8 @@ class IranpaymentZarinpalGatewayTest extends TestCase
         $app['config']->set('app.env', 'testing');
 
         $app['config']->set(
-            'iranpayment.zarinpal.merchant-id',
-            app('config')->get('iranpayment.zarinpal.merchant-id', 1)
+            'iranpayment.novinopay.merchant-id',
+            app('config')->get('iranpayment.novinopay.merchant-id', 1)
         );
     }
 
@@ -46,7 +46,7 @@ class IranpaymentZarinpalGatewayTest extends TestCase
 
     public function testSuccess()
     {
-        $gateway = Mockery::mock(Zarinpal::class)->makePartial();
+        $gateway = Mockery::mock(Novinopay::class)->makePartial();
         $gateway->shouldReceive('getAuthority')->andReturn(1);
         $gateway->shouldReceive('purchase')->andReturn(null);
         $gateway->shouldReceive('verify')->andReturn(null);
@@ -60,7 +60,7 @@ class IranpaymentZarinpalGatewayTest extends TestCase
             ->setAmount(10000)
             ->setCallbackUrl(url('/test'))
             ->setPayable($product);
-        $this->assertInstanceOf(Zarinpal::class, $payment);
+        $this->assertInstanceOf(Novinopay::class, $payment);
         $this->assertEquals(10000, $payment->getAmount());
         $this->assertEquals(url('/test'), $payment->getCallbackUrl());
         $this->assertEquals(1, $payment->getPayable()->id);
@@ -69,7 +69,6 @@ class IranpaymentZarinpalGatewayTest extends TestCase
         $payment = $payment->ready();
         $this->assertEquals(IranPaymentTransaction::T_PENDING, $payment->getTransaction()->status);
         $this->assertEquals(1, $payment->getAuthority());
-        $this->assertEquals("https://www.zarinpal.com/pg/StartPay/1", $payment->purchaseUri());
 
         $tr = $payment->getTransaction();
         $payment = IranPayment::create($gateway);
