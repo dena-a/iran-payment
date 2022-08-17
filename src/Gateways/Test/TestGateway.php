@@ -37,16 +37,38 @@ class TestGateway extends AbstractGateway implements GatewayInterface
             throw InvalidDataException::invalidAmount();
         }
     }
-    
-    public function preVerify(): void
-    {
-        parent::preVerify();
-    }
 
 	public function verify(): void
     {
-        $code = rand(1, 10000);
-		$this->transactionSucceed(['tracking_code' => $code]);
+        $trackingCode = rand(111111, 999999);
+		$this->transactionSucceed([
+            'card_number' => rand(1111, 9999).'********'.rand(1111, 9999),
+            'tracking_code' => $trackingCode,
+            'reference_number' => 'RefNum-'.$trackingCode,
+        ]);
+        if (
+            (isset($this->request['State']) && $this->request['State'] !== 'OK') ||
+            (isset($this->request['StateCode']) && $this->request['StateCode'] !== '0')
+        ) {
+            switch ($this->request['StateCode']) {
+                case '-1':
+                    throw SamanException::error(-101);
+                case '51':
+                    throw SamanException::error(51);
+                default:
+                    throw SamanException::error(-100);
+            }
+        }
+
+        if (isset($this->request['MID']) && $this->request['MID'] !== $this->getMerchantId()) {
+            throw SamanException::error(-4);
+        }
+
+        $this->transactionUpdate([
+            'card_number' => $this->request['SecurePan'] ?? null,
+            'tracking_code' => $this->request['TRACENO'] ?? null,
+            'reference_number' => $this->request['RefNum'] ?? null,
+        ]);
     }
 
     /**
@@ -64,15 +86,15 @@ class TestGateway extends AbstractGateway implements GatewayInterface
 	public function purchase(): void
     {
         $this->transactionUpdate([
-            'reference_number'	=> uniqid(),
+            'reference_number' => uniqid(),
 		]);
     }
 
 	public function purchaseView(array $arr = [])
     {
         return view('iranpayment::pages.test', [
-            'reference_number'	=> uniqid(),
-			'transaction_code'	=> $this->getTransactionCode(),
+            'reference_number' => uniqid(),
+			'transaction_code' => $this->getTransactionCode(),
 		]);
     }
 
