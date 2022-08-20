@@ -111,6 +111,7 @@ return [
     */
     'test' => [
         'active' => env('IRANPAYMENT_TEST_ACTIVE', false),
+        'url' => '/iranpayments/test',
         // 'callback-url' => 'http://example.com/payments/test/callback',
     ],
 ];

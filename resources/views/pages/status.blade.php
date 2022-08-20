@@ -1,10 +1,10 @@
 @extends('iranpayment::layouts.master')
 
 @php
-	if ($status === '') {
-		$title = "درحال انتقال به درگاه {$title}...";
+	if ($status === \Dena\IranPayment\Models\IranPaymentTransaction::T_SUCCEED) {
+		$title = 'پرداخت با موفقیت انجام شد';
 	} else {
-		$title = "درحال انتقال به درگاه پرداخت...";
+		$title = 'پرداخت با خطا مواجه شد';
 	}
 @endphp
 
@@ -24,6 +24,6 @@
 		@endif
 
         <a class="pure-button pure-button-default" href="{{ $button_url }}">{{ $button_text }}</a>
-	</div>
+    </div>
 </div>
 @endsection
