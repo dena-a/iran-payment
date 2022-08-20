@@ -103,4 +103,15 @@ return [
         'merchant-id' => env('NOVINOPAY_MERCHANT_ID', 'xxxxxxxxxxxxxxxx-xxxx-xxxx-xxxx-xxxx'),
         // 'callback-url' => 'http://example.com/payments/navinopay/callback',
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | TEST gateway
+    |--------------------------------------------------------------------------
+    */
+    'test' => [
+        'active' => env('IRANPAYMENT_TEST_ACTIVE', false),
+        'url' => '/iranpayments/test',
+        // 'callback-url' => 'http://example.com/payments/test/callback',
+    ],
 ];

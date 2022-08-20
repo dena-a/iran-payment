@@ -10,6 +10,8 @@ use Exception;
 
 class TestGateway extends AbstractGateway implements GatewayInterface
 {
+    protected ?string $url;
+
     public function getName(): string
     {
         return 'test';
@@ -26,6 +28,8 @@ class TestGateway extends AbstractGateway implements GatewayInterface
             ?? app('config')->get('iranpayment.callback-url')
         );
 
+        $this->url = $parameters['url'] ?? app('config')->get('iranpayment.test.url');
+
         return $this;
     }
 
@@ -33,51 +37,78 @@ class TestGateway extends AbstractGateway implements GatewayInterface
 	{
         parent::prePurchase();
 
-        if ($this->preparedAmount() < 1000 || $this->preparedAmount() > 500000000) {
+        if ($this->preparedAmount() < 0 || $this->preparedAmount() > 500000000) {
             throw InvalidDataException::invalidAmount();
         }
     }
-    
-    public function preVerify(): void
-    {
-        parent::preVerify();
-    }
 
-	public function verify(): void
+    public function purchase(): void
     {
-        $code = rand(1, 10000);
-		$this->transactionSucceed(['tracking_code' => $code]);
-    }
-
-    /**
-     * @throws Exception
-     */
-	public function redirect()
-    {
-        $this->addExtra($this->getCallbackUrl(), 'callback_url');
-        return view('iranpayment::pages.test')->with([
-            'transaction_code' => $this->getTransactionCode(),
-            'reference_number' => $this->getReferenceNumber(),
+        $this->transactionUpdate([
+            'reference_number' => uniqid(),
         ]);
     }
 
-	public function purchase(): void
+    /**
+     * Purchase View Params function
+     *
+     * @return array
+     */
+    protected function purchaseViewParams(): array
     {
-        $this->transactionUpdate([
-            'reference_number'	=> uniqid(),
-		]);
+        return [
+            'title' => 'تست',
+            'method' => 'POST',
+        ];
     }
 
-	public function purchaseView(array $arr = [])
-    {
-        return view('iranpayment::pages.test', [
-            'reference_number'	=> uniqid(),
-			'transaction_code'	=> $this->getTransactionCode(),
-		]);
-    }
-
+    /**
+     * Pay Link function
+     *
+     * @return string
+     */
     public function purchaseUri(): string
     {
-        return route('iranpayment.test.pay', $this->getReferenceNumber());
+        $url = filter_var($this->url, FILTER_VALIDATE_URL)
+            ? $this->url
+            : url($this->url);
+
+        $url_parts = parse_url($url);
+        if (isset($url_parts['query'])) {
+            parse_str($url_parts['query'], $params);
+        } else {
+            $params = [];
+        }
+
+        $params['reference_number'] = $this->getReferenceNumber();
+
+        $url_parts['query'] = http_build_query($params);
+
+        return $url_parts['scheme'].'://'.$url_parts['host']
+            .(strlen($url_parts['port']) ? ':'.$url_parts['port'] : '')
+            .$url_parts['path']
+            .(strlen($url_parts['query']) ? '?'.$url_parts['query'] : '');
+    }
+
+    public function verify(): void
+    {
+        if ($this->request['status'] === 'error') {
+            throw TestException::error(-100);
+        }
+
+        $trackingCode = rand(111111, 999999);
+		$this->transactionSucceed([
+            'card_number' => rand(1111, 9999).'********'.rand(1111, 9999),
+            'tracking_code' => $trackingCode,
+            'reference_number' => 'RefNum-'.$trackingCode,
+        ]);
+    }
+
+    public function bankView()
+    {
+        return response()->view('iranpayment::pages.test', [
+            'transaction_code' => $this->getTransactionCode(),
+            'callback_url' => $this->preparedCallbackUrl(),
+        ]);
     }
 }
