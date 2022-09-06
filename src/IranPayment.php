@@ -12,6 +12,7 @@ use Dena\IranPayment\Gateways\PayPing\PayPing;
 use Dena\IranPayment\Gateways\Test\TestGateway;
 use Dena\IranPayment\Gateways\Zarinpal\Zarinpal;
 use Dena\IranPayment\Gateways\Novinopay\Novinopay;
+use Dena\IranPayment\Gateways\Idpay\Idpay;
 
 use Dena\IranPayment\Exceptions\GatewayNotFoundException;
 
@@ -31,6 +32,7 @@ class IranPayment
     const ZARINPAL  = 'zarinpal';
     const PAYPING   = 'payping';
     const NOVINOPAY = 'novinopay';
+    const IDPAY = 'idpay';
     const TEST      = 'test';
 
     /**
@@ -92,10 +94,16 @@ class IranPayment
             case Novinopay::class:
                 $this->gateway = new Novinopay;
                 break;
+            case self::IDPAY:
+            case Idpay::class:
+                $this->gateway = new Idpay;
+                break;
             case self::TEST:
             case TestGateway::class:
-                if (app('config')->get('app.env', 'production') == 'production')
+                if (app('config')->get('app.env', 'production') === 'production' ||
+                    !app('config')->get('iranpayment.test.active', false)) {
                     throw GatewayNotFoundException::productionUnavailableGateway();
+                }
 
                 $this->gateway = new TestGateway;
                 break;
@@ -140,9 +148,11 @@ class IranPayment
             self::PAYIR,
             self::PAYPING,
             self::NOVINOPAY,
+            self::IDPAY,
         ];
 
-        if (app('config')->get('app.env', 'production') !== 'production') {
+        if (app('config')->get('app.env', 'production') !== 'production' &&
+            app('config')->get('iranpayment.test.active', false)) {
             $gateways[] = self::TEST;
         }
 

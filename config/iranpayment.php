@@ -103,4 +103,28 @@ return [
         'merchant-id' => env('NOVINOPAY_MERCHANT_ID', 'xxxxxxxxxxxxxxxx-xxxx-xxxx-xxxx-xxxx'),
         // 'callback-url' => 'http://example.com/payments/navinopay/callback',
     ],
+
+    /*
+   |--------------------------------------------------------------------------
+   | Idpay gateway
+   |--------------------------------------------------------------------------
+   | Types: [normal | sandbox]
+   */
+    'idpay' => [
+        'merchant-id' => env('IDPAY_MERCHANT_ID', 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'),
+        'type' => 'normal',
+        'description' => 'تراكنش خرید',
+        // 'callback-url' => 'http://example.com/payments/idpay/callback',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | TEST gateway
+    |--------------------------------------------------------------------------
+    */
+    'test' => [
+        'active' => env('IRANPAYMENT_TEST_ACTIVE', false),
+        'url' => '/iranpayments/test',
+        // 'callback-url' => 'http://example.com/payments/test/callback',
+    ],
 ];
