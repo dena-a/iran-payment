@@ -105,6 +105,19 @@ return [
     ],
 
     /*
+   |--------------------------------------------------------------------------
+   | Idpay gateway
+   |--------------------------------------------------------------------------
+   | Types: [normal | sandbox]
+   */
+    'idpay' => [
+        'merchant-id' => env('IDPAY_MERCHANT_ID', 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'),
+        'type' => 'normal',
+        'description' => 'تراكنش خرید',
+        // 'callback-url' => 'http://example.com/payments/idpay/callback',
+    ],
+
+    /*
     |--------------------------------------------------------------------------
     | TEST gateway
     |--------------------------------------------------------------------------
