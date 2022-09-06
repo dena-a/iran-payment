@@ -6,9 +6,9 @@ use Dena\IranPayment\Exceptions\GatewayException;
 
 class TestException extends GatewayException
 {
-    public static array $errors = [
-        -100	=> 'تراکنش ناموفق میباشد',
-    ];
+	public static array $errors = [
+		-100	=> 'تراکنش ناموفق میباشد',
+	];
 
     public static function error($error_code)
     {
