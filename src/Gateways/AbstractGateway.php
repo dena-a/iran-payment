@@ -18,13 +18,7 @@ use Dena\IranPayment\Models\IranPaymentTransaction;
 
 use Dena\IranPayment\Helpers\Currency;
 
-/**
- * @method getName()
- * @method purchase()
- * @method purchaseUri()
- * @method verify()
- */
-abstract class AbstractGateway
+abstract class AbstractGateway implements GatewayInterface
 {
 	use UserData,
         PaymentData,
@@ -43,6 +37,9 @@ abstract class AbstractGateway
      * @var array
      */
     protected array $gateway_request_options = [];
+
+    abstract public function verify(): void;
+    abstract public function purchase(): void;
 
     /**
      * Initialize Gateway function
@@ -299,7 +296,7 @@ abstract class AbstractGateway
      */
 	public function confirm(IranPaymentTransaction $transaction = null)
 	{
-		if(isset($transaction)) {
+		if (isset($transaction)) {
 			$this->setTransaction($transaction);
 		}
 
@@ -321,4 +318,17 @@ abstract class AbstractGateway
 
 		return $this;
 	}
+
+    public function statusView(array $parameters = [])
+    {
+        return response()->view('iranpayment::pages.status', array_merge(
+            [
+                'status' => $parameters['status'] ?? $this->getTransaction()->status,
+                'transaction_code' => $parameters['transaction_code'] ?? $this->getTransactionCode(),
+                'button_url' => url('/'),
+                'button_text' => 'بازگشت به صفحه‌اصلی',
+            ],
+            $parameters
+        ));
+    }
 }

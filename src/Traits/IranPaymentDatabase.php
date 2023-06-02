@@ -5,6 +5,13 @@ namespace Dena\IranPayment\Traits;
 trait IranPaymentDatabase
 {
     /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
+    protected $table;
+
+    /**
      * IranPayment Table Name variable
      *
      * @var string

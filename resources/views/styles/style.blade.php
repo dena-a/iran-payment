@@ -95,7 +95,6 @@ body {
 	color: #455a64;
 	border: 3px solid #455a64;
 	padding: 1em 1.6em;
-	margin: auto;
 	border-radius: 5px;
 	letter-spacing: 0.1em;
 	line-height: 1.7em;
@@ -106,12 +105,29 @@ body {
 	border-radius: 5px;
 }
 
-button.pure-button-default {
+button.pure-button-default,
+a.pure-button-default {
 	color: white;
 	background: #455a64;
-	font-size: 150%;	
+	font-size: 150%;
 }
 
+.button-success,
+.button-error,
+.button-warning,
+.button-secondary {
+    color: white;
+    border-radius: 4px;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+}
+
+.button-success {
+    background: rgb(28, 184, 65);
+}
+
+.button-error {
+    background: rgb(202, 60, 60);
+}
 
 footer {
 	background-color: #263238;

@@ -94,8 +94,10 @@ class IranPayment
                 break;
             case self::TEST:
             case TestGateway::class:
-                if (app('config')->get('app.env', 'production') == 'production')
+                if (app('config')->get('app.env', 'production') === 'production' ||
+                    !app('config')->get('iranpayment.test.active', false)) {
                     throw GatewayNotFoundException::productionUnavailableGateway();
+                }
 
                 $this->gateway = new TestGateway;
                 break;
@@ -142,7 +144,8 @@ class IranPayment
             self::NOVINOPAY,
         ];
 
-        if (app('config')->get('app.env', 'production') !== 'production') {
+        if (app('config')->get('app.env', 'production') !== 'production' &&
+            app('config')->get('iranpayment.test.active', false)) {
             $gateways[] = self::TEST;
         }
 

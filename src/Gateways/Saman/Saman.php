@@ -226,7 +226,7 @@ class Saman extends AbstractGateway implements GatewayInterface
             'method' => 'POST',
             'form_data' => [
                 'Token' => $this->getToken(),
-                'RedirectURL' => $this->getCallbackUrl(),
+                'RedirectURL' => $this->preparedCallbackUrl(),
             ],
         ];
     }
