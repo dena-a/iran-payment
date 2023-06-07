@@ -85,7 +85,7 @@ class TestGateway extends AbstractGateway implements GatewayInterface
         $url_parts['query'] = http_build_query($params);
 
         return $url_parts['scheme'].'://'.$url_parts['host']
-            .(strlen($url_parts['port']) ? ':'.$url_parts['port'] : '')
+            .(isset($url_parts['port']) && strlen($url_parts['port']) ? ':'.$url_parts['port'] : '')
             .$url_parts['path']
             .(strlen($url_parts['query']) ? '?'.$url_parts['query'] : '');
     }
