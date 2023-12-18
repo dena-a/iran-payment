@@ -43,6 +43,18 @@ trait TransactionData
     public function setTransaction(IranPaymentTransaction $transaction): self
     {
         $this->transaction = $transaction;
+        
+        if (isset($transaction->payable)) {
+            $this->setPayable($transaction->payable);
+        }
+
+        if (isset($transaction->payable_id)) {
+            $this->payable_id = $transaction->payable_id;
+        }
+
+        if (isset($transaction->payable_type)) {
+            $this->payable_type = $transaction->payable_type;
+        }
 
         return $this;
     }
