@@ -22,7 +22,8 @@
         "pay.ir",
         "zarinpal",
         "payping",
-        "novinopay"
+        "novinopay",
+        "idpay"
     ],
     "authors": [
         {
@@ -34,7 +35,7 @@
         }
     ],
     "require": {
-        "php": "^7.4|^8.0",
+        "php": ">=7.2",
         "ext-curl": "*",
         "ext-json": "*",
         "ext-soap": "*",
