@@ -92,7 +92,7 @@ class TestGateway extends AbstractGateway implements GatewayInterface
 
     public function verify(): void
     {
-        if ($this->request['status'] === 'error') {
+        if ($this->request['status'] ?? null === 'error') {
             throw TestException::error(-100);
         }
 

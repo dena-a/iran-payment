@@ -29,6 +29,7 @@ class IranpaymentTestGatewayTest extends TestCase
     {
         $app['config']->set('database.default', 'testing');
         $app['config']->set('app.env', 'testing');
+        $app['config']->set('iranpayment.test.active', true);
     }
 
     protected function getPackageProviders($app)
