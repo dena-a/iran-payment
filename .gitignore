@@ -1,4 +1,7 @@
 /vendor
-/.idea
 .phpunit.result.cache
 composer.lock
+
+/.idea
+/.vscode
+/*.code-workspace

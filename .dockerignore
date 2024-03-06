@@ -1,0 +1,6 @@
+/.idea
+/.vscode
+/*.code-workspace
+
+.git
+.github
