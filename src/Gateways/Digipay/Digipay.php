@@ -13,9 +13,9 @@ use Psr\Container\NotFoundExceptionInterface;
 
 class Digipay extends AbstractGateway implements GatewayInterface
 {
-    private const LOGIN_URL = "https://uatweb.mydigipay.info/digipay/api/oauth/token";
-    private const REQUEST_URL = "https://uatweb.mydigipay.info/digipay/api/tickets/business?type={ticketType}";
-    private const VERIFY_URL = "https://uatweb.mydigipay.info/digipay/api/purchases/verify/{trackingCode}?type={ticketType}";
+    private const LOGIN_URL = "https://api.mydigipay.com/digipay/api/oauth/token";
+    private const REQUEST_URL = "https://api.mydigipay.com/digipay/api/tickets/business?type={ticketType}";
+    private const VERIFY_URL = "https://api.mydigipay.com/digipay/api/purchases/verify/{trackingCode}?type={ticketType}";
     public const CURRENCY = Currency::IRR;
 
     /**
@@ -47,7 +47,7 @@ class Digipay extends AbstractGateway implements GatewayInterface
     protected ?string $ticket;
 
     /**
-     * Tracking Code variable
+     * Ticket Type variable
      *
      * @var int|null
      */
@@ -72,7 +72,7 @@ class Digipay extends AbstractGateway implements GatewayInterface
      *
      * @var string|null
      */
-    protected ?string $grantType;
+    protected ?string $grant_type;
 
     /**
      * Client Id variable
@@ -253,12 +253,12 @@ class Digipay extends AbstractGateway implements GatewayInterface
     /**
      * Set Grant Type function
      *
-     * @param string $grantType
+     * @param string $grant_type
      * @return $this
      */
-    public function setGrantType(string $grantType = 'password'): self
+    public function setGrantType(string $grant_type = 'password'): self
     {
-        $this->grantType = $grantType;
+        $this->grant_type = $grant_type;
 
         return $this;
     }
@@ -270,7 +270,7 @@ class Digipay extends AbstractGateway implements GatewayInterface
      */
     public function getGrantType(): ?string
     {
-        return $this->grantType;
+        return $this->grant_type;
     }
 
     /**
