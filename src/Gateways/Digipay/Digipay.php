@@ -16,6 +16,7 @@ class Digipay extends AbstractGateway implements GatewayInterface
     private const LOGIN_URL = "https://api.mydigipay.com/digipay/api/oauth/token";
     private const REQUEST_URL = "https://api.mydigipay.com/digipay/api/tickets/business?type={ticketType}";
     private const VERIFY_URL = "https://api.mydigipay.com/digipay/api/purchases/verify/{trackingCode}?type={ticketType}";
+    private const DELIVER_URL = "https://api.mydigipay.com/digipay/api/purchases/deliver?type={ticketType}";
     public const CURRENCY = Currency::IRR;
 
     /**
@@ -532,6 +533,10 @@ class Digipay extends AbstractGateway implements GatewayInterface
         $this->setTrackingCode($this->request['trackingCode']);
     }
 
+    /**
+     * @throws GatewayException
+     * @throws DigipayException
+     */
     public function verify(): void
     {
         // login and get access_token
@@ -574,12 +579,16 @@ class Digipay extends AbstractGateway implements GatewayInterface
 
         $this->setTrackingCode($result["trackingCode"]);
 
+        $this->deliver($this->getTrackingCode(), $this->getTicketType());
+
         $this->setGatewayTransactionData([
+            'rrn' => $result['rrn'] ?? null,
             'fpCode' => $result['fpCode'] ?? null,
             'fpName' => $result['fpName'] ?? null,
             'amount' => $result['amount'] ?? null,
             'paymentGateway' => $result['paymentGateway'] ?? null,
             'additionalInfo' => $result['additionalInfo'] ?? null,
+            'finalizeDate' => $result['finalizeDate'] ?? null,
         ]);
     }
 
@@ -593,6 +602,50 @@ class Digipay extends AbstractGateway implements GatewayInterface
         );
 
         parent::postVerify();
+    }
+
+    public function deliver(string $trackingCode, int $type): void
+    {
+        $data = [
+            'deliveryDate' => now()->timestamp,
+            'invoiceNumber' => $this->getPayableId(),
+            'trackingCode' => $trackingCode,
+            'products' => [$this->transaction->description]
+        ];
+
+        try {
+            $endpoint = str_replace('{ticketType}', $type, self::DELIVER_URL);
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $endpoint);
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                'Agent: WEB',
+                'Digipay-Version: 2022-02-02',
+                'Authorization: Bearer ' . $this->getAccessToken(),
+                'Content-Type: application/json',
+            ]);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_TIMEOUT, $this->getGatewayRequestOptions()['timeout'] ?? 30);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->getGatewayRequestOptions()['connection_timeout'] ?? 60);
+            $response = curl_exec($ch);
+            $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $ch_error = curl_error($ch);
+            curl_close($ch);
+
+            if ($ch_error) {
+                throw GatewayException::connectionProblem(new \Exception($ch_error));
+            }
+
+            $result = json_decode($response, true);
+        } catch (\Exception $ex) {
+            throw GatewayException::connectionProblem($ex);
+        }
+
+        if ($http_code != 200 && isset($result['result']['status']) && $result['result']['status'] !== 0) {
+            throw DigipayException::error($result['result']['status']);
+        }
     }
 
     /**
