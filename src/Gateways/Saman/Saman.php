@@ -181,7 +181,8 @@ class Saman extends AbstractGateway implements GatewayInterface
             $result = $soap->RequestToken(
                 $this->getMerchantId(),
                 $this->getTransactionCode(),
-                $this->preparedAmount()
+                $this->preparedAmount(),
+                $this->getMobile(),
             );
         } catch(SoapFault|Exception $ex) {
             throw GatewayException::connectionProblem($ex);
