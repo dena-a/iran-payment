@@ -1,9 +1,9 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/dena-a/iran-payment/master/images/logo.png" height="128"/>
+  <img src="images/logo.png" height="128"/>
 </p>
 <h1 align="center">IranPayment for Laravel</h1>
 
-<p align="center"><a href="https://github.com/dena-a/iran-payment" target="_blank"><img width="650" src="https://raw.githubusercontent.com/dena-a/iran-payment/master/images/screen.png"></a></p>
+<p align="center"><a href="https://github.com/dena-a/iran-payment" target="_blank"><img width="650" src="images/screen.png"></a></p>
 
 **a Laravel package to handle Internet Payment Gateways (IPGs) for Iran Banking System**
 
@@ -17,15 +17,15 @@ Accepting [Sadad (Melli)](https://sadadpsp.ir/), [Pay.ir](https://pay.ir/), [Zar
 ## Gateways
 
 Logo | Gateway | Description | Available | Tested | Last Update
---- | --- | --- | --- | --- | ---
-<img width="50" src="https://raw.githubusercontent.com/dena-a/iran-payment/master/resources/assets/img/sadad.png"> | [Sadad (Melli)](https://sadadpsp.ir/) | بانک ملی (سداد) | ✓ | ✓ | 2020/09/10
-<img width="50" src="https://raw.githubusercontent.com/dena-a/iran-payment/master/resources/assets/img/pay.png"> | [Pay.ir](https://pay.ir/) | پرداخت پی | ✓ | ✓ | 2020/08/03
-<img width="50" src="https://raw.githubusercontent.com/dena-a/iran-payment/master/resources/assets/img/zp.png"> | [Zarinpal](https://zarinpal.com/) | زرین پال | ✓ | ✓ | 2020/08/03
-<img width="50" src="https://raw.githubusercontent.com/dena-a/iran-payment/master/resources/assets/img/payping.png"> | [Payping](https://www.payping.ir/) | پی پینگ | ✓ | ✓ | 2020/08/04
-<img width="50" src="https://raw.githubusercontent.com/dena-a/iran-payment/master/resources/assets/img/novinopay.png"> | [Novinopay](https://www.novinopay.com/) | نوینو پرداخت | ✓ | ✓ | 2022/03/23
+--- | --- | --- | -- | -- | ---
+<img width="50" src="resources/assets/img/sadad.png"> | [Sadad (Melli)](https://sadadpsp.ir/) | بانک ملی (سداد) | ✓ | ✓ | 2020/09/10
+<img width="50" src="resources/assets/img/pay.png"> | [Pay.ir](https://pay.ir/) | پرداخت پی | ✓ | ✓ | 2020/08/03
+<img width="50" src="resources/assets/img/zp.png"> | [Zarinpal](https://zarinpal.com/) | زرین پال | ✓ | ✓ | 2020/08/03
+<img width="50" src="resources/assets/img/payping.png"> | [Payping](https://www.payping.ir/) | پی پینگ | ✓ | ✓ | 2020/08/04
+<img width="50" src="resources/assets/img/novinopay.png"> | [Novinopay](https://www.novinopay.com/) | نوینو پرداخت | ✓ | ✓ | 2022/03/23
+<img width="50" src="resources/assets/img/saman.png"> | [Saman (Sep)](https://www.sep.ir/) | (سپ) بانک سامان | ✓ | ✓ | 2020/08/05
+<img width="50" src="resources/assets/img/behpardakht.png"> | [Mellat (Behpardakht)](http://www.behpardakht.com/) | (به پرداخت) بانک ملت | ✓ | ✓ | 2024/07/30
  --- | [Qeroun](https://qeroun.com/) | قرون - خرید امن با ایجاد توافق‌نامه | - | - | -
- --- | [Saman (Sep)](https://www.sep.ir/) | (سپ) بانک سامان | - | - | -
- --- | [Mellat (Behpardakht)](http://www.behpardakht.com/) | (به پرداخت) بانک ملت | - | - | -
  --- | [Parsian (Pec)](https://www.pec.ir/) | (پک) بانک پارسیان | - | - | -
  --- | [Pasargad (Pep)](https://www.pep.co.ir/) | (پپ) بانک پاسارگاد | - | - | -
  --- | [Zibal](https://zibal.ir/) | زیبال | - | - | -
