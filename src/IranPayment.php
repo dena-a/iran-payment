@@ -3,6 +3,7 @@
 namespace Dena\IranPayment;
 
 use Dena\IranPayment\Gateways\AbstractGateway;
+use Dena\IranPayment\Gateways\Digipay\Digipay;
 use Dena\IranPayment\Gateways\GatewayInterface;
 
 use Dena\IranPayment\Gateways\PayIr\PayIr;
@@ -31,6 +32,7 @@ class IranPayment
     const ZARINPAL  = 'zarinpal';
     const PAYPING   = 'payping';
     const NOVINOPAY = 'novinopay';
+    const DIGIPAY   = 'digipay';
     const TEST      = 'test';
 
     /**
@@ -92,6 +94,10 @@ class IranPayment
             case Novinopay::class:
                 $this->gateway = new Novinopay;
                 break;
+            case self::DIGIPAY:
+            case Digipay::class:
+                $this->gateway = new Digipay;
+                break;
             case self::TEST:
             case TestGateway::class:
                 if (app('config')->get('app.env', 'production') === 'production' ||
@@ -142,6 +148,7 @@ class IranPayment
             self::PAYIR,
             self::PAYPING,
             self::NOVINOPAY,
+            self::DIGIPAY,
         ];
 
         if (app('config')->get('app.env', 'production') !== 'production' &&
