@@ -106,6 +106,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Behpardakht (Mellat) gateway
+    |--------------------------------------------------------------------------
+    */
+    'behpardakht' => [
+        'terminal-id'  => env('BEHPARDAKHT_TERMINAL_ID',  'xxxxxxxx'),
+        'username' => env('BEHPARDAKHT_USERNAME', 'xxxxxxxx'),
+        'password' => env('BEHPARDAKHT_PASSWORD', 'xxxxxxxx'),
+        // 'callback-url' => 'http://example.com/payments/behpardakht/callback',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | TEST gateway
     |--------------------------------------------------------------------------
     */
