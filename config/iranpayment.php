@@ -115,6 +115,7 @@ return [
         'username' => env('DIGIPAY_USERNAME', ''),
         'password' => env('DIGIPAY_PASSWORD', ''),
         'grant_type' => env('DIGIPAY_GRANT_TYPE', 'password'),
+        'ticket_type' => env('DIGIPAY_TICKET_TYPE', 11), // 11 => supported all types (CPG, BPG/BNPL, WALLET, IPG)
         'callback-url' => env('DIGIPAY_CALLBACK_URL', ''),
     ],
 

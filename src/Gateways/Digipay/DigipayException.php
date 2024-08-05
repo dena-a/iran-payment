@@ -35,6 +35,6 @@ class DigipayException extends GatewayException
             return self::unknownResponse((string) $error_code);
         }
 
-        return new self(self::$errors[$error_code], 422);
+        return new self(self::$errors[$error_code], $error_code);
     }
 }

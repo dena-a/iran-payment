@@ -104,6 +104,15 @@ class Digipay extends AbstractGateway implements GatewayInterface
     protected ?array $gateway_transaction_data = null;
 
     /**
+     * @throws DigipayException
+     * @throws GatewayException
+     */
+    public function __construct()
+    {
+        $this->oauth();
+    }
+
+    /**
      * Gateway Name function
      *
      * @return string
@@ -408,6 +417,7 @@ class Digipay extends AbstractGateway implements GatewayInterface
         $this->setUsername($parameters['username'] ?? app('config')->get('iranpayment.digipay.username'));
         $this->setPassword($parameters['password'] ?? app('config')->get('iranpayment.digipay.password'));
         $this->setGrantType($parameters['grant_type'] ?? app('config')->get('iranpayment.digipay.grant_type'));
+        $this->setTicketType($parameters['ticket_type'] ?? app('config')->get('iranpayment.digipay.ticket_type'));
         $this->setCallbackUrl($parameters['callback_url']
             ?? app('config')->get('iranpayment.digipay.callback-url')
             ?? app('config')->get('iranpayment.callback-url')
@@ -436,19 +446,15 @@ class Digipay extends AbstractGateway implements GatewayInterface
 
     public function purchase(): void
     {
-        // login and set access_token
-        $this->oauth();
-
         $data = [
-            'cellNumber' => $this->getMobile(),
+            'cellNumber' => $this->getMobile(), // e.g. 09xxxxxxxxx
             'amount' => $this->preparedAmount(),
             'providerId' => $this->getProviderId(),
             'callbackUrl' => $this->preparedCallbackUrl()
         ];
 
         try {
-            $ticketType = 11;
-            $endpoint = str_replace('{ticketType}', $ticketType, self::REQUEST_URL);
+            $endpoint = str_replace('{ticketType}', $this->getTicketType(), self::REQUEST_URL);
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $endpoint);
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
@@ -539,9 +545,6 @@ class Digipay extends AbstractGateway implements GatewayInterface
      */
     public function verify(): void
     {
-        // login and get access_token
-        $this->oauth();
-
         try {
             $endpoint = str_replace(
                 ['{trackingCode}', '{ticketType}'],
@@ -690,11 +693,7 @@ class Digipay extends AbstractGateway implements GatewayInterface
         }
 
         if ($http_code !== 200) {
-            if ($http_code == 401) {
-                throw new DigipayException("نام کاربری یا رمز عبور شما اشتباه می باشد.");
-            }
-
-            throw new DigipayException("خطا در هنگام احراز هویت.");
+            throw GatewayException::connectionProblem(new \Exception((string) $http_code));
         }
 
         if (! isset($result->access_token)) {
