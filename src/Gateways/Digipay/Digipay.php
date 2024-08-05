@@ -104,15 +104,6 @@ class Digipay extends AbstractGateway implements GatewayInterface
     protected ?array $gateway_transaction_data = null;
 
     /**
-     * @throws DigipayException
-     * @throws GatewayException
-     */
-    public function __construct()
-    {
-        $this->oauth();
-    }
-
-    /**
      * Gateway Name function
      *
      * @return string
@@ -406,6 +397,8 @@ class Digipay extends AbstractGateway implements GatewayInterface
      * @throws InvalidDataException
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
+     * @throws DigipayException
+     * @throws GatewayException
      */
     public function initialize(array $parameters = []): self
     {
@@ -422,6 +415,8 @@ class Digipay extends AbstractGateway implements GatewayInterface
             ?? app('config')->get('iranpayment.digipay.callback-url')
             ?? app('config')->get('iranpayment.callback-url')
         );
+
+        $this->oauth();
 
         return $this;
     }
