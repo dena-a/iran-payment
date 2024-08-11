@@ -7,51 +7,43 @@
 
 namespace Dena\IranPayment\Gateways\Saman;
 
-use Dena\IranPayment\Gateways\AbstractGateway;
-use Dena\IranPayment\Gateways\GatewayInterface;
-
 use Dena\IranPayment\Exceptions\GatewayException;
 use Dena\IranPayment\Exceptions\InvalidDataException;
 use Dena\IranPayment\Exceptions\IranPaymentException;
-
+use Dena\IranPayment\Gateways\AbstractGateway;
+use Dena\IranPayment\Gateways\GatewayInterface;
 use Dena\IranPayment\Helpers\Currency;
-
 use Exception;
-use SoapFault;
 use SoapClient;
+use SoapFault;
 
 class Saman extends AbstractGateway implements GatewayInterface
 {
     private const TOKEN_URL = 'https://sep.shaparak.ir/Payments/InitPayment.asmx?wsdl';
+
     private const PAYMENT_URL = 'https://sep.shaparak.ir/Payment.aspx';
+
     private const VERIFY_URL = 'https://verify.sep.ir/Payments/ReferencePayment.asmx?wsdl';
+
     private const CURRENCY = Currency::IRR;
 
     /**
      * Merchant ID variable
-     *
-     * @var string|null
      */
     protected ?string $merchant_id;
 
     /**
      * ResNum variable
-     *
-     * @var string|null
      */
     protected ?string $res_num;
 
     /**
      * Token variable
-     *
-     * @var string|null
      */
     protected ?string $token;
 
     /**
      * Gateway Name function
-     *
-     * @return string
      */
     public function getName(): string
     {
@@ -61,7 +53,6 @@ class Saman extends AbstractGateway implements GatewayInterface
     /**
      * Set Merchant Id function
      *
-     * @param string $merchant_id
      * @return $this
      */
     public function setMerchantId(string $merchant_id): self
@@ -73,8 +64,6 @@ class Saman extends AbstractGateway implements GatewayInterface
 
     /**
      * Get Merchant Id function
-     *
-     * @return string|null
      */
     public function getMerchantId(): ?string
     {
@@ -84,7 +73,7 @@ class Saman extends AbstractGateway implements GatewayInterface
     /**
      * Set ResNum function
      *
-     * @param string|null $res_num
+     * @param  string|null  $res_num
      * @return $this
      */
     public function setResNum(string $res_num): self
@@ -96,8 +85,6 @@ class Saman extends AbstractGateway implements GatewayInterface
 
     /**
      * Get ResNum function
-     *
-     * @return string|null
      */
     public function getResNum(): ?string
     {
@@ -107,7 +94,7 @@ class Saman extends AbstractGateway implements GatewayInterface
     /**
      * Set Token function
      *
-     * @param string|null $token
+     * @param  string|null  $token
      * @return $this
      */
     public function setToken(string $token): self
@@ -119,8 +106,6 @@ class Saman extends AbstractGateway implements GatewayInterface
 
     /**
      * Get Token function
-     *
-     * @return string|null
      */
     public function getToken(): ?string
     {
@@ -130,8 +115,8 @@ class Saman extends AbstractGateway implements GatewayInterface
     /**
      * Initialize function
      *
-     * @param array $parameters
      * @return $this
+     *
      * @throws InvalidDataException
      */
     public function initialize(array $parameters = []): self
@@ -170,7 +155,7 @@ class Saman extends AbstractGateway implements GatewayInterface
      */
     public function purchase(): void
     {
-        try{
+        try {
             $soap = new SoapClient(self::TOKEN_URL, [
                 'encoding' => 'UTF-8',
                 'trace' => 1,
@@ -184,7 +169,7 @@ class Saman extends AbstractGateway implements GatewayInterface
                 $this->preparedAmount(),
                 $this->getMobile(),
             );
-        } catch(SoapFault|Exception $ex) {
+        } catch (SoapFault|Exception $ex) {
             throw GatewayException::connectionProblem($ex);
         }
 
@@ -205,7 +190,6 @@ class Saman extends AbstractGateway implements GatewayInterface
     }
 
     /**
-     * @return string
      * @throws GatewayException
      */
     public function purchaseUri(): string
@@ -215,8 +199,6 @@ class Saman extends AbstractGateway implements GatewayInterface
 
     /**
      * Purchase View Params function
-     *
-     * @return array
      */
     protected function purchaseViewParams(): array
     {
@@ -269,7 +251,7 @@ class Saman extends AbstractGateway implements GatewayInterface
      */
     public function verify(): void
     {
-        try{
+        try {
             $soap = new SoapClient(self::VERIFY_URL, [
                 'encoding' => 'UTF-8',
                 'trace' => 1,
@@ -281,7 +263,7 @@ class Saman extends AbstractGateway implements GatewayInterface
                 $this->getReferenceNumber(),
                 $this->getMerchantId()
             );
-        } catch(SoapFault|Exception $ex) {
+        } catch (SoapFault|Exception $ex) {
             throw GatewayException::connectionProblem($ex);
         }
 

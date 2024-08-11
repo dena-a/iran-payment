@@ -2,7 +2,4 @@
 
 namespace Dena\IranPayment\Exceptions;
 
-class TransactionFailedException extends IranPaymentException
-{
-
-}
+class TransactionFailedException extends IranPaymentException {}

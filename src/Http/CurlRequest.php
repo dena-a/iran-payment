@@ -8,10 +8,13 @@ use Exception;
 class CurlRequest implements HttpRequestInterface
 {
     private $handle = null;
+
     private int $timeout = 30;
+
     private int $connectionTimeout = 60;
 
-    public function __construct(string $url, string $method = "GET") {
+    public function __construct(string $url, string $method = 'GET')
+    {
         $this->handle = curl_init($url);
         curl_setopt($this->handle, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($this->handle, CURLOPT_RETURNTRANSFER, true);
@@ -52,12 +55,12 @@ class CurlRequest implements HttpRequestInterface
     public function execute($data = null)
     {
         try {
-            if (!empty($data)) {
+            if (! empty($data)) {
                 curl_setopt($this->handle, CURLOPT_POSTFIELDS, $data);
                 curl_setopt(
                     $this->handle,
                     CURLOPT_HTTPHEADER,
-                    ['Content-Type: application/json', 'Content-Length: ' . strlen($data)]
+                    ['Content-Type: application/json', 'Content-Length: '.strlen($data)]
                 );
             }
 

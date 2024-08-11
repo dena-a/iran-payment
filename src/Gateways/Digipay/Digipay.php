@@ -1,4 +1,9 @@
 <?php
+/**
+ * Api Version: 2022-02-02
+ * Api Document Date: 1402/11/25
+ * Last Update: 2024/06/24
+ */
 
 namespace Dena\IranPayment\Gateways\Digipay;
 
@@ -13,100 +18,78 @@ use Psr\Container\NotFoundExceptionInterface;
 
 class Digipay extends AbstractGateway implements GatewayInterface
 {
-    private const LOGIN_URL = "https://api.mydigipay.com/digipay/api/oauth/token";
-    private const REQUEST_URL = "https://api.mydigipay.com/digipay/api/tickets/business?type={ticketType}";
-    private const VERIFY_URL = "https://api.mydigipay.com/digipay/api/purchases/verify/{trackingCode}?type={ticketType}";
-    private const DELIVER_URL = "https://api.mydigipay.com/digipay/api/purchases/deliver?type={ticketType}";
+    private const LOGIN_URL = 'https://api.mydigipay.com/digipay/api/oauth/token';
+
+    private const REQUEST_URL = 'https://api.mydigipay.com/digipay/api/tickets/business?type={ticketType}';
+
+    private const VERIFY_URL = 'https://api.mydigipay.com/digipay/api/purchases/verify/{trackingCode}?type={ticketType}';
+
+    private const DELIVER_URL = 'https://api.mydigipay.com/digipay/api/purchases/deliver?type={ticketType}';
+
     public const CURRENCY = Currency::IRR;
 
     /**
      * Provider ID variable
-     *
-     * @var string|null
      */
     protected ?string $provider_id;
 
     /**
      * Payment Url variable
-     *
-     * @var string|null
      */
     protected ?string $payment_url;
 
     /**
      * Tracking Code variable
-     *
-     * @var string|null
      */
     protected ?string $tracking_code;
 
     /**
      * Ticket variable
-     *
-     * @var string|null
      */
     protected ?string $ticket;
 
     /**
      * Ticket Type variable
-     *
-     * @var int|null
      */
     protected ?int $ticket_type;
 
     /**
      * Username variable
-     *
-     * @var string|null
      */
     protected ?string $username;
 
     /**
      * Password variable
-     *
-     * @var string|null
      */
     protected ?string $password;
 
     /**
      * Grant Type variable
-     *
-     * @var string|null
      */
     protected ?string $grant_type;
 
     /**
      * Client Id variable
-     *
-     * @var string|null
      */
     protected ?string $client_id;
 
     /**
      * Client Secret variable
-     *
-     * @var string|null
      */
     protected ?string $client_secret;
 
     /**
      * Access Token variable
-     *
-     * @var string|null
      */
     protected ?string $access_token;
 
     /**
      * Gateway Transaction Data variable
-     *
-     * @var array|null
      */
     protected ?array $gateway_transaction_data = null;
 
     /**
      * Gateway Name function
-     *
-     * @return string
      */
     public function getName(): string
     {
@@ -116,7 +99,6 @@ class Digipay extends AbstractGateway implements GatewayInterface
     /**
      * Set Ticket function
      *
-     * @param string $ticket
      * @return $this
      */
     public function setTicket(string $ticket): self
@@ -128,8 +110,6 @@ class Digipay extends AbstractGateway implements GatewayInterface
 
     /**
      * Get Ticket function
-     *
-     * @return string|null
      */
     public function getTicket(): ?string
     {
@@ -139,7 +119,6 @@ class Digipay extends AbstractGateway implements GatewayInterface
     /**
      * Set Payment Url function
      *
-     * @param string $payment_url
      * @return $this
      */
     public function setPaymentUrl(string $payment_url): self
@@ -151,8 +130,6 @@ class Digipay extends AbstractGateway implements GatewayInterface
 
     /**
      * Get Payment Url function
-     *
-     * @return string|null
      */
     public function getPaymentUrl(): ?string
     {
@@ -162,7 +139,6 @@ class Digipay extends AbstractGateway implements GatewayInterface
     /**
      * Set Provider ID function
      *
-     * @param string $provider_id
      * @return $this
      */
     public function setProviderId(string $provider_id): self
@@ -174,8 +150,6 @@ class Digipay extends AbstractGateway implements GatewayInterface
 
     /**
      * Get Provider ID function
-     *
-     * @return string|null
      */
     public function getProviderId(): ?string
     {
@@ -185,7 +159,6 @@ class Digipay extends AbstractGateway implements GatewayInterface
     /**
      * Set Tracking Code function
      *
-     * @param string $tracking_code
      * @return $this
      */
     public function setTrackingCode(string $tracking_code): self
@@ -197,8 +170,6 @@ class Digipay extends AbstractGateway implements GatewayInterface
 
     /**
      * Get Tracking Code function
-     *
-     * @return string|null
      */
     public function getTrackingCode(): ?string
     {
@@ -208,7 +179,6 @@ class Digipay extends AbstractGateway implements GatewayInterface
     /**
      * Set Ticket Type function
      *
-     * @param int $ticket_type
      * @return $this
      */
     public function setTicketType(int $ticket_type): self
@@ -220,8 +190,6 @@ class Digipay extends AbstractGateway implements GatewayInterface
 
     /**
      * Get Ticket Type function
-     *
-     * @return int|null
      */
     public function getTicketType(): ?int
     {
@@ -231,7 +199,6 @@ class Digipay extends AbstractGateway implements GatewayInterface
     /**
      * Set Username function
      *
-     * @param string $username
      * @return $this
      */
     public function setUsername(string $username): self
@@ -243,8 +210,6 @@ class Digipay extends AbstractGateway implements GatewayInterface
 
     /**
      * Get Username function
-     *
-     * @return string|null
      */
     public function getUsername(): ?string
     {
@@ -254,7 +219,6 @@ class Digipay extends AbstractGateway implements GatewayInterface
     /**
      * Set Grant Type function
      *
-     * @param string $grant_type
      * @return $this
      */
     public function setGrantType(string $grant_type = 'password'): self
@@ -266,8 +230,6 @@ class Digipay extends AbstractGateway implements GatewayInterface
 
     /**
      * Get Grant Type function
-     *
-     * @return string|null
      */
     public function getGrantType(): ?string
     {
@@ -277,7 +239,6 @@ class Digipay extends AbstractGateway implements GatewayInterface
     /**
      * Set Password function
      *
-     * @param string $password
      * @return $this
      */
     public function setPassword(string $password): self
@@ -289,8 +250,6 @@ class Digipay extends AbstractGateway implements GatewayInterface
 
     /**
      * Get Password function
-     *
-     * @return string|null
      */
     public function getPassword(): ?string
     {
@@ -300,7 +259,6 @@ class Digipay extends AbstractGateway implements GatewayInterface
     /**
      * Set Client Id function
      *
-     * @param string $client_id
      * @return $this
      */
     public function setClientId(string $client_id): self
@@ -312,8 +270,6 @@ class Digipay extends AbstractGateway implements GatewayInterface
 
     /**
      * Get Client Id function
-     *
-     * @return string|null
      */
     public function getClientId(): ?string
     {
@@ -323,7 +279,6 @@ class Digipay extends AbstractGateway implements GatewayInterface
     /**
      * Set Client Secret function
      *
-     * @param string $client_secret
      * @return $this
      */
     public function setClientSecret(string $client_secret): self
@@ -335,8 +290,6 @@ class Digipay extends AbstractGateway implements GatewayInterface
 
     /**
      * Get Client Secret function
-     *
-     * @return string|null
      */
     public function getClientSecret(): ?string
     {
@@ -346,7 +299,6 @@ class Digipay extends AbstractGateway implements GatewayInterface
     /**
      * Set Access Token function
      *
-     * @param string $access_token
      * @return $this
      */
     public function setAccessToken(string $access_token): self
@@ -358,8 +310,6 @@ class Digipay extends AbstractGateway implements GatewayInterface
 
     /**
      * Get Access Token function
-     *
-     * @return string|null
      */
     public function getAccessToken(): ?string
     {
@@ -369,7 +319,6 @@ class Digipay extends AbstractGateway implements GatewayInterface
     /**
      * Set Gateway Transaction Data function
      *
-     * @param array $gateway_transaction_data
      * @return $this
      */
     public function setGatewayTransactionData(array $gateway_transaction_data): self
@@ -381,8 +330,6 @@ class Digipay extends AbstractGateway implements GatewayInterface
 
     /**
      * Get Gateway Transaction Data function
-     *
-     * @return array|null
      */
     public function getGatewayTransactionData(): ?array
     {
@@ -392,8 +339,8 @@ class Digipay extends AbstractGateway implements GatewayInterface
     /**
      * Initialize function
      *
-     * @param array $parameters
      * @return $this
+     *
      * @throws InvalidDataException
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
@@ -428,7 +375,7 @@ class Digipay extends AbstractGateway implements GatewayInterface
     {
         parent::prePurchase();
 
-        if ($this->preparedAmount() < 100 || $this->preparedAmount() > 500000000) {
+        if ($this->preparedAmount() < 100 || $this->preparedAmount() > 1000000000) {
             throw InvalidDataException::invalidAmount();
         }
 
@@ -445,7 +392,7 @@ class Digipay extends AbstractGateway implements GatewayInterface
             'cellNumber' => $this->getMobile(), // e.g. 09xxxxxxxxx
             'amount' => $this->preparedAmount(),
             'providerId' => $this->getProviderId(),
-            'callbackUrl' => $this->preparedCallbackUrl()
+            'callbackUrl' => $this->preparedCallbackUrl(),
         ];
 
         try {
@@ -457,7 +404,7 @@ class Digipay extends AbstractGateway implements GatewayInterface
             curl_setopt($ch, CURLOPT_HTTPHEADER, [
                 'Agent: WEB',
                 'Digipay-Version: 2022-02-02',
-                'Authorization: Bearer ' . $this->getAccessToken(),
+                'Authorization: Bearer '.$this->getAccessToken(),
                 'Content-Type: application/json',
             ]);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
@@ -502,8 +449,6 @@ class Digipay extends AbstractGateway implements GatewayInterface
 
     /**
      * Purchase View Params function
-     *
-     * @return array
      */
     protected function purchaseViewParams(): array
     {
@@ -551,7 +496,7 @@ class Digipay extends AbstractGateway implements GatewayInterface
             curl_setopt($ch, CURLOPT_URL, $endpoint);
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
             curl_setopt($ch, CURLOPT_HTTPHEADER, [
-                'Authorization: Bearer ' . $this->getAccessToken(),
+                'Authorization: Bearer '.$this->getAccessToken(),
                 'Content-Type: application/json',
             ]);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
@@ -575,7 +520,7 @@ class Digipay extends AbstractGateway implements GatewayInterface
             throw DigipayException::error($result['result']['status']);
         }
 
-        $this->setTrackingCode($result["trackingCode"]);
+        $this->setTrackingCode($result['trackingCode']);
 
         $this->deliver($this->getTrackingCode(), $this->getTicketType());
 
@@ -608,7 +553,7 @@ class Digipay extends AbstractGateway implements GatewayInterface
             'deliveryDate' => now()->timestamp,
             'invoiceNumber' => $this->getPayableId(),
             'trackingCode' => $trackingCode,
-            'products' => [$this->transaction->description]
+            'products' => [$this->transaction->description],
         ];
 
         try {
@@ -620,7 +565,7 @@ class Digipay extends AbstractGateway implements GatewayInterface
             curl_setopt($ch, CURLOPT_HTTPHEADER, [
                 'Agent: WEB',
                 'Digipay-Version: 2022-02-02',
-                'Authorization: Bearer ' . $this->getAccessToken(),
+                'Authorization: Bearer '.$this->getAccessToken(),
                 'Content-Type: application/json',
             ]);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
@@ -647,15 +592,14 @@ class Digipay extends AbstractGateway implements GatewayInterface
     }
 
     /**
-     * @return void
      * @throws DigipayException
      * @throws GatewayException
      */
     private function oauth(): void
     {
         $fields = [
-            'username'   => $this->getUsername(),
-            'password'   => $this->getPassword(),
+            'username' => $this->getUsername(),
+            'password' => $this->getPassword(),
             'grant_type' => $this->getGrantType(),
         ];
 
@@ -664,8 +608,8 @@ class Digipay extends AbstractGateway implements GatewayInterface
             curl_setopt($ch, CURLOPT_URL, self::LOGIN_URL);
             curl_setopt($ch, CURLOPT_USERPWD, "{$this->getClientId()}:{$this->getClientSecret()}");
             curl_setopt($ch, CURLOPT_HTTPHEADER, [
-                 'Content-Type' => 'application/json',
-                'Authorization' => 'Basic ' . base64_encode("{$this->getClientId()}:{$this->getClientSecret()}"),
+                'Content-Type' => 'application/json',
+                'Authorization' => 'Basic '.base64_encode("{$this->getClientId()}:{$this->getClientSecret()}"),
             ]);
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
             curl_setopt($ch, CURLOPT_POSTFIELDS, $fields);
@@ -683,7 +627,7 @@ class Digipay extends AbstractGateway implements GatewayInterface
             }
 
             $result = json_decode($response);
-        } catch(\Exception $ex) {
+        } catch (\Exception $ex) {
             throw GatewayException::connectionProblem($ex);
         }
 

@@ -5,10 +5,8 @@ namespace Dena\IranPayment\Gateways\Test;
 use Dena\IranPayment\IranPayment;
 use Dena\IranPayment\Models\IranPaymentTransaction;
 
-use Illuminate\Http\Request;
-
-class TestGatewayController {
-
+class TestGatewayController
+{
     public function paymentView()
     {
         $payment = IranPayment::create('test');

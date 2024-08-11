@@ -2,44 +2,35 @@
 
 namespace Dena\IranPayment\Traits;
 
-use Dena\IranPayment\Helpers\Helpers;
-use Dena\IranPayment\Helpers\Currency;
 use Dena\IranPayment\Exceptions\InvalidDataException;
+use Dena\IranPayment\Helpers\Currency;
+use Dena\IranPayment\Helpers\Helpers;
 
 trait PaymentData
 {
     /**
      * Payment Amount variable
-     *
-     * @var int
      */
-	protected int $amount;
+    protected int $amount;
 
     /**
      * Payment Currency variable
-     *
-     * @var string
      */
     protected string $currency = Currency::IRR;
 
     /**
      * Gateway Currency variable
-     *
-     * @var string
      */
     protected string $gateway_currency;
 
     /**
      * Payment Callback URL variable
-     *
-     * @var string|null
      */
     protected ?string $callback_url;
 
     /**
      * Set Amount function
      *
-     * @param int $amount
      * @return $this
      */
     public function setAmount(int $amount): self
@@ -51,8 +42,6 @@ trait PaymentData
 
     /**
      * Get Amount function
-     *
-     * @return int
      */
     public function getAmount(): int
     {
@@ -62,16 +51,16 @@ trait PaymentData
     /**
      * Set Payment Currency function
      *
-     * @param string $currency
      * @return $this
+     *
      * @throws InvalidDataException
      */
     public function setCurrency(string $currency): self
     {
         $currency = strtoupper($currency);
 
-		if (!in_array($currency, [Currency::IRR, Currency::IRT])) {
-			throw InvalidDataException::invalidCurrency();
+        if (! in_array($currency, [Currency::IRR, Currency::IRT])) {
+            throw InvalidDataException::invalidCurrency();
         }
 
         $this->currency = $currency;
@@ -81,8 +70,6 @@ trait PaymentData
 
     /**
      * Get Payment Currency function
-     *
-     * @return string
      */
     public function getCurrency(): string
     {
@@ -92,16 +79,16 @@ trait PaymentData
     /**
      * Set Gateway Currency function
      *
-     * @param string $gateway_currency
      * @return $this
+     *
      * @throws InvalidDataException
      */
     public function setGatewayCurrency(string $gateway_currency): self
     {
         $gateway_currency = strtoupper($gateway_currency);
 
-		if (!in_array($gateway_currency, [Currency::IRR, Currency::IRT])) {
-			throw InvalidDataException::invalidCurrency();
+        if (! in_array($gateway_currency, [Currency::IRR, Currency::IRT])) {
+            throw InvalidDataException::invalidCurrency();
         }
 
         $this->gateway_currency = $gateway_currency;
@@ -111,8 +98,6 @@ trait PaymentData
 
     /**
      * Get Payment Currency function
-     *
-     * @return string
      */
     public function getGatewayCurrency(): string
     {
@@ -122,7 +107,6 @@ trait PaymentData
     /**
      * Set Callback Url function
      *
-     * @param string $callback_url
      * @return self
      */
     public function setCallbackUrl(string $callback_url)
@@ -134,8 +118,6 @@ trait PaymentData
 
     /**
      * Get Callback Url function
-     *
-     * @return string|null
      */
     public function getCallbackUrl(): ?string
     {
@@ -144,8 +126,6 @@ trait PaymentData
 
     /**
      * Get Prepared Amount function
-     *
-     * @return int
      */
     public function preparedAmount(): int
     {
@@ -162,8 +142,6 @@ trait PaymentData
 
     /**
      * Get Prepared Callback URL function
-     *
-     * @return string|null
      */
     public function preparedCallbackUrl(): ?string
     {
@@ -172,7 +150,7 @@ trait PaymentData
             : $this->callback_url;
 
         return Helpers::urlQueryBuilder($callback_url, [
-            app('config')->get('iranpayment.transaction_query_param', 'tc') => $this->getTransactionCode()
+            app('config')->get('iranpayment.transaction_query_param', 'tc') => $this->getTransactionCode(),
         ]);
     }
 }

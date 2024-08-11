@@ -2,22 +2,18 @@
 
 namespace Dena\IranPayment;
 
+use Dena\IranPayment\Exceptions\GatewayNotFoundException;
 use Dena\IranPayment\Gateways\AbstractGateway;
 use Dena\IranPayment\Gateways\Digipay\Digipay;
 use Dena\IranPayment\Gateways\GatewayInterface;
-
+use Dena\IranPayment\Gateways\Novinopay\Novinopay;
 use Dena\IranPayment\Gateways\PayIr\PayIr;
-use Dena\IranPayment\Gateways\Saman\Saman;
-use Dena\IranPayment\Gateways\Sadad\Sadad;
 use Dena\IranPayment\Gateways\PayPing\PayPing;
+use Dena\IranPayment\Gateways\Sadad\Sadad;
+use Dena\IranPayment\Gateways\Saman\Saman;
 use Dena\IranPayment\Gateways\Test\TestGateway;
 use Dena\IranPayment\Gateways\Zarinpal\Zarinpal;
-use Dena\IranPayment\Gateways\Novinopay\Novinopay;
-
-use Dena\IranPayment\Exceptions\GatewayNotFoundException;
-
 use Dena\IranPayment\Models\IranPaymentTransaction;
-
 use Illuminate\Http\Request;
 
 class IranPayment
@@ -25,27 +21,34 @@ class IranPayment
     /**
      * Gateways classes constant names
      */
-    const SAMAN	    = 'saman';
-    const SADAD     = 'sadad';
-    const PAYIR	    = 'payir';
-    const PAYDOTIR  = 'pay.ir';
-    const ZARINPAL  = 'zarinpal';
-    const PAYPING   = 'payping';
+    const SAMAN = 'saman';
+
+    const SADAD = 'sadad';
+
+    const PAYIR = 'payir';
+
+    const PAYDOTIR = 'pay.ir';
+
+    const ZARINPAL = 'zarinpal';
+
+    const PAYPING = 'payping';
+
     const NOVINOPAY = 'novinopay';
-    const DIGIPAY   = 'digipay';
-    const TEST      = 'test';
+
+    const DIGIPAY = 'digipay';
+
+    const TEST = 'test';
 
     /**
      * Gateway variable
-     *
-     * @var GatewayInterface
      */
     protected GatewayInterface $gateway;
 
     /**
      * Constructor function
      *
-     * @param GatewayInterface|string $gateway
+     * @param  GatewayInterface|string  $gateway
+     *
      * @throws GatewayNotFoundException
      */
     public function __construct($gateway)
@@ -56,8 +59,9 @@ class IranPayment
     /**
      * Set Gateway function
      *
-     * @param GatewayInterface|string $gateway
+     * @param  GatewayInterface|string  $gateway
      * @return $this
+     *
      * @throws GatewayNotFoundException
      */
     public function setGateway($gateway): self
@@ -101,7 +105,7 @@ class IranPayment
             case self::TEST:
             case TestGateway::class:
                 if (app('config')->get('app.env', 'production') === 'production' ||
-                    !app('config')->get('iranpayment.test.active', false)) {
+                    ! app('config')->get('iranpayment.test.active', false)) {
                     throw GatewayNotFoundException::productionUnavailableGateway();
                 }
 
@@ -116,8 +120,6 @@ class IranPayment
 
     /**
      * Get Gateway function
-     *
-     * @return GatewayInterface
      */
     public function getGateway(): GatewayInterface
     {
@@ -126,8 +128,6 @@ class IranPayment
 
     /**
      * Build Gateway function
-     *
-     * @return GatewayInterface
      */
     public function build(): GatewayInterface
     {
@@ -136,8 +136,6 @@ class IranPayment
 
     /**
      * Get Supported Gateways function
-     *
-     * @return array
      */
     public function getSupportedGateways(): array
     {
@@ -162,8 +160,8 @@ class IranPayment
     /**
      * Create new Instance of IranPayment
      *
-     * @param GatewayInterface|string|null $gateway
-     * @return GatewayInterface
+     * @param  GatewayInterface|string|null  $gateway
+     *
      * @throws GatewayNotFoundException
      */
     public static function create($gateway = null): GatewayInterface
@@ -171,7 +169,7 @@ class IranPayment
         if (is_null($gateway)) {
             $gateway = app('config')->get('iranpayment.default');
 
-            if (!isset($gateway)) {
+            if (! isset($gateway)) {
                 throw GatewayNotFoundException::defaultGatewayDoesNotSet();
             }
         }
@@ -182,8 +180,8 @@ class IranPayment
     /**
      * Detect Gateway and Create new Instance of IranPayment
      *
-     * @param IranPaymentTransaction|Request|null $data
-     * @return GatewayInterface
+     * @param  IranPaymentTransaction|Request|null  $data
+     *
      * @throws GatewayNotFoundException
      */
     public static function detect($data = null): GatewayInterface
@@ -201,10 +199,14 @@ class IranPayment
 
         if (isset($transaction_code)) {
             $transaction = IranPaymentTransaction::where('code', $transaction_code)->first();
-            if (isset($transaction)) $gateway = $transaction->gateway;
+            if (isset($transaction)) {
+                $gateway = $transaction->gateway;
+            }
         }
 
-        if (!isset($gateway)) throw new GatewayNotFoundException;
+        if (! isset($gateway)) {
+            throw new GatewayNotFoundException;
+        }
 
         $gateway = self::create($gateway);
 

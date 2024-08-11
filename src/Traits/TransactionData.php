@@ -2,48 +2,40 @@
 
 namespace Dena\IranPayment\Traits;
 
-use Dena\IranPayment\Exceptions\TransactionNotFoundException;
-
-use Dena\IranPayment\Models\IranPaymentTransaction;
-
 use Carbon\Carbon;
+use Dena\IranPayment\Exceptions\TransactionNotFoundException;
+use Dena\IranPayment\Models\IranPaymentTransaction;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 trait TransactionData
 {
     /**
      * Transaction variable
-     *
-     * @var IranPaymentTransaction|null
      */
     protected ?IranPaymentTransaction $transaction = null;
 
     /**
      * Extra variable
-     *
-     * @var array|null
      */
     protected ?array $extra = null;
 
     /**
      * Fillable data variable
-     *
-     * @var array
      */
     protected array $fillableData = [];
 
     /**
      * Set Transaction  function
      *
-     * @param IranPaymentTransaction|Model $transaction
+     * @param  IranPaymentTransaction|Model  $transaction
      * @return $this
      */
     public function setTransaction(IranPaymentTransaction $transaction): self
     {
         $this->transaction = $transaction;
-        
+
         if (isset($transaction->payable)) {
             $this->setPayable($transaction->payable);
         }
@@ -61,8 +53,6 @@ trait TransactionData
 
     /**
      * Get Transaction function
-     *
-     * @return IranPaymentTransaction|null
      */
     public function getTransaction(): ?IranPaymentTransaction
     {
@@ -72,7 +62,7 @@ trait TransactionData
     /**
      * Set FillableData function
      *
-     * @param FillableData $fillableData
+     * @param  FillableData  $fillableData
      * @return $this
      */
     public function setFillableData(array $fillableData): self
@@ -95,8 +85,9 @@ trait TransactionData
     /**
      * Find Transaction function
      *
-     * @param string|int $uid
+     * @param  string|int  $uid
      * @return $this
+     *
      * @throws TransactionNotFoundException
      */
     public function findTransaction($uid): self
@@ -107,7 +98,7 @@ trait TransactionData
             $transaction = IranPaymentTransaction::where('code', $uid)->first();
         }
 
-        if (!isset($transaction)) {
+        if (! isset($transaction)) {
             throw new TransactionNotFoundException;
         }
 
@@ -118,11 +109,6 @@ trait TransactionData
 
     /**
      * Find Item Transactions
-     *
-     * @param $payable_id
-     * @param $payable_type
-     * @param $status
-     * @return Collection
      */
     public function payableTransactions($payable_id, $payable_type = null, $status = null): Collection
     {
@@ -199,24 +185,23 @@ trait TransactionData
         return isset($this->transaction) ? $this->transaction->extra : $this->extra;
     }
 
-
     /**
      * Add Extra function
      *
      * @param [type] $val
      * @param [type] $key
-     * @return self
+     *
      * @throws \Exception
      */
     public function addExtra($val, $key = null): self
     {
-        if (!empty($this->transaction) && !empty($this->transaction['id'])) {
+        if (! empty($this->transaction) && ! empty($this->transaction['id'])) {
             $extra = $this->getExtra();
-            if(is_null($extra)) {
+            if (is_null($extra)) {
                 $extra = [];
             }
-            if(is_array($extra)) {
-                if(!is_null($key)) {
+            if (is_array($extra)) {
+                if (! is_null($key)) {
                     $extra[$key] = $val;
                 } else {
                     $extra[] = $val;
@@ -228,7 +213,7 @@ trait TransactionData
             if (empty($this->extra)) {
                 $this->extra = [];
             }
-            if(!is_null($key)) {
+            if (! is_null($key)) {
                 $this->extra[$key] = $val;
             } else {
                 $this->extra[] = $val;
@@ -240,29 +225,22 @@ trait TransactionData
 
     /**
      * Payable variable
-     *
-     * @var Model|null
      */
     protected ?Model $payable;
 
     /**
      * Payable id
-     *
-     * @var int|null
      */
     protected ?int $payable_id;
 
     /**
      * Payable type
-     *
-     * @var string|null
      */
     protected ?string $payable_type;
 
     /**
      * Set Payable function
      *
-     * @param Model $payable
      * @return $this
      */
     public function setPayable(Model $payable): self
@@ -279,30 +257,27 @@ trait TransactionData
      */
     public function getPayable()
     {
-        if ($this->payable)
+        if ($this->payable) {
             return $this->payable;
-        elseif($this->payable_id)
+        } elseif ($this->payable_id) {
             return $this->payable_id;
+        }
 
         return null;
     }
 
     /**
      * Set Payable function
-     *
-     * @param int $payableId
-     * @return self
      */
-    public function setPayableId(int $payableId) : self
+    public function setPayableId(int $payableId): self
     {
         $this->payable_id = $payableId;
+
         return $this;
     }
 
     /**
      * Get Payable id function
-     *
-     * @return int
      */
     public function getPayableId(): int
     {
@@ -311,9 +286,6 @@ trait TransactionData
 
     /**
      * Set Payable function
-     *
-     * @param string $payableType
-     * @return self
      */
     public function setPayableType(string $payableType): self
     {
@@ -324,8 +296,6 @@ trait TransactionData
 
     /**
      * Get Payable id function
-     *
-     * @return string
      */
     public function getPayableType(): string
     {
@@ -345,7 +315,7 @@ trait TransactionData
         ));
 
         $transaction->status = IranPaymentTransaction::T_INIT;
-        $transaction->code = Str::random(app('config')->get('iranpayment.code_length' ,16));
+        $transaction->code = Str::random(app('config')->get('iranpayment.code_length', 16));
 
         if (isset($this->payable)) {
             $transaction->payable()->associate($this->payable);
@@ -361,33 +331,33 @@ trait TransactionData
 
     protected function fillTransaction(array $params = []): void
     {
-        if (!empty($params['gateway_data']) && is_array($params['gateway_data'])) {
+        if (! empty($params['gateway_data']) && is_array($params['gateway_data'])) {
             $this->transaction->gateway_data = array_merge(
                 $this->transaction->gateway_data ?? [],
                 $params['gateway_data']
             );
             unset($params['gateway_data']);
         }
-        if (!empty($params['extra']) && is_array($params['extra'])) {
+        if (! empty($params['extra']) && is_array($params['extra'])) {
             $this->transaction->extra = array_merge(
                 $this->transaction->extra ?? [],
                 $params['extra']
             );
             unset($params['extra']);
         }
-        
+
         $this->transaction->fill($params);
     }
 
     protected function transactionSucceed(array $params = []): void
     {
         $this->transaction->fill($params);
-        $this->transaction->paid_at	= Carbon::now();
+        $this->transaction->paid_at = Carbon::now();
         $this->transaction->status = IranPaymentTransaction::T_SUCCEED;
         $this->transaction->save();
     }
 
-    protected function transactionFailed(string $errors = null): void
+    protected function transactionFailed(?string $errors = null): void
     {
         $this->transaction->status = IranPaymentTransaction::T_FAILED;
         $this->transaction->errors = $errors;

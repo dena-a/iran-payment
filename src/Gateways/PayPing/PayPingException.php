@@ -49,7 +49,7 @@ class PayPingException extends GatewayException
 
     public static function httpError($http_code)
     {
-        if (!isset(self::$http_code_errors[$http_code])) {
+        if (! isset(self::$http_code_errors[$http_code])) {
             return self::unknownResponse((string) $http_code);
         }
 
@@ -57,13 +57,13 @@ class PayPingException extends GatewayException
     }
 
     /**
-     * @param $error_code
      * @return $this
+     *
      * @throws TransactionFailedException
      */
     public static function error($error_code)
     {
-        if (!isset(self::$errors[$error_code])) {
+        if (! isset(self::$errors[$error_code])) {
             return self::unknownResponse((string) $error_code);
         }
 

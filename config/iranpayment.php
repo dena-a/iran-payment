@@ -52,10 +52,10 @@ return [
     |--------------------------------------------------------------------------
     */
     'sadad' => [
-        'merchant_id'  => env('SADAD_MERCHANT_ID',  'xxxxxxxx'),
-        'terminal_id'  => env('SADAD_TERMINAL_ID',  'xxxxxxxx'),
+        'merchant_id' => env('SADAD_MERCHANT_ID', 'xxxxxxxx'),
+        'terminal_id' => env('SADAD_TERMINAL_ID', 'xxxxxxxx'),
         'terminal_key' => env('SADAD_TERMINAL_KEY', 'xxxxxxxx'),
-        'app_name'     => env('APP_NAME', ''),
+        'app_name' => env('APP_NAME', ''),
         // 'callback-url' => 'http://example.com/payments/sadad/callback',
     ],
 

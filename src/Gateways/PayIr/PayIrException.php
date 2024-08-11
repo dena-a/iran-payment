@@ -38,13 +38,13 @@ class PayIrException extends GatewayException
     ];
 
     /**
-     * @param $error_code
      * @return $this
+     *
      * @throws TransactionFailedException
      */
     public static function error($error_code)
     {
-        if (!isset(self::$errors[$error_code])) {
+        if (! isset(self::$errors[$error_code])) {
             return self::unknownResponse((string) $error_code);
         }
 
