@@ -2,7 +2,6 @@
 
 use Dena\IranPayment\Gateways\Sadad\Sadad;
 use Dena\IranPayment\Gateways\Sadad\SadadException;
-use Dena\IranPayment\Gateways\Test\TestGateway;
 use Dena\IranPayment\IranPayment;
 use Dena\IranPayment\Models\IranPaymentTransaction;
 use Orchestra\Testbench\TestCase;
@@ -13,13 +12,14 @@ class IranpaymentSadadGatewayTest extends TestCase
     /**
      * Setup the test environment.
      */
-    protected function setUp() : void
+    protected function setUp(): void
     {
         parent::setUp();
 
-        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
-        $this->loadMigrationsFrom(__DIR__ . '/migrations');
+        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
+        $this->loadMigrationsFrom(__DIR__.'/migrations');
     }
+
     /**
      * Define environment setup.
      *
@@ -32,9 +32,9 @@ class IranpaymentSadadGatewayTest extends TestCase
             'database.default' => 'testing',
             'app.env' => 'testing',
             'iranpayment.sadad.merchant_id' => app('config')->get('iranpayment.sadad.merchant_id', 1),
-            'iranpayment.sadad.terminal_id' => app('config')->get('iranpayment.sadad.terminal_id', "1"),
-            'iranpayment.sadad.terminal_key' => app('config')->get('iranpayment.sadad.terminal_key', "1"),
-            'iranpayment.sadad.app_name' => app('config')->get('iranpayment.sadad.app_name', "TestApp"),
+            'iranpayment.sadad.terminal_id' => app('config')->get('iranpayment.sadad.terminal_id', '1'),
+            'iranpayment.sadad.terminal_key' => app('config')->get('iranpayment.sadad.terminal_key', '1'),
+            'iranpayment.sadad.app_name' => app('config')->get('iranpayment.sadad.app_name', 'TestApp'),
         ]);
     }
 
@@ -53,14 +53,14 @@ class IranpaymentSadadGatewayTest extends TestCase
         $purchaseResponse = (object) [
             'Token' => 1,
             'ResCode' => 0,
-            'Description' => ''
+            'Description' => '',
         ];
         $verifyResponse = (object) [
             'ResCode' => 0,
             'Amount' => 10000,
             'SystemTraceNo' => 1,
             'RetrivalRefNo' => 1,
-            'Description' => ''
+            'Description' => '',
         ];
         $sadad->shouldReceive('httpRequest')->andReturn($purchaseResponse, $verifyResponse);
         // $sadad->shouldReceive('purchase')->andReturn(null);
@@ -82,7 +82,7 @@ class IranpaymentSadadGatewayTest extends TestCase
         $payment = $payment->ready();
         $this->assertEquals(IranPaymentTransaction::T_PENDING, $payment->getTransaction()->status);
         $this->assertEquals(1, $payment->getToken());
-        $this->assertEquals("https://sadad.shaparak.ir/VPG/Purchase?Token=1", $payment->purchaseUri());
+        $this->assertEquals('https://sadad.shaparak.ir/VPG/Purchase?Token=1', $payment->purchaseUri());
 
         $tr = $payment->getTransaction();
         $payment = (new IranPayment($sadad))->build();
@@ -99,14 +99,14 @@ class IranpaymentSadadGatewayTest extends TestCase
         $purchaseResponse = (object) [
             'Token' => 1,
             'ResCode' => 1006,
-            'Description' => ''
+            'Description' => '',
         ];
         $verifyResponse = (object) [
             'ResCode' => -1,
             'Amount' => 10000,
             'SystemTraceNo' => 1,
             'RetrivalRefNo' => 1,
-            'Description' => ''
+            'Description' => '',
         ];
         $sadad->shouldReceive('httpRequest')->andReturn($purchaseResponse, $verifyResponse);
 

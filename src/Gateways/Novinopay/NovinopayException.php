@@ -8,15 +8,15 @@ use Dena\IranPayment\Exceptions\TransactionFailedException;
 class NovinopayException extends GatewayException
 {
     public static array $errors = [
-        -1  => 'صرفا درخواست با متد POST قابل پذیرش است',
-        -2  => 'مقداری برای MerchantID ارسال نشده است',
-        -3  => 'مقداری برای Amount ارسال نشده است',
-        -4  => 'مقداری برای CallbackURL ارسال نشده است',
-        -5  => 'مبلغ صحیح نمیباشد',
-        -6  => 'MerchantID وارد شده در سیستم یافت نشد',
-        -7  => 'MerchantID وارد شده فعال نیست',
-        -8  => 'اکانت شما تجاری نیست, لذا امکان استفاده از وبسرویس را ندارید',
-        -9  => 'IP معتبر نیست',
+        -1 => 'صرفا درخواست با متد POST قابل پذیرش است',
+        -2 => 'مقداری برای MerchantID ارسال نشده است',
+        -3 => 'مقداری برای Amount ارسال نشده است',
+        -4 => 'مقداری برای CallbackURL ارسال نشده است',
+        -5 => 'مبلغ صحیح نمیباشد',
+        -6 => 'MerchantID وارد شده در سیستم یافت نشد',
+        -7 => 'MerchantID وارد شده فعال نیست',
+        -8 => 'اکانت شما تجاری نیست, لذا امکان استفاده از وبسرویس را ندارید',
+        -9 => 'IP معتبر نیست',
         -10 => 'آدرس بازگشتی با آدرس درگاه پرداخت ثبت شده همخوانی ندارد',
         -11 => 'خطای در وب سرویس - ایجاد تراکنش با خطا مواجه شد',
         -12 => 'مقدار Authority ارسالی معتبر نیست - تراکنش یافت نشد',
@@ -38,13 +38,13 @@ class NovinopayException extends GatewayException
     ];
 
     /**
-     * @param $error_code
      * @return $this
+     *
      * @throws TransactionFailedException
      */
     public static function error($error_code): self
     {
-        if (!isset(self::$errors[$error_code])) {
+        if (! isset(self::$errors[$error_code])) {
             return self::unknownResponse((string) $error_code);
         }
 

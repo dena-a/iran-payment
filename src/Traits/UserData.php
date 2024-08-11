@@ -6,43 +6,32 @@ trait UserData
 {
     /**
      * User Full Name variable
-     *
-     * @var string|null
      */
     protected ?string $full_name = null;
 
     /**
      * User Mobile variable
-     *
-     * @var string|null
      */
     protected ?string $mobile = null;
 
     /**
      * User Email variable
-     *
-     * @var string|null
      */
     protected ?string $email = null;
 
     /**
      * Transaction Description variable
-     *
-     * @var string|null
      */
     protected ?string $description = null;
 
     /**
      * Valid Card Number variable for transaction
-     *
-     * @var string|null
      */
     protected ?string $valid_card_number = null;
 
     /**
      * Set User Full Name function
      *
-     * @param string $full_name
      * @return $this
      */
     public function setFullname(string $full_name): self
@@ -54,8 +43,6 @@ trait UserData
 
     /**
      * Get User Full Name function
-     *
-     * @return string|null
      */
     public function getFullname(): ?string
     {
@@ -65,7 +52,6 @@ trait UserData
     /**
      * Set User Mobile function
      *
-     * @param string $mobile
      * @return $this
      */
     public function setMobile(string $mobile): self
@@ -77,8 +63,6 @@ trait UserData
 
     /**
      * Get User Mobile function
-     *
-     * @return string|null
      */
     public function getMobile(): ?string
     {
@@ -88,7 +72,6 @@ trait UserData
     /**
      * Set User Email function
      *
-     * @param string $email
      * @return $this
      */
     public function setEmail(string $email): self
@@ -100,8 +83,6 @@ trait UserData
 
     /**
      * Get User Email function
-     *
-     * @return string|null
      */
     public function getEmail(): ?string
     {
@@ -111,7 +92,6 @@ trait UserData
     /**
      * Set Transaction Description function
      *
-     * @param string $description
      * @return $this
      */
     public function setDescription(string $description): self
@@ -123,8 +103,6 @@ trait UserData
 
     /**
      * Get Transaction Description function
-     *
-     * @return string|null
      */
     public function getDescription(): ?string
     {
@@ -134,7 +112,6 @@ trait UserData
     /**
      * Set Valid Card Number function
      *
-     * @param string $valid_card_number
      * @return $this
      */
     public function setValidCardNumber(string $valid_card_number): self
@@ -146,8 +123,6 @@ trait UserData
 
     /**
      * Get Valid Card Number function
-     *
-     * @return string|null
      */
     public function getValidCardNumber(): ?string
     {

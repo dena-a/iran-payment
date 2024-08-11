@@ -7,77 +7,65 @@
 
 namespace Dena\IranPayment\Gateways\Zarinpal;
 
-use Dena\IranPayment\Gateways\AbstractGateway;
-use Dena\IranPayment\Gateways\GatewayInterface;
-
 use Dena\IranPayment\Exceptions\GatewayException;
 use Dena\IranPayment\Exceptions\InvalidDataException;
 use Dena\IranPayment\Exceptions\IranPaymentException;
 use Dena\IranPayment\Exceptions\TransactionFailedException;
-
+use Dena\IranPayment\Gateways\AbstractGateway;
+use Dena\IranPayment\Gateways\GatewayInterface;
 use Dena\IranPayment\Helpers\Currency;
-
 use Exception;
-use SoapFault;
 use SoapClient;
+use SoapFault;
 
 class Zarinpal extends AbstractGateway implements GatewayInterface
 {
-    private const WSDL_URL       = "https://www.zarinpal.com/pg/services/WebGate/wsdl";
-    private const WEB_GATE_URL   = "https://www.zarinpal.com/pg/StartPay/{Authority}";
-    private const ZARIN_GATE_URL = "https://www.zarinpal.com/pg/StartPay/{Authority}/ZarinGate";
-    private const SANDBOX_URL    = "https://sandbox.zarinpal.com/pg/StartPay/{Authority}";
-    public const CURRENCY        = Currency::IRT;
+    private const WSDL_URL = 'https://www.zarinpal.com/pg/services/WebGate/wsdl';
 
-	/**
-	 * Merchant ID variable
-	 *
-	 * @var string|null
-	 */
-	protected ?string $merchant_id;
+    private const WEB_GATE_URL = 'https://www.zarinpal.com/pg/StartPay/{Authority}';
+
+    private const ZARIN_GATE_URL = 'https://www.zarinpal.com/pg/StartPay/{Authority}/ZarinGate';
+
+    private const SANDBOX_URL = 'https://sandbox.zarinpal.com/pg/StartPay/{Authority}';
+
+    public const CURRENCY = Currency::IRT;
+
+    /**
+     * Merchant ID variable
+     */
+    protected ?string $merchant_id;
 
     /**
      * Authority variable
-     *
-     * @var string|null
      */
     protected ?string $authority;
 
     /**
      * Ref Id variable
-     *
-     * @var string|null
      */
     protected ?string $ref_id;
 
     /**
      * Sandbox mod variable
-     *
-     * @var string
      */
     protected string $type = 'normal';
 
     /**
      * Add Fees variable
-     *
-     * @var bool
      */
     private bool $add_fees = false;
 
-	/**
-	 * Gateway Name function
-	 *
-	 * @return string
-	 */
-	public function getName(): string
-	{
-		return 'zarinpal';
-	}
+    /**
+     * Gateway Name function
+     */
+    public function getName(): string
+    {
+        return 'zarinpal';
+    }
 
     /**
      * Set Merchant ID function
      *
-     * @param string $merchant_id
      * @return $this
      */
     public function setMerchantId(string $merchant_id): self
@@ -89,8 +77,6 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
 
     /**
      * Get Merchant ID function
-     *
-     * @return string|null
      */
     public function getMerchantId(): ?string
     {
@@ -100,7 +86,6 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
     /**
      * Set Type function
      *
-     * @param string $type
      * @return $this
      */
     public function setType(string $type): self
@@ -112,8 +97,6 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
 
     /**
      * Get Type function
-     *
-     * @return string
      */
     public function getType(): string
     {
@@ -123,7 +106,6 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
     /**
      * Set Authority function
      *
-     * @param string $authority
      * @return $this
      */
     public function setAuthority(string $authority): self
@@ -135,8 +117,6 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
 
     /**
      * Get Authority function
-     *
-     * @return string|null
      */
     public function getAuthority(): ?string
     {
@@ -146,7 +126,6 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
     /**
      * Set Ref ID function
      *
-     * @param string $ref_id
      * @return $this
      */
     public function setRefId(string $ref_id): self
@@ -158,8 +137,6 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
 
     /**
      * Get Ref ID function
-     *
-     * @return string|null
      */
     public function getRefId(): ?string
     {
@@ -169,7 +146,6 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
     /**
      * Set Add Fees function
      *
-     * @param bool $add_fees
      * @return $this
      */
     public function setAddFees(bool $add_fees): self
@@ -181,8 +157,6 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
 
     /**
      * Get Token function
-     *
-     * @return bool
      */
     public function getAddFees(): bool
     {
@@ -192,8 +166,8 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
     /**
      * Initialize function
      *
-     * @param array $parameters
      * @return $this
+     *
      * @throws InvalidDataException
      */
     public function initialize(array $parameters = []): self
@@ -233,31 +207,31 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
      * @throws GatewayException
      * @throws TransactionFailedException
      */
-	public function purchase(): void
-	{
-		$fields = [
-			'MerchantID' => $this->getMerchantId(),
+    public function purchase(): void
+    {
+        $fields = [
+            'MerchantID' => $this->getMerchantId(),
             'Amount' => $this->preparedAmount(),
             'Description' => $this->getDescription(),
             'Email' => $this->getEmail(),
             'Mobile' => $this->getMobile(),
             'CallbackURL' => $this->preparedCallbackUrl(),
-		];
+        ];
 
-		try {
-			$soap = new SoapClient(self::WSDL_URL, [
-				'encoding' => 'UTF-8',
-				'trace' => 1,
-				'exceptions' => 1,
-				'connection_timeout' => $this->getGatewayRequestOptions()['connection_timeout'] ?? 60,
-			]);
+        try {
+            $soap = new SoapClient(self::WSDL_URL, [
+                'encoding' => 'UTF-8',
+                'trace' => 1,
+                'exceptions' => 1,
+                'connection_timeout' => $this->getGatewayRequestOptions()['connection_timeout'] ?? 60,
+            ]);
 
             $result = $soap->PaymentRequest($fields);
-		} catch(SoapFault|Exception $ex) {
-		    throw GatewayException::connectionProblem($ex);
-		}
+        } catch (SoapFault|Exception $ex) {
+            throw GatewayException::connectionProblem($ex);
+        }
 
-        if (!isset($result->Status)) {
+        if (! isset($result->Status)) {
             throw GatewayException::unknownResponse(json_encode($result));
         }
 
@@ -265,12 +239,12 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
             throw ZarinpalException::error($result->Status);
         }
 
-        if (!isset($result->Authority)) {
+        if (! isset($result->Authority)) {
             throw GatewayException::unknownResponse(json_encode($result));
         }
 
         $this->setAuthority($result->Authority);
-	}
+    }
 
     protected function postPurchase(): void
     {
@@ -284,12 +258,11 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
     /**
      * Purchase Uri function
      *
-     * @return string
      * @throws InvalidDataException
      */
-	public function purchaseUri(): string
-	{
-	    switch ($this->getType()) {
+    public function purchaseUri(): string
+    {
+        switch ($this->getType()) {
             case 'normal':
                 $url = self::WEB_GATE_URL;
                 break;
@@ -306,12 +279,10 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
         }
 
         return str_replace('{Authority}', $this->getReferenceNumber(), $url);
-	}
+    }
 
     /**
      * Purchase View Params function
-     *
-     * @return array
      */
     protected function purchaseViewParams(): array
     {
@@ -337,23 +308,23 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
         }
 
         $this->setAuthority($this->getReferenceNumber());
-	}
+    }
 
     /**
      * @throws GatewayException
      * @throws ZarinpalException
      * @throws TransactionFailedException
      */
-	public function verify(): void
-	{
-		$fields = [
-			'MerchantID' => $this->getMerchantId(),
-			'Authority' => $this->getAuthority(),
-			'Amount' => $this->preparedAmount(),
-		];
+    public function verify(): void
+    {
+        $fields = [
+            'MerchantID' => $this->getMerchantId(),
+            'Authority' => $this->getAuthority(),
+            'Amount' => $this->preparedAmount(),
+        ];
 
-		try {
-			$soap = new SoapClient(self::WSDL_URL, [
+        try {
+            $soap = new SoapClient(self::WSDL_URL, [
                 'encoding' => 'UTF-8',
                 'trace' => 1,
                 'exceptions' => 1,
@@ -361,11 +332,11 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
             ]);
 
             $result = $soap->PaymentVerification($fields);
-        } catch(SoapFault|Exception $ex) {
+        } catch (SoapFault|Exception $ex) {
             throw GatewayException::connectionProblem($ex);
         }
 
-        if (!isset($result->Status)) {
+        if (! isset($result->Status)) {
             throw GatewayException::unknownResponse(json_encode($result));
         }
 
@@ -373,12 +344,12 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
             throw ZarinpalException::error($result->Status);
         }
 
-        if (!isset($result->RefID)) {
+        if (! isset($result->RefID)) {
             throw GatewayException::unknownResponse(json_encode($result));
         }
 
         $this->setRefId($result->RefID);
-	}
+    }
 
     protected function postVerify(): void
     {
@@ -393,6 +364,7 @@ class Zarinpal extends AbstractGateway implements GatewayInterface
     {
         $fees = $amount * 1 / 100;
         $amount += $fees;
+
         return intval($amount);
     }
 }

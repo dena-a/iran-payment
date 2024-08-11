@@ -6,7 +6,6 @@ use Dena\IranPayment\Exceptions\InvalidDataException;
 use Dena\IranPayment\Gateways\AbstractGateway;
 use Dena\IranPayment\Gateways\GatewayInterface;
 use Dena\IranPayment\Helpers\Currency;
-use Exception;
 
 class TestGateway extends AbstractGateway implements GatewayInterface
 {
@@ -33,11 +32,11 @@ class TestGateway extends AbstractGateway implements GatewayInterface
         return $this;
     }
 
-	protected function prePurchase(): void
-	{
+    protected function prePurchase(): void
+    {
         parent::prePurchase();
 
-        if ($this->preparedAmount() < 0 || $this->preparedAmount() > 500000000) {
+        if ($this->preparedAmount() < 0 || $this->preparedAmount() > 1000000000) {
             throw InvalidDataException::invalidAmount();
         }
     }
@@ -51,8 +50,6 @@ class TestGateway extends AbstractGateway implements GatewayInterface
 
     /**
      * Purchase View Params function
-     *
-     * @return array
      */
     protected function purchaseViewParams(): array
     {
@@ -64,8 +61,6 @@ class TestGateway extends AbstractGateway implements GatewayInterface
 
     /**
      * Pay Link function
-     *
-     * @return string
      */
     public function purchaseUri(): string
     {
@@ -97,7 +92,7 @@ class TestGateway extends AbstractGateway implements GatewayInterface
         }
 
         $trackingCode = rand(111111, 999999);
-		$this->transactionSucceed([
+        $this->transactionSucceed([
             'card_number' => rand(1111, 9999).'********'.rand(1111, 9999),
             'tracking_code' => $trackingCode,
             'reference_number' => 'RefNum-'.$trackingCode,

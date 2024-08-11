@@ -1,6 +1,5 @@
 <?php
 
-use Dena\IranPayment\Gateways\Sadad\Sadad;
 use Dena\IranPayment\Gateways\Test\TestGateway;
 use Dena\IranPayment\IranPayment;
 use Dena\IranPayment\Models\IranPaymentTransaction;
@@ -12,13 +11,14 @@ class IranpaymentTestGatewayTest extends TestCase
     /**
      * Setup the test environment.
      */
-    protected function setUp() : void
+    protected function setUp(): void
     {
         parent::setUp();
 
-        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
-        $this->loadMigrationsFrom(__DIR__ . '/migrations');
+        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
+        $this->loadMigrationsFrom(__DIR__.'/migrations');
     }
+
     /**
      * Define environment setup.
      *

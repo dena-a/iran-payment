@@ -7,76 +7,60 @@
 
 namespace Dena\IranPayment\Gateways\Novinopay;
 
-use Dena\IranPayment\Gateways\AbstractGateway;
-use Dena\IranPayment\Gateways\GatewayInterface;
-
-use Exception;
 use Dena\IranPayment\Exceptions\GatewayException;
 use Dena\IranPayment\Exceptions\InvalidDataException;
 use Dena\IranPayment\Exceptions\IranPaymentException;
 use Dena\IranPayment\Exceptions\TransactionFailedException;
-
+use Dena\IranPayment\Gateways\AbstractGateway;
+use Dena\IranPayment\Gateways\GatewayInterface;
 use Dena\IranPayment\Helpers\Currency;
+use Exception;
 
 class Novinopay extends AbstractGateway implements GatewayInterface
 {
-    private const REQUEST_URL = "https://api.novinopay.com/Payment/rest/v1/Request";
-    private const VERIFY_URL = "https://api.novinopay.com/Payment/rest/v1/Verification";
+    private const REQUEST_URL = 'https://api.novinopay.com/Payment/rest/v1/Request';
+
+    private const VERIFY_URL = 'https://api.novinopay.com/Payment/rest/v1/Verification';
+
     public const CURRENCY = Currency::IRT;
 
     /**
      * Merchant ID variable
-     *
-     * @var string|null
      */
     protected ?string $merchant_id;
 
     /**
      * Invoice ID variable
-     *
-     * @var string|null
      */
     protected ?string $invoice_id;
 
     /**
      * Authority variable
-     *
-     * @var string|null
      */
     protected ?string $authority;
 
     /**
      * Ref Id variable
-     *
-     * @var string|null
      */
     protected ?string $ref_id;
 
     /**
      * Payment Url variable
-     *
-     * @var string|null
      */
     protected ?string $payment_url;
 
     /**
      * Mask Card Number variable
-     *
-     * @var string|null
      */
     protected ?string $mask_card_number = null;
 
     /**
      * Gateway Transaction Data variable
-     *
-     * @var array|null
      */
     protected ?array $gateway_transaction_data = null;
 
     /**
      * Gateway Name function
-     *
-     * @return string
      */
     public function getName(): string
     {
@@ -86,7 +70,6 @@ class Novinopay extends AbstractGateway implements GatewayInterface
     /**
      * Set Merchant ID function
      *
-     * @param string $merchant_id
      * @return $this
      */
     public function setMerchantId(string $merchant_id): self
@@ -98,8 +81,6 @@ class Novinopay extends AbstractGateway implements GatewayInterface
 
     /**
      * Get Merchant ID function
-     *
-     * @return string|null
      */
     public function getMerchantId(): ?string
     {
@@ -109,7 +90,6 @@ class Novinopay extends AbstractGateway implements GatewayInterface
     /**
      * Set Invoice ID function
      *
-     * @param string $invoice_id
      * @return $this
      */
     public function setInvoiceId(string $invoice_id): self
@@ -121,8 +101,6 @@ class Novinopay extends AbstractGateway implements GatewayInterface
 
     /**
      * Get Invoice ID function
-     *
-     * @return string|null
      */
     public function getInvoiceId(): ?string
     {
@@ -132,7 +110,6 @@ class Novinopay extends AbstractGateway implements GatewayInterface
     /**
      * Set Authority function
      *
-     * @param string $authority
      * @return $this
      */
     public function setAuthority(string $authority): self
@@ -144,8 +121,6 @@ class Novinopay extends AbstractGateway implements GatewayInterface
 
     /**
      * Get Authority function
-     *
-     * @return string|null
      */
     public function getAuthority(): ?string
     {
@@ -155,7 +130,6 @@ class Novinopay extends AbstractGateway implements GatewayInterface
     /**
      * Set Ref ID function
      *
-     * @param string $ref_id
      * @return $this
      */
     public function setRefId(string $ref_id): self
@@ -167,8 +141,6 @@ class Novinopay extends AbstractGateway implements GatewayInterface
 
     /**
      * Get Ref ID function
-     *
-     * @return string|null
      */
     public function getRefId(): ?string
     {
@@ -178,7 +150,6 @@ class Novinopay extends AbstractGateway implements GatewayInterface
     /**
      * Set Payment Url function
      *
-     * @param string $payment_url
      * @return $this
      */
     public function setPaymentUrl(string $payment_url): self
@@ -190,8 +161,6 @@ class Novinopay extends AbstractGateway implements GatewayInterface
 
     /**
      * Get Payment Url function
-     *
-     * @return string|null
      */
     public function getPaymentUrl(): ?string
     {
@@ -201,7 +170,6 @@ class Novinopay extends AbstractGateway implements GatewayInterface
     /**
      * Set Mask Card Number function
      *
-     * @param string $mask_card_number
      * @return $this
      */
     public function setMaskCardNumber(string $mask_card_number): self
@@ -213,8 +181,6 @@ class Novinopay extends AbstractGateway implements GatewayInterface
 
     /**
      * Get Mask Card Number function
-     *
-     * @return string|null
      */
     public function getMaskCardNumber(): ?string
     {
@@ -224,7 +190,6 @@ class Novinopay extends AbstractGateway implements GatewayInterface
     /**
      * Set Payment Url function
      *
-     * @param array $gateway_transaction_data
      * @return $this
      */
     public function setGatewayTransactionData(array $gateway_transaction_data): self
@@ -236,8 +201,6 @@ class Novinopay extends AbstractGateway implements GatewayInterface
 
     /**
      * Get Payment Url function
-     *
-     * @return array|null
      */
     public function getGatewayTransactionData(): ?array
     {
@@ -247,8 +210,8 @@ class Novinopay extends AbstractGateway implements GatewayInterface
     /**
      * Initialize function
      *
-     * @param array $parameters
      * @return $this
+     *
      * @throws InvalidDataException
      */
     public function initialize(array $parameters = []): self
@@ -274,7 +237,7 @@ class Novinopay extends AbstractGateway implements GatewayInterface
     {
         parent::prePurchase();
 
-        if ($this->preparedAmount() < 100 || $this->preparedAmount() > 500000000) {
+        if ($this->preparedAmount() < 100 || $this->preparedAmount() > 1000000000) {
             throw InvalidDataException::invalidAmount();
         }
 
@@ -299,7 +262,7 @@ class Novinopay extends AbstractGateway implements GatewayInterface
         try {
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, self::REQUEST_URL);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, ["Content-Type" => "application/json"]);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type' => 'application/json']);
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($fields, JSON_UNESCAPED_UNICODE));
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -314,11 +277,11 @@ class Novinopay extends AbstractGateway implements GatewayInterface
             }
 
             $result = json_decode($response);
-        } catch(Exception $ex) {
+        } catch (Exception $ex) {
             throw GatewayException::connectionProblem($ex);
         }
 
-        if (!isset($result->Status)) {
+        if (! isset($result->Status)) {
             throw GatewayException::unknownResponse(json_encode($result));
         }
 
@@ -326,13 +289,13 @@ class Novinopay extends AbstractGateway implements GatewayInterface
             throw NovinopayException::error($result->Status);
         }
 
-        if (!isset($result->Authority)) {
+        if (! isset($result->Authority)) {
             throw GatewayException::unknownResponse(json_encode($result));
         }
 
         $this->setAuthority($result->Authority);
 
-        if (!isset($result->PaymentUrl)) {
+        if (! isset($result->PaymentUrl)) {
             throw GatewayException::unknownResponse(json_encode($result));
         }
 
@@ -350,8 +313,6 @@ class Novinopay extends AbstractGateway implements GatewayInterface
 
     /**
      * Pay Link function
-     *
-     * @return string
      */
     public function purchaseUri(): string
     {
@@ -360,8 +321,6 @@ class Novinopay extends AbstractGateway implements GatewayInterface
 
     /**
      * Purchase View Params function
-     *
-     * @return array
      */
     protected function purchaseViewParams(): array
     {
@@ -403,7 +362,7 @@ class Novinopay extends AbstractGateway implements GatewayInterface
         try {
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, self::VERIFY_URL);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, ["Content-Type" => "application/json"]);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type' => 'application/json']);
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($fields, JSON_UNESCAPED_UNICODE));
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -418,11 +377,11 @@ class Novinopay extends AbstractGateway implements GatewayInterface
             }
 
             $result = json_decode($response);
-        } catch(Exception $ex) {
+        } catch (Exception $ex) {
             throw GatewayException::connectionProblem($ex);
         }
 
-        if (!isset($result->Status)) {
+        if (! isset($result->Status)) {
             throw GatewayException::unknownResponse(json_encode($result));
         }
 
@@ -430,7 +389,7 @@ class Novinopay extends AbstractGateway implements GatewayInterface
             throw NovinopayException::error($result->Status);
         }
 
-        if (!isset($result->RefID)) {
+        if (! isset($result->RefID)) {
             throw GatewayException::unknownResponse(json_encode($result));
         }
 
@@ -440,7 +399,7 @@ class Novinopay extends AbstractGateway implements GatewayInterface
             throw NovinopayException::error(-5);
         }
 
-        if (!isset($result->MaskCardNumber)) {
+        if (! isset($result->MaskCardNumber)) {
             $this->setMaskCardNumber($result->MaskCardNumber);
         }
 

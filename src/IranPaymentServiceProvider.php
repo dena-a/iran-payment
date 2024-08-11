@@ -53,8 +53,6 @@ class IranPaymentServiceProvider extends ServiceProvider
 
     /**
      * Check if app uses Lumen.
-     *
-     * @return bool
      */
     private function isLumen(): bool
     {
