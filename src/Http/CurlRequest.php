@@ -16,7 +16,6 @@ class CurlRequest implements HttpRequestInterface
         curl_setopt($this->handle, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($this->handle, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($this->handle, CURLOPT_CUSTOMREQUEST, strtoupper($method));
-        curl_setopt($this->handle, CURLOPT_RETURNTRANSFER, true);
 
         $timeout = app('config')->get('iranpayment.timeout');
         if ($timeout !== null) {

@@ -6,7 +6,7 @@ return [
     |--------------------------------------------------------------------------
     | Default gateway
     |--------------------------------------------------------------------------
-    | [saman|sadad|zarinpal|payir|payping]
+    | [saman|sadad|zarinpal|payir|payping|digipay]
     */
     'default' => env('IRANPAYMENT_DEFAULT', 'saman'),
 
@@ -102,6 +102,21 @@ return [
     'novinopay' => [
         'merchant-id' => env('NOVINOPAY_MERCHANT_ID', 'xxxxxxxxxxxxxxxx-xxxx-xxxx-xxxx-xxxx'),
         // 'callback-url' => 'http://example.com/payments/navinopay/callback',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Digipay gateway
+    |--------------------------------------------------------------------------
+    */
+    'digipay' => [
+        'client_id' => env('DIGIPAY_CLIENT_ID', ''),
+        'client_secret' => env('DIGIPAY_CLIENT_SECRET', ''),
+        'username' => env('DIGIPAY_USERNAME', ''),
+        'password' => env('DIGIPAY_PASSWORD', ''),
+        'grant_type' => env('DIGIPAY_GRANT_TYPE', 'password'),
+        'ticket_type' => env('DIGIPAY_TICKET_TYPE', 11), // 11 => supported all types (CPG, BPG/BNPL, WALLET, IPG)
+        'callback-url' => env('DIGIPAY_CALLBACK_URL', ''),
     ],
 
     /*
