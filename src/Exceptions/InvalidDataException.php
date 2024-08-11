@@ -2,8 +2,6 @@
 
 namespace Dena\IranPayment\Exceptions;
 
-use Dena\IranPayment\Exceptions\IranPaymentException;
-
 use Throwable;
 
 class InvalidDataException extends IranPaymentException
@@ -31,5 +29,10 @@ class InvalidDataException extends IranPaymentException
 	public static function invalidCallbackUrl(): self
 	{
         return new self('آدرس بازگشتی وارد شده معتبر نمی‌باشد.');
+	}
+
+    public static function invalidCode(): self
+	{
+        return new self('کد تراکنش معتبر نمی‌باشد.');
 	}
 }
