@@ -7,57 +7,48 @@ use Dena\IranPayment\Exceptions\InvalidDataException;
 use Dena\IranPayment\Gateways\AbstractGateway;
 use Dena\IranPayment\Gateways\GatewayInterface;
 use Dena\IranPayment\Helpers\Currency;
+use Exception;
 use Illuminate\Support\Carbon;
 use SoapClient;
-use Exception;
 use SoapFault;
 
 class BehPardakht extends AbstractGateway implements GatewayInterface
 {
-    private const SEND_URL    = 'https://bpm.shaparak.ir/pgwchannel/services/pgw?wsdl';
+    private const SEND_URL = 'https://bpm.shaparak.ir/pgwchannel/services/pgw?wsdl';
+
     private const PAYMENT_URL = 'https://bpm.shaparak.ir/pgwchannel/startpay.mellat';
-    private const VERIFY_URL  = 'https://bpm.shaparak.ir/pgwchannel/services/pgw?wsdl';
-    private const CURRENCY    = Currency::IRR;
+
+    private const VERIFY_URL = 'https://bpm.shaparak.ir/pgwchannel/services/pgw?wsdl';
+
+    private const CURRENCY = Currency::IRR;
 
     /**
      * Terminal ID variable
-     *
-     * @var int|null
      */
     protected ?int $terminal_id;
 
     /**
      * Username variable
-     *
-     * @var string|null
      */
     protected ?string $username;
 
     /**
      * Password variable
-     *
-     * @var string|null
      */
     protected ?string $password;
 
     /**
      * Order ID variable
-     *
-     * @var int|null
      */
     protected ?int $order_id;
 
     /**
      * Ref Id variable
-     *
-     * @var string|null
      */
     protected ?string $ref_id;
 
     /**
      * Gateway Transaction Data variable
-     *
-     * @var array|null
      */
     protected ?array $gateway_transaction_data = null;
 
@@ -69,7 +60,6 @@ class BehPardakht extends AbstractGateway implements GatewayInterface
     /**
      * Set Terminal Id function
      *
-     * @param int $terminal_id
      * @return $this
      */
     public function setTerminalId(int $terminal_id): self
@@ -81,8 +71,6 @@ class BehPardakht extends AbstractGateway implements GatewayInterface
 
     /**
      * Get Terminal Id function
-     *
-     * @return int|null
      */
     public function getTerminalId(): ?int
     {
@@ -92,7 +80,6 @@ class BehPardakht extends AbstractGateway implements GatewayInterface
     /**
      * Set Username function
      *
-     * @param string $username
      * @return $this
      */
     public function setUsername(string $username): self
@@ -104,8 +91,6 @@ class BehPardakht extends AbstractGateway implements GatewayInterface
 
     /**
      * Get Username function
-     *
-     * @return string|null
      */
     public function getUsername(): ?string
     {
@@ -115,7 +100,6 @@ class BehPardakht extends AbstractGateway implements GatewayInterface
     /**
      * Set Password function
      *
-     * @param string $password
      * @return $this
      */
     public function setPassword(string $password): self
@@ -127,8 +111,6 @@ class BehPardakht extends AbstractGateway implements GatewayInterface
 
     /**
      * Get Password function
-     *
-     * @return string|null
      */
     public function getPassword(): ?string
     {
@@ -138,7 +120,6 @@ class BehPardakht extends AbstractGateway implements GatewayInterface
     /**
      * Set Order Id function
      *
-     * @param int $order_id
      * @return $this
      */
     public function setOrderId(int $order_id): self
@@ -150,8 +131,6 @@ class BehPardakht extends AbstractGateway implements GatewayInterface
 
     /**
      * Get Order Id function
-     *
-     * @return int|null
      */
     public function getOrderId(): ?int
     {
@@ -161,7 +140,6 @@ class BehPardakht extends AbstractGateway implements GatewayInterface
     /**
      * Set Ref Id function
      *
-     * @param string $ref_id
      * @return $this
      */
     public function setRefId(string $ref_id): self
@@ -173,8 +151,6 @@ class BehPardakht extends AbstractGateway implements GatewayInterface
 
     /**
      * Get Ref Id function
-     *
-     * @return string|null
      */
     public function getRefId(): ?string
     {
@@ -184,7 +160,6 @@ class BehPardakht extends AbstractGateway implements GatewayInterface
     /**
      * Set Gateway Transaction Data function
      *
-     * @param array $gateway_transaction_data
      * @return $this
      */
     public function setGatewayTransactionData(array $gateway_transaction_data): self
@@ -196,8 +171,6 @@ class BehPardakht extends AbstractGateway implements GatewayInterface
 
     /**
      * Get Gateway Transaction Data function
-     *
-     * @return array|null
      */
     public function getGatewayTransactionData(): ?array
     {
@@ -229,11 +202,10 @@ class BehPardakht extends AbstractGateway implements GatewayInterface
     {
         parent::prePurchase();
 
-        if ($this->preparedAmount() < 100) {
+        if ($this->preparedAmount() < 10000) {
             throw InvalidDataException::invalidAmount();
         }
 
-        // crc32($this->getTransactionCode())
         $this->setOrderId($this->getTransaction()->id);
     }
 
@@ -258,9 +230,9 @@ class BehPardakht extends AbstractGateway implements GatewayInterface
                 'orderId' => $this->getOrderId(),
                 'mobileNo' => $this->mobileReformat($this->getMobile()),
                 'additionalData' => 'behpardakht',
-                'payerId' => 0
+                'payerId' => 0,
             ]);
-        } catch(SoapFault|Exception $ex) {
+        } catch (SoapFault|Exception $ex) {
             throw GatewayException::connectionProblem($ex);
         }
 
@@ -269,11 +241,11 @@ class BehPardakht extends AbstractGateway implements GatewayInterface
             throw BehPardakhtException::error(21);
         }
 
-        list($resCode, $refId) = explode(',', $result->return);
+        [$resCode, $refId] = explode(',', $result->return);
 
         // purchase was not successful
         if ($resCode != '0') {
-            throw BehPardakhtException::error((int)$resCode);
+            throw BehPardakhtException::error((int) $resCode);
         }
 
         $this->setRefId($refId);
@@ -289,7 +261,6 @@ class BehPardakht extends AbstractGateway implements GatewayInterface
     }
 
     /**
-     * @return string
      * @throws GatewayException
      */
     public function purchaseUri(): string
@@ -299,8 +270,6 @@ class BehPardakht extends AbstractGateway implements GatewayInterface
 
     /**
      * Purchase View Params function
-     *
-     * @return array
      */
     protected function purchaseViewParams(): array
     {
@@ -325,13 +294,13 @@ class BehPardakht extends AbstractGateway implements GatewayInterface
         }
 
         if (isset($this->request['ResCode']) && $this->request['ResCode'] != '0') {
-            throw BehPardakhtException::error((int)$this->request['ResCode']);
+            throw BehPardakhtException::error((int) $this->request['ResCode']);
         }
 
         if (
             (isset($this->request['RefId']) && $this->request['RefId'] != $this->getTransaction()->reference_number)
             &&
-            (isset($this->request['SaleOrderId']) && $this->request['SaleOrderId'] != $this->getTransaction()->id )
+            (isset($this->request['SaleOrderId']) && $this->request['SaleOrderId'] != $this->getTransaction()->id)
         ) {
             throw BehPardakhtException::error(44);
         }
@@ -350,7 +319,7 @@ class BehPardakht extends AbstractGateway implements GatewayInterface
             'userPassword' => $this->getPassword(),
             'orderId' => $orderId,
             'saleOrderId' => $verifySaleOrderId,
-            'saleReferenceId' => $verifySaleReferenceId
+            'saleReferenceId' => $verifySaleReferenceId,
         ];
 
         try {
@@ -362,7 +331,7 @@ class BehPardakht extends AbstractGateway implements GatewayInterface
             ]);
 
             // step1: verify request
-            $verifyResponse = (int)$soap->bpVerifyRequest($data)->return;
+            $verifyResponse = (int) $soap->bpVerifyRequest($data)->return;
             if ($verifyResponse != 0) {
                 // rollback money and throw exception
                 // avoid rollback if request was already verified
@@ -403,7 +372,7 @@ class BehPardakht extends AbstractGateway implements GatewayInterface
         $this->transactionUpdate(
             [
                 'tracking_code' => $this->request['SaleReferenceId'] ?? null,
-                'card_number' => $this->request['CardHolderPan'] ?? null
+                'card_number' => $this->request['CardHolderPan'] ?? null,
             ],
             $this->getGatewayTransactionData() ?? []
         );
@@ -413,6 +382,6 @@ class BehPardakht extends AbstractGateway implements GatewayInterface
 
     protected function mobileReformat($mobile)
     {
-        return str_replace('09', '989', $mobile);
+        return preg_replace('/^(\+989|00989|989|09|9)/', '989', $mobile);
     }
 }

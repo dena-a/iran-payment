@@ -6,7 +6,7 @@ return [
     |--------------------------------------------------------------------------
     | Default gateway
     |--------------------------------------------------------------------------
-    | [saman|sadad|zarinpal|payir|payping|digipay]
+    | [saman|sadad|behpardakht|zarinpal|payir|payping|digipay]
     */
     'default' => env('IRANPAYMENT_DEFAULT', 'saman'),
 
@@ -125,7 +125,7 @@ return [
     |--------------------------------------------------------------------------
     */
     'behpardakht' => [
-        'terminal-id'  => env('BEHPARDAKHT_TERMINAL_ID',  'xxxxxxxx'),
+        'terminal-id' => env('BEHPARDAKHT_TERMINAL_ID', 'xxxxxxxx'),
         'username' => env('BEHPARDAKHT_USERNAME', 'xxxxxxxx'),
         'password' => env('BEHPARDAKHT_PASSWORD', 'xxxxxxxx'),
         // 'callback-url' => 'http://example.com/payments/behpardakht/callback',

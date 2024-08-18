@@ -6,8 +6,8 @@ use Dena\IranPayment\Exceptions\GatewayException;
 
 class BehPardakhtException extends GatewayException
 {
-	public static array $errors = [
-        0 => 'تراکنش با موفقیت انجام شد',
+    public static array $errors = [
+        // 0 => 'تراکنش با موفقیت انجام شد',
         11 => 'شماره کارت نامعتبر است',
         12 => 'موجودی کافی نیست',
         13 => 'رمز نادرست است',
@@ -53,7 +53,7 @@ class BehPardakhtException extends GatewayException
         61 => 'خطا در واریز',
         62 => 'مسیر بازگشت به سایت در دامنه ثبت شده برای پذیرنده قرار ندارد',
         98 => 'سقف استفاده از رمز ایستا به پایان رسیده است',
-        995 => 'تعلق کارت بانکي به مشتری احراز نشد'
+        995 => 'تعلق کارت بانکي به مشتری احراز نشد',
     ];
 
     public static function error($error_code)
