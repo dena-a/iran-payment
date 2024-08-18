@@ -3,15 +3,14 @@
 namespace Dena\IranPayment\Models;
 
 use DateTimeInterface;
-use Illuminate\Database\Eloquent\Model;
-
 use Dena\IranPayment\Traits\IranPaymentDatabase as DatabaseTrait;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * An Eloquent Model: 'IranPaymentTransaction'
  *
- * @property integer $id
- * @property integer $amount
+ * @property int $id
+ * @property int $amount
  * @property string $gateway
  * @property string $status
  * @property string $full_name
@@ -20,6 +19,7 @@ use Dena\IranPayment\Traits\IranPaymentDatabase as DatabaseTrait;
  * @property string $currency
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
+ *
  * @method static Model find(integer $id)
  * @method static Model where($key, $val)
  */
@@ -28,17 +28,22 @@ class IranPaymentTransaction extends Model
     use DatabaseTrait;
 
     const T_INIT = 0;
+
     const T_SUCCEED = 1;
+
     const T_FAILED = 2;
+
     const T_PENDING = 3;
+
     const T_VERIFY_PENDING = 4;
+
     const T_PAID_BACK = 5;
+
     const T_CANCELED = 6;
 
     /**
      * Prepare a date for array / JSON serialization.
      *
-     * @param  \DateTimeInterface  $date
      * @return string
      */
     protected function serializeDate(DateTimeInterface $date)
@@ -51,7 +56,7 @@ class IranPaymentTransaction extends Model
      *
      * @var array
      */
-    protected $fillable	= [
+    protected $fillable = [
         'gateway',
         'amount',
         'currency',
@@ -72,7 +77,7 @@ class IranPaymentTransaction extends Model
      * @var array
      */
     protected $hidden = [
-        'gateway_data'
+        'gateway_data',
     ];
 
     /**
@@ -91,21 +96,21 @@ class IranPaymentTransaction extends Model
      */
     protected $casts = [
         'extra' => 'array',
-        'gateway_data' => 'array'
+        'gateway_data' => 'array',
     ];
 
     /**
-     * Get all of the owning payable models.
+     * Get all the owning payable models.
      */
     public function payable()
     {
         return $this->morphTo();
     }
 
-    public function getStatusTextAttribute()
+    public function getStatusTextAttribute(): string
     {
         //@TODO::add translation
-        switch($this->status) {
+        switch ($this->status) {
             case self::T_INIT:
                 return 'ایجاد شده';
             case self::T_SUCCEED:

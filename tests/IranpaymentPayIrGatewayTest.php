@@ -11,13 +11,14 @@ class IranpaymentPayIrGatewayTest extends TestCase
     /**
      * Setup the test environment.
      */
-    protected function setUp() : void
+    protected function setUp(): void
     {
         parent::setUp();
 
-        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
-        $this->loadMigrationsFrom(__DIR__ . '/migrations');
+        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
+        $this->loadMigrationsFrom(__DIR__.'/migrations');
     }
+
     /**
      * Define environment setup.
      *
@@ -67,7 +68,7 @@ class IranpaymentPayIrGatewayTest extends TestCase
         $payment = $payment->ready();
         $this->assertEquals(IranPaymentTransaction::T_PENDING, $payment->getTransaction()->status);
         $this->assertEquals(1, $payment->getToken());
-        $this->assertEquals("https://pay.ir/pg/1", $payment->purchaseUri());
+        $this->assertEquals('https://pay.ir/pg/1', $payment->purchaseUri());
 
         $tr = $payment->getTransaction();
         $payment = IranPayment::create($gateway);

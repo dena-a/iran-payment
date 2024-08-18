@@ -7,101 +7,79 @@
 
 namespace Dena\IranPayment\Gateways\Sadad;
 
-use Dena\IranPayment\Gateways\AbstractGateway;
-use Dena\IranPayment\Gateways\GatewayInterface;
-
+use Carbon\Carbon;
+use DateTime;
 use Dena\IranPayment\Exceptions\GatewayException;
 use Dena\IranPayment\Exceptions\InvalidDataException;
 use Dena\IranPayment\Exceptions\IranPaymentException;
 use Dena\IranPayment\Exceptions\TransactionFailedException;
-
+use Dena\IranPayment\Gateways\AbstractGateway;
+use Dena\IranPayment\Gateways\GatewayInterface;
 use Dena\IranPayment\Helpers\Currency;
 use Dena\IranPayment\Http\CurlRequest;
 
-use DateTime;
-use Carbon\Carbon;
-
 class Sadad extends AbstractGateway implements GatewayInterface
 {
-    private const SEND_URL   = 'https://sadad.shaparak.ir/vpg/api/v0/Request/PaymentRequest';
+    private const SEND_URL = 'https://sadad.shaparak.ir/vpg/api/v0/Request/PaymentRequest';
+
     private const VERIFY_URL = 'https://sadad.shaparak.ir/vpg/api/v0/Advice/Verify';
-    private const TOKEN_URL  = "https://sadad.shaparak.ir/VPG/Purchase?Token={token}";
-    public const CURRENCY    = Currency::IRR;
+
+    private const TOKEN_URL = 'https://sadad.shaparak.ir/VPG/Purchase?Token={token}';
+
+    public const CURRENCY = Currency::IRR;
 
     /**
      * Merchant ID variable
-     *
-     * @var string|null
      */
     protected ?string $merchant_id;
 
     /**
      * Terminal ID variable
-     *
-     * @var string|null
      */
     protected ?string $terminal_id;
 
     /**
      * Terminal Key variable
-     *
-     * @var string|null
      */
     protected ?string $terminal_key;
 
     /**
      * Token variable
-     *
-     * @var string|null
      */
     protected ?string $token;
 
     /**
      * Order Id variable
-     *
-     * @var string|null
      */
     protected ?string $order_id;
 
     /**
      * Application Name variable
-     *
-     * @var string|null
      */
     protected ?string $app_name;
 
     /**
      * Local Date Time variable
-     *
-     * @var DateTime|null
      */
     protected ?DateTime $local_date_time;
 
     /**
      * System Trace Number variable
-     *
-     * @var string|null
      */
     protected ?string $system_trace_number;
 
     /**
      * Retrival Reference Number variable
-     *
-     * @var string|null
      */
     protected ?string $retrival_reference_number;
 
     /**
      * Response Description variable
-     *
-     * @var string|null
      */
     protected ?string $response_description;
 
     /**
      * Gateway Name function
-     *
-     * @return string
      */
     public function getName(): string
     {
@@ -111,7 +89,6 @@ class Sadad extends AbstractGateway implements GatewayInterface
     /**
      * Set Merchant Id function
      *
-     * @param string $merchant_id
      * @return $this
      */
     public function setMerchantId(string $merchant_id): self
@@ -123,8 +100,6 @@ class Sadad extends AbstractGateway implements GatewayInterface
 
     /**
      * Get Merchant Id function
-     *
-     * @return string|null
      */
     public function getMerchantId(): ?string
     {
@@ -134,7 +109,6 @@ class Sadad extends AbstractGateway implements GatewayInterface
     /**
      * Set Terminal Id function
      *
-     * @param string $terminal_id
      * @return $this
      */
     public function setTerminalId(string $terminal_id): self
@@ -146,8 +120,6 @@ class Sadad extends AbstractGateway implements GatewayInterface
 
     /**
      * Get Terminal Id function
-     *
-     * @return string|null
      */
     public function getTerminalId(): ?string
     {
@@ -157,7 +129,6 @@ class Sadad extends AbstractGateway implements GatewayInterface
     /**
      * Set Terminal Key function
      *
-     * @param string $terminal_key
      * @return $this
      */
     public function setTerminalKey(string $terminal_key): self
@@ -169,8 +140,6 @@ class Sadad extends AbstractGateway implements GatewayInterface
 
     /**
      * Get Terminal Key function
-     *
-     * @return string|null
      */
     public function getTerminalKey(): ?string
     {
@@ -180,7 +149,6 @@ class Sadad extends AbstractGateway implements GatewayInterface
     /**
      * Set Order Number function
      *
-     * @param string $order_id
      * @return $this
      */
     public function setOrderId(string $order_id): self
@@ -192,8 +160,6 @@ class Sadad extends AbstractGateway implements GatewayInterface
 
     /**
      * Get Order Id function
-     *
-     * @return string|null
      */
     public function getOrderId(): ?string
     {
@@ -203,7 +169,6 @@ class Sadad extends AbstractGateway implements GatewayInterface
     /**
      * Set Token function
      *
-     * @param $token
      * @return $this
      */
     public function setToken($token): self
@@ -215,8 +180,6 @@ class Sadad extends AbstractGateway implements GatewayInterface
 
     /**
      * Get Token function
-     *
-     * @return string|null
      */
     public function getToken(): ?string
     {
@@ -226,9 +189,7 @@ class Sadad extends AbstractGateway implements GatewayInterface
     /**
      * Set Application Name function
      *
-     * @param string $name
      * @return $this
-     *
      */
     public function setAppName(string $name): self
     {
@@ -239,8 +200,6 @@ class Sadad extends AbstractGateway implements GatewayInterface
 
     /**
      * Get Application Name function
-     *
-     * @return string|null
      */
     public function getAppName(): ?string
     {
@@ -250,9 +209,7 @@ class Sadad extends AbstractGateway implements GatewayInterface
     /**
      * Set Local DateTime function
      *
-     * @param DateTime $date_time
      * @return $this
-     *
      */
     public function setLocalDateTime(DateTime $date_time): self
     {
@@ -274,7 +231,6 @@ class Sadad extends AbstractGateway implements GatewayInterface
     /**
      * Set Retrival Reference Number function
      *
-     * @param $retrival_reference_number
      * @return $this
      */
     public function setRetrivalReferenceNumber($retrival_reference_number): self
@@ -286,8 +242,6 @@ class Sadad extends AbstractGateway implements GatewayInterface
 
     /**
      * Get Retrival Reference Number function
-     *
-     * @return string|null
      */
     public function getRetrivalReferenceNumber(): ?string
     {
@@ -297,7 +251,6 @@ class Sadad extends AbstractGateway implements GatewayInterface
     /**
      * Set System Trace Number function
      *
-     * @param $system_trace_number
      * @return $this
      */
     public function setSystemTraceNumber($system_trace_number): self
@@ -309,8 +262,6 @@ class Sadad extends AbstractGateway implements GatewayInterface
 
     /**
      * Get System Trace Number function
-     *
-     * @return string|null
      */
     public function getSystemTraceNumber(): ?string
     {
@@ -320,7 +271,6 @@ class Sadad extends AbstractGateway implements GatewayInterface
     /**
      * Set Response Description function
      *
-     * @param $description
      * @return $this
      */
     public function setResponseDescription(string $description): self
@@ -332,8 +282,6 @@ class Sadad extends AbstractGateway implements GatewayInterface
 
     /**
      * Get Response Description function
-     *
-     * @return string|null
      */
     public function getResponseDescription(): ?string
     {
@@ -342,14 +290,11 @@ class Sadad extends AbstractGateway implements GatewayInterface
 
     /**
      * Sign Data function
-     *
-     * @param string $str
-     * @return string
      */
     private function signData(string $str): string
     {
         $key = base64_decode($this->terminal_key);
-        $ciphertext = OpenSSL_encrypt($str,"DES-EDE3", $key, OPENSSL_RAW_DATA);
+        $ciphertext = openssl_encrypt($str, 'DES-EDE3', $key, OPENSSL_RAW_DATA);
 
         return base64_encode($ciphertext);
     }
@@ -357,8 +302,8 @@ class Sadad extends AbstractGateway implements GatewayInterface
     /**
      * Initialize function
      *
-     * @param array $parameters
      * @return $this
+     *
      * @throws InvalidDataException
      */
     public function initialize(array $parameters = []): self
@@ -388,7 +333,7 @@ class Sadad extends AbstractGateway implements GatewayInterface
         return $this;
     }
 
-    protected function httpRequest(string $url, array $data = [], string $method = "POST") : object
+    protected function httpRequest(string $url, array $data = [], string $method = 'POST'): object
     {
         $curl = new CurlRequest($url, $method);
         $result = $curl->execute(json_encode($data));
@@ -403,7 +348,7 @@ class Sadad extends AbstractGateway implements GatewayInterface
     {
         parent::prePurchase();
 
-        if ($this->preparedAmount() < 10000 || $this->preparedAmount() > 500000000) {
+        if ($this->preparedAmount() < 10000 || $this->preparedAmount() > 1000000000) {
             throw InvalidDataException::invalidAmount();
         }
 
@@ -444,7 +389,7 @@ class Sadad extends AbstractGateway implements GatewayInterface
             throw SadadException::error($result->ResCode, $result->Description ?? null);
         }
 
-        if (!isset($result->Token)) {
+        if (! isset($result->Token)) {
             throw GatewayException::unknownResponse(json_encode($result));
         }
 
@@ -462,7 +407,7 @@ class Sadad extends AbstractGateway implements GatewayInterface
                 'app_name' => $this->getAppName(),
                 'local_date_time' => $this->getLocalDateTime(),
                 'purchase_description' => $this->getResponseDescription(),
-            ]
+            ],
         ]);
 
         parent::postPurchase();
@@ -470,8 +415,6 @@ class Sadad extends AbstractGateway implements GatewayInterface
 
     /**
      * Pay Link function
-     *
-     * @return string
      */
     public function purchaseUri(): string
     {
@@ -480,8 +423,6 @@ class Sadad extends AbstractGateway implements GatewayInterface
 
     /**
      * Purchase View Params function
-     *
-     * @return array
      */
     protected function purchaseViewParams(): array
     {
@@ -505,7 +446,7 @@ class Sadad extends AbstractGateway implements GatewayInterface
         }
 
         $token = $this->getTransaction()->gateway_data['token'] ?? null;
-        if (!isset($token)) {
+        if (! isset($token)) {
             throw SadadException::error(-1);
         }
 
@@ -530,7 +471,7 @@ class Sadad extends AbstractGateway implements GatewayInterface
 
         $result = $this->httpRequest(self::VERIFY_URL, $data);
         if (
-            !isset(
+            ! isset(
                 $result->Amount,
                 $result->SystemTraceNo,
                 $result->RetrivalRefNo,
@@ -562,7 +503,7 @@ class Sadad extends AbstractGateway implements GatewayInterface
                 'system_trace_number' => $this->getSystemTraceNumber(),
                 'retrival_reference_number' => $this->getRetrivalReferenceNumber(),
                 'verify_description' => $this->getResponseDescription(),
-            ]
+            ],
         ]);
 
         parent::postVerify();

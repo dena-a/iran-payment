@@ -1,11 +1,9 @@
 <?php
 
-use Orchestra\Testbench\TestCase;
-
-use Dena\IranPayment\IranPayment;
 use Dena\IranPayment\Gateways\Novinopay\Novinopay;
+use Dena\IranPayment\IranPayment;
 use Dena\IranPayment\Models\IranPaymentTransaction;
-
+use Orchestra\Testbench\TestCase;
 use Tests\Models\ProductModel;
 
 class NovinopayTest extends TestCase
@@ -13,13 +11,14 @@ class NovinopayTest extends TestCase
     /**
      * Setup the test environment.
      */
-    protected function setUp() : void
+    protected function setUp(): void
     {
         parent::setUp();
 
-        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
-        $this->loadMigrationsFrom(__DIR__ . '/migrations');
+        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
+        $this->loadMigrationsFrom(__DIR__.'/migrations');
     }
+
     /**
      * Define environment setup.
      *

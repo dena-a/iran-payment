@@ -6,8 +6,6 @@ trait Payable
 {
     /**
      * IranPayment Amount variable
-     *
-     * @var int|null
      */
     private ?int $iranpayment_amount;
 
@@ -19,7 +17,7 @@ trait Payable
      *
      * @var string|null
      */
-     // protected ?string $iranpayment_amount_field;
+    // protected ?string $iranpayment_amount_field;
 
     /**
      * Get all of the payment's transactions.
@@ -32,7 +30,6 @@ trait Payable
     /**
      * Set IranPayment Amount function
      *
-     * @param int $amount
      * @return $this
      */
     protected function setIranPaymentAmount(int $amount): self
@@ -45,13 +42,14 @@ trait Payable
     /**
      * Call IranPayment Purchase Method
      *
-     * @param null $gateway
+     * @param  null  $gateway
      * @return mixed
+     *
      * @throws \Dena\IranPayment\Exceptions\IranPaymentException
      */
     public function pay($gateway = null)
     {
-        if (!isset($this->iranpayment_amount) && isset($this->iranpayment_amount_field)) {
+        if (! isset($this->iranpayment_amount) && isset($this->iranpayment_amount_field)) {
             $this->iranpayment_amount = intval($this->{$this->iranpayment_amount_field});
         }
 

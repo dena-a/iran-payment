@@ -8,9 +8,9 @@ interface GatewayInterface
 
     public function initialize(array $parameters = []): self;
 
-	public function purchase(): void;
+    public function purchase(): void;
 
     public function purchaseUri(): string;
 
-	public function verify(): void;
+    public function verify(): void;
 }

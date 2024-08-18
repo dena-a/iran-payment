@@ -60,14 +60,13 @@ class SadadException extends GatewayException
     ];
 
     /**
-     * @param int $error_code
-     * @param string|null $description
      * @return SadadException
+     *
      * @throws TransactionFailedException
      */
-    public static function error(int $error_code, string $description = null)
+    public static function error(int $error_code, ?string $description = null)
     {
-        if (!isset(self::$errors[$error_code])) {
+        if (! isset(self::$errors[$error_code])) {
             return self::unknownResponse($error_code.'-'.$description);
         }
 
@@ -75,7 +74,7 @@ class SadadException extends GatewayException
             throw new TransactionFailedException(self::$errors[$error_code], $error_code);
         }
 
-        if ($error_code == -1 && !empty($description)) {
+        if ($error_code == -1 && ! empty($description)) {
             return new self($description, $error_code);
         }
 
