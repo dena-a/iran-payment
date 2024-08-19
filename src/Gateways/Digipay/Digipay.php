@@ -18,13 +18,13 @@ use Psr\Container\NotFoundExceptionInterface;
 
 class Digipay extends AbstractGateway implements GatewayInterface
 {
-    private const LOGIN_URL = 'https://api.mydigipay.com/digipay/api/oauth/token';
+    private const LOGIN_URL = 'https://uatweb.mydigipay.info/digipay/api/oauth/token';
 
-    private const REQUEST_URL = 'https://api.mydigipay.com/digipay/api/tickets/business?type={ticketType}';
+    private const REQUEST_URL = 'https://uatweb.mydigipay.info/digipay/api/tickets/business?type={ticketType}';
 
-    private const VERIFY_URL = 'https://api.mydigipay.com/digipay/api/purchases/verify/{trackingCode}?type={ticketType}';
+    private const VERIFY_URL = 'https://uatweb.mydigipay.info/digipay/api/purchases/verify/{trackingCode}?type={ticketType}';
 
-    private const DELIVER_URL = 'https://api.mydigipay.com/digipay/api/purchases/deliver?type={ticketType}';
+    private const DELIVER_URL = 'https://uatweb.mydigipay.info/digipay/api/purchases/deliver?type={ticketType}';
 
     public const CURRENCY = Currency::IRR;
 
