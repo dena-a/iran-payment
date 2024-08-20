@@ -223,7 +223,7 @@ class BehPardakht extends AbstractGateway implements GatewayInterface
                 'terminalId' => $this->getTerminalId(),
                 'userName' => $this->getUsername(),
                 'userPassword' => $this->getPassword(),
-                'callBackUrl' => $this->getCallbackUrl(),
+                'callBackUrl' => $this->preparedCallbackUrl(),
                 'amount' => $this->preparedAmount(),
                 'localDate' => Carbon::now()->format('Ymd'),
                 'localTime' => Carbon::now()->format('Gis'),
