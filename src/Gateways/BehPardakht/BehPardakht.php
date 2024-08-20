@@ -308,7 +308,6 @@ class BehPardakht extends AbstractGateway implements GatewayInterface
 
     public function verify(): void
     {
-        // verify purchase request
         $orderId = $this->request['SaleOrderId'] ?? null;
         $verifySaleOrderId = $this->request['SaleOrderId'] ?? null;
         $verifySaleReferenceId = $this->request['SaleReferenceId'] ?? null;
