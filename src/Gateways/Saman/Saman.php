@@ -9,6 +9,7 @@ namespace Dena\IranPayment\Gateways\Saman;
 
 use Dena\IranPayment\Exceptions\GatewayException;
 use Dena\IranPayment\Exceptions\InvalidDataException;
+use Dena\IranPayment\Exceptions\InvalidRequestException;
 use Dena\IranPayment\Exceptions\IranPaymentException;
 use Dena\IranPayment\Gateways\AbstractGateway;
 use Dena\IranPayment\Gateways\GatewayInterface;
@@ -220,6 +221,18 @@ class Saman extends AbstractGateway implements GatewayInterface
     public function preVerify(): void
     {
         parent::preVerify();
+
+        if (! isset($this->request['RefNum']) && empty($this->request['RefNum'])) {
+            throw InvalidRequestException::notFound();
+        }
+
+        $transaction = $this->getTransaction();
+
+        $referenceTransaction = $this->findTransactionByReferenceNumber($this->request['RefNum']);
+
+        if ($referenceTransaction && $transaction->id != $referenceTransaction->id) {
+            throw InvalidRequestException::unProcessableVerify();
+        }
 
         if (
             (isset($this->request['State']) && $this->request['State'] !== 'OK') ||

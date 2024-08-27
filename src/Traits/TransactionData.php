@@ -107,6 +107,11 @@ trait TransactionData
         return $this;
     }
 
+    public function findTransactionByReferenceNumber(string $referenceNumber): ?IranPaymentTransaction
+    {
+        return IranPaymentTransaction::where('reference_number', $referenceNumber)->first();
+    }
+
     /**
      * Find Item Transactions
      */
