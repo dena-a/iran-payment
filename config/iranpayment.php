@@ -6,7 +6,7 @@ return [
     |--------------------------------------------------------------------------
     | Default gateway
     |--------------------------------------------------------------------------
-    | [saman|sadad|zarinpal|payir|payping|digipay]
+    | [saman|sadad|behpardakht|zarinpal|payir|payping|digipay]
     */
     'default' => env('IRANPAYMENT_DEFAULT', 'saman'),
 
@@ -117,6 +117,18 @@ return [
         'grant_type' => env('DIGIPAY_GRANT_TYPE', 'password'),
         'ticket_type' => env('DIGIPAY_TICKET_TYPE', 11), // 11 => supported all types (CPG, BPG/BNPL, WALLET, IPG)
         'callback-url' => env('DIGIPAY_CALLBACK_URL', ''),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Behpardakht (Mellat) gateway
+    |--------------------------------------------------------------------------
+    */
+    'behpardakht' => [
+        'terminal-id' => env('BEHPARDAKHT_TERMINAL_ID', 'xxxxxxxx'),
+        'username' => env('BEHPARDAKHT_USERNAME', 'xxxxxxxx'),
+        'password' => env('BEHPARDAKHT_PASSWORD', 'xxxxxxxx'),
+        // 'callback-url' => 'http://example.com/payments/behpardakht/callback',
     ],
 
     /*
