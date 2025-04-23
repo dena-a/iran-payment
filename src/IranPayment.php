@@ -11,6 +11,7 @@ use Dena\IranPayment\Gateways\PayIr\PayIr;
 use Dena\IranPayment\Gateways\PayPing\PayPing;
 use Dena\IranPayment\Gateways\Sadad\Sadad;
 use Dena\IranPayment\Gateways\Saman\Saman;
+use Dena\IranPayment\Gateways\Sep\Sep;
 use Dena\IranPayment\Gateways\Test\TestGateway;
 use Dena\IranPayment\Gateways\Zarinpal\Zarinpal;
 use Dena\IranPayment\Models\IranPaymentTransaction;
@@ -22,6 +23,8 @@ class IranPayment
      * Gateways classes constant names
      */
     const SAMAN = 'saman';
+
+    const SEP = 'sep';
 
     const SADAD = 'sadad';
 
@@ -76,6 +79,10 @@ class IranPayment
             case self::SAMAN:
             case Saman::class:
                 $this->gateway = new Saman;
+                break;
+            case self::SEP:
+            case Sep::class:
+                $this->gateway = new Sep;
                 break;
             case self::SADAD:
             case Sadad::class:
@@ -142,6 +149,7 @@ class IranPayment
         $gateways = [
             self::ZARINPAL,
             self::SAMAN,
+            self::SEP,
             self::SADAD,
             self::PAYIR,
             self::PAYPING,
