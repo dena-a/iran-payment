@@ -18,21 +18,22 @@ Accepting [Sadad (Melli)](https://sadadpsp.ir/), [Saman (Sep)](https://www.sep.i
 
 ## Gateways
 
-| Logo                                                                                                                   | Gateway                                             | Description                         | Available        | Tested | Last Update |
-|------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------|-------------------------------------|------------------|--------|-------------|
-| <img width="50" src="https://raw.githubusercontent.com/dena-a/iran-payment/master/resources/assets/img/sadad.png">     | [Sadad (Melli)](https://sadadpsp.ir/)               | بانک ملی (سداد)                     | ✓                | ✓      | 2020/09/10  |
-| <img width="50" src="https://raw.githubusercontent.com/dena-a/iran-payment/master/resources/assets/img/sep.png">       | [Saman (Sep)](https://www.sep.ir/)                  | (سپ) بانک سامان                     | ✓                | ✓      | 2020/08/03  |
-| <img width="50" src="https://raw.githubusercontent.com/dena-a/iran-payment/master/resources/assets/img/pay.png">       | [Pay.ir](https://pay.ir/)                           | پرداخت پی                           | ✓                | ✓      | 2020/08/03  |
-| <img width="50" src="https://raw.githubusercontent.com/dena-a/iran-payment/master/resources/assets/img/zp.png">        | [Zarinpal](https://zarinpal.com/)                   | زرین پال                            | ✓                | ✓      | 2020/08/03  |
-| <img width="50" src="https://raw.githubusercontent.com/dena-a/iran-payment/master/resources/assets/img/payping.png">   | [Payping](https://www.payping.ir/)                  | پی پینگ                             | ✓                | ✓      | 2020/08/04  |
-| <img width="50" src="https://raw.githubusercontent.com/dena-a/iran-payment/master/resources/assets/img/novinopay.png"> | [Novinopay](https://www.novinopay.com/)             | نوینو پرداخت                        | ✓                | ✓      | 2022/03/23  |
-| <img width="50" src="https://raw.githubusercontent.com/dena-a/iran-payment/master/resources/assets/img/digipay.png">   | [Digipay](https://www.mydigipay.com/)               | دیجی پی                             | CPG ✓ BPG/BNPL ✓ | ✓      | 2024/06/24  |
-| ---                                                                                                                    | [Qeroun](https://qeroun.com/)                       | قرون - خرید امن با ایجاد توافق‌نامه | -                | -      | -           |
-| ---                                                                                                                    | [Mellat (Behpardakht)](http://www.behpardakht.com/) | (به پرداخت) بانک ملت                | -                | -      | -           |
-| ---                                                                                                                    | [Parsian (Pec)](https://www.pec.ir/)                | (پک) بانک پارسیان                   | -                | -      | -           |
-| ---                                                                                                                    | [Pasargad (Pep)](https://www.pep.co.ir/)            | (پپ) بانک پاسارگاد                  | -                | -      | -           |
-| ---                                                                                                                    | [Zibal](https://zibal.ir/)                          | زیبال                               | -                | -      | -           |
-| ---                                                                                                                    | [IDPay](https://idpay.ir/)                          | آیدی پی                             | -                | -      | -           |
+| Logo                                                          | Gateway                                            | Description                         | Available        | Tested | Last Update |
+|---------------------------------------------------------------|----------------------------------------------------|-------------------------------------|------------------|--------|-------------|
+| <img width="50" src="./resources/assets/img/sadad.png">       | [Sadad (Melli)](https://sadadpsp.ir/)              | بانک ملی (سداد)                     | ✓                | ✓      | 2020/09/10  |
+| <img width="50" src="./resources/assets/img/sep.png">         | [Saman (Sep)](https://www.sep.ir/)                 | (سپ) بانک سامان                     | ✓                | ✓      | 2020/08/03  |
+| <img width="50" src="./resources/assets/img/behpardakht.png"> | [Mellat (Behpardakht)](http://www.behpardakht.com/) | (به پرداخت) بانک ملت                | ✓                | ✓      | 2024/08/18  |
+| <img width="50" src="./resources/assets/img/pay.png">         | [Pay.ir](https://pay.ir/)                          | پرداخت پی                           | ✓                | ✓      | 2020/08/03  |
+| <img width="50" src="./resources/assets/img/zp.png">          | [Zarinpal](https://zarinpal.com/)                  | زرین پال                            | ✓                | ✓      | 2020/08/03  |
+| <img width="50" src="./resources/assets/img/payping.png">     | [Payping](https://www.payping.ir/)                 | پی پینگ                             | ✓                | ✓      | 2020/08/04  |
+| <img width="50" src="./resources/assets/img/novinopay.png">   | [Novinopay](https://www.novinopay.com/)            | نوینو پرداخت                        | ✓                | ✓      | 2022/03/23  |
+| <img width="50" src="./resources/assets/img/digipay.png">     | [Digipay](https://www.mydigipay.com/)              | دیجی پی                             | CPG ✓ BPG/BNPL ✓ | ✓      | 2024/06/24  |
+| <img width="50" src="./resources/assets/img/tara.png">        | [Tara](https://tara360.ir/)                  | تارا                                | CPG ✓ BPG/BNPL ✓ | ✓      | 2025/07/26  |
+| ---                                                           | [Qeroun](https://qeroun.com/)                      | قرون - خرید امن با ایجاد توافق‌نامه | -                | -      | -           |
+| ---                                                           | [Parsian (Pec)](https://www.pec.ir/)               | (پک) بانک پارسیان                   | -                | -      | -           |
+| ---                                                           | [Pasargad (Pep)](https://www.pep.co.ir/)           | (پپ) بانک پاسارگاد                  | -                | -      | -           |
+| ---                                                           | [Zibal](https://zibal.ir/)                         | زیبال                               | -                | -      | -           |
+| ---                                                           | [IDPay](https://idpay.ir/)                         | آیدی پی                             | -                | -      | -           |
 
 ## Requirements
 
@@ -159,6 +160,23 @@ class NewGateway extends AbstractGateway implements GatewayInterface
             'tracking_code' => $tracking_code
         ]);
     }
+}
+```
+### refund Payment:
+
+```php
+use Dena\IranPayment\IranPayment;
+use Dena\IranPayment\Exceptions\IranPaymentException;
+
+try {
+    $payment = IranPayment::create('tara');
+    
+    $payment->setCurrency(Currency::IRR)
+    $payment->setPayableId($invoiceDTO->id)
+    
+    $payment->refund();
+} catch (Dena\IranPayment\Exceptions\IranPaymentException $ex) {
+    throw $ex;
 }
 ```
 

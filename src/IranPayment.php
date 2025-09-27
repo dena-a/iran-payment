@@ -5,6 +5,7 @@ namespace Dena\IranPayment;
 use Dena\IranPayment\Exceptions\GatewayNotFoundException;
 use Dena\IranPayment\Gateways\AbstractGateway;
 use Dena\IranPayment\Gateways\Digipay\Digipay;
+use Dena\IranPayment\Gateways\Tara\Tara;
 use Dena\IranPayment\Gateways\GatewayInterface;
 use Dena\IranPayment\Gateways\Novinopay\Novinopay;
 use Dena\IranPayment\Gateways\PayIr\PayIr;
@@ -36,6 +37,8 @@ class IranPayment
     const NOVINOPAY = 'novinopay';
 
     const DIGIPAY = 'digipay';
+
+    const TARA = 'tara';
 
     const TEST = 'test';
 
@@ -102,6 +105,10 @@ class IranPayment
             case Digipay::class:
                 $this->gateway = new Digipay;
                 break;
+            case self::TARA:
+            case Tara::class:
+                $this->gateway = new Tara;
+                break;
             case self::TEST:
             case TestGateway::class:
                 if (app('config')->get('app.env', 'production') === 'production' ||
@@ -147,6 +154,7 @@ class IranPayment
             self::PAYPING,
             self::NOVINOPAY,
             self::DIGIPAY,
+            self::TARA,
         ];
 
         if (app('config')->get('app.env', 'production') !== 'production' &&

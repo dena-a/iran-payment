@@ -6,7 +6,7 @@ return [
     |--------------------------------------------------------------------------
     | Default gateway
     |--------------------------------------------------------------------------
-    | [saman|sadad|zarinpal|payir|payping|digipay]
+    | [saman|sadad|zarinpal|payir|payping|digipay|tara]
     */
     'default' => env('IRANPAYMENT_DEFAULT', 'saman'),
 
@@ -117,6 +117,23 @@ return [
         'grant_type' => env('DIGIPAY_GRANT_TYPE', 'password'),
         'ticket_type' => env('DIGIPAY_TICKET_TYPE', 11), // 11 => supported all types (CPG, BPG/BNPL, WALLET, IPG)
         'callback-url' => env('DIGIPAY_CALLBACK_URL', ''),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Tara gateway
+    |--------------------------------------------------------------------------
+    */
+    'tara' => [
+        'service_id' => env('TARA_SERVICE_ID', ''),
+        'username'   => env('TARA_USERNAME', ''),
+        'password'   => env('TARA_PASSWORD', ''),
+        'valid_ip'   => env('TARA_VALID_IP', ''),
+        'refund'     => [
+            'username' => env('TARA_REFUND_USERNAME', ''),
+            'password' => env('TARA_REFUND_PASSWORD', ''),
+        ]
+        // 'callback-url' => 'http://example.com/payments/tara/callback',
     ],
 
     /*

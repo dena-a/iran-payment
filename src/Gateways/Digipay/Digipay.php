@@ -10,13 +10,16 @@ namespace Dena\IranPayment\Gateways\Digipay;
 use Dena\IranPayment\Exceptions\GatewayException;
 use Dena\IranPayment\Exceptions\InvalidDataException;
 use Dena\IranPayment\Exceptions\IranPaymentException;
+use Dena\IranPayment\Exceptions\TransactionNotFoundException;
 use Dena\IranPayment\Gateways\AbstractGateway;
+use Dena\IranPayment\Gateways\GatewayRefundableInterface;
 use Dena\IranPayment\Gateways\GatewayInterface;
 use Dena\IranPayment\Helpers\Currency;
+use Dena\IranPayment\Models\IranPaymentTransaction;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
-class Digipay extends AbstractGateway implements GatewayInterface
+class Digipay extends AbstractGateway implements GatewayInterface, GatewayRefundableInterface
 {
     private const LOGIN_URL = 'https://api.mydigipay.com/digipay/api/oauth/token';
 
@@ -25,6 +28,8 @@ class Digipay extends AbstractGateway implements GatewayInterface
     private const VERIFY_URL = 'https://api.mydigipay.com/digipay/api/purchases/verify/{trackingCode}?type={ticketType}';
 
     private const DELIVER_URL = 'https://api.mydigipay.com/digipay/api/purchases/deliver?type={ticketType}';
+
+    private const REFUND_URL = 'https://api.mydigipay.com/digipay/api/refunds?type={ticketType}';
 
     public const CURRENCY = Currency::IRR;
 
@@ -626,7 +631,7 @@ class Digipay extends AbstractGateway implements GatewayInterface
                 throw GatewayException::connectionProblem(new \Exception($ch_error));
             }
 
-            $result = json_decode($response);
+            $result = json_decode($response, true);
         } catch (\Exception $ex) {
             throw GatewayException::connectionProblem($ex);
         }
@@ -635,10 +640,114 @@ class Digipay extends AbstractGateway implements GatewayInterface
             throw GatewayException::connectionProblem(new \Exception((string) $http_code));
         }
 
-        if (! isset($result->access_token)) {
+        if (! isset($result['access_token'])) {
             throw GatewayException::unknownResponse(json_encode($result));
         }
 
-        $this->setAccessToken($result->access_token);
+        $this->setAccessToken($result['access_token']);
+    }
+
+    /**
+     * @param bool $limitRefund
+     * @param int $limitRefundAmount
+     * @param array $refundItems
+     * @param string $description
+     * @return array
+     * @throws DigipayException
+     * @throws GatewayException
+     * @throws TransactionNotFoundException
+     */
+    public function refund(
+        bool $limitRefund = false,
+        int $limitRefundAmount = 0,
+        array $refundItems = [],
+        string $description = ''
+    ): array {
+        $transaction = $this->payableTransactions(
+            $this->getPayableId(),
+            null,
+            IranPaymentTransaction::T_SUCCEED
+        );
+        if (count($transaction) === 0) {
+            throw new TransactionNotFoundException;
+        }
+
+        $this->setTransaction($transaction->first());
+        $this->setTrackingCode($transaction->first()->tracking_code);
+
+        if ($limitRefund) {
+            throw DigipayException::notSupportedMethod();
+        }
+
+        return $this->refundInvoice();
+    }
+
+    /**
+     * @return array
+     * @throws DigipayException
+     * @throws GatewayException
+     */
+    private function refundInvoice(): array
+    {
+        $transaction = $this->getTransaction();
+
+        $data = [
+            'providerId'       => $transaction->payable_id,
+            'amount'           => $transaction->amount,
+            'saleTrackingCode' => $transaction->tracking_code,
+        ];
+
+        // 13 => BNPL (Buy Now Pay Later)
+        $type = 13;
+        $endpoint = str_replace('{ticketType}', $type, self::REFUND_URL);
+
+        try {
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $endpoint);
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                'Agent: WEB',
+                'Digipay-Version: 2022-02-02',
+                'Authorization: Bearer '.$this->getAccessToken(),
+                'Content-Type: application/json',
+            ]);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_TIMEOUT, $this->getGatewayRequestOptions()['timeout'] ?? 30);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->getGatewayRequestOptions()['connection_timeout'] ?? 60);
+            $response = curl_exec($ch);
+            $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $ch_error = curl_error($ch);
+            curl_close($ch);
+
+            if ($ch_error) {
+                throw GatewayException::connectionProblem(new \Exception($ch_error));
+            }
+
+            $result = json_decode($response, true);
+        } catch (\Exception $ex) {
+            throw GatewayException::connectionProblem($ex);
+        }
+
+        if ($http_code != 200 && isset($result['result']['status']) && $result['result']['status'] !== 0) {
+            throw DigipayException::error($result['result']['status']);
+        }
+
+        if (empty($result['trackingCode'])) {
+            throw GatewayException::unknownResponse(json_encode($result));
+        }
+
+        $this->transactionUpdate([
+            'gateway_data' => array_merge([
+                'gateway_data' => (array) $this->getTransaction()->gateway_data ?? []
+            ], [
+                'refundType' => 'unlimited',
+                'refundStatus' => $http_code,
+                'refundResponse' => $result,
+            ]),
+        ]);
+
+        return $result;
     }
 }
